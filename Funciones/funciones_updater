@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20150726
+FUNCIONES_VERSION=20150815
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -62,13 +62,13 @@ f_comprobarConexion() {
 
 # Comprobacion de updates para el script
 f_comprobarUpdates() {
-   SERVIDOR_WEB="http://www.downloadwireless.net/wifislax-updaters"
+   SERVIDOR_WEB="https://raw.githubusercontent.com/wifislax-ng/wifislax-updaters/master"
    DIRECTORIO=$(find /opt/wifislax-updaters -type f -name ${PRGNAM}*| rev | cut -d/ -f2- | rev)
-   SERVIDOR_VERSION=$(timeout -s SIGTERM 10 curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
+   SERVIDOR_VERSION=$(timeout -s SIGTERM 10 curl -sk $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
 
    echo ${CYAN}Version Script$CIERRE: $ROJO${SCRIPT_VERSION:6}$BLANCO/$AMARILLO${SCRIPT_VERSION:4:2}$BLANCO/$ROJO${SCRIPT_VERSION:0:4}$CIERRE
 
-   if [ "$(ping downloadwireless.net -c1 2>/dev/null)" ]; then
+   if [ "$(ping github.com -c1 2>/dev/null)" ]; then
       if [[ $SCRIPT_VERSION -lt $SERVIDOR_VERSION ]]; then
          echo
          echo "$ROSA"Comprobando si hay actualizaciones para el script..."$CIERRE."
@@ -77,7 +77,7 @@ f_comprobarUpdates() {
          echo ${ROSA}Version Server$CIERRE: $ROJO${SERVIDOR_VERSION:6}$BLANCO/$AMARILLO${SERVIDOR_VERSION:4:2}$BLANCO/$ROJO${SERVIDOR_VERSION:0:4}$CIERRE
          echo
          echo ${CYAN}Actualizando ${PRGNAM}_updater
-         curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater -o $DIRECTORIO/${PRGNAM}_updater
+         curl -sk $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater -o $DIRECTORIO/${PRGNAM}_updater
          echo ${ROJO}LISTO$CIERRE
          sleep 1
          $0
