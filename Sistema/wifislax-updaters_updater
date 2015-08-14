@@ -2,7 +2,7 @@
 
 # Script for www.seguridadwireless.net by vk496
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150815
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,11 +27,11 @@ fi
 
 # Definicion de variables
 F_variables() {
-   WEB="http://www.downloadwireless.net"
-   ELDIRECTORIO="wifislax-updaters"
    PRGNAM=wifislax-updaters
+   WEB="https://github.com/wifislax-ng/$PRGNAM"
+   WEB_RAW="https://raw.githubusercontent.com/wifislax-ng/$PRGNAM/master"
+   ELDIRECTORIO="$PRGNAM"
    echo -ne "\033]2;${PRGNAM}_updater\007"
-   DIRECTORIOHTML="?dir=$ELDIRECTORIO"
    VERSION=`echo $(date +"%Y%m%d")`
    CREAR_MODULO=NO
 }
@@ -53,10 +53,10 @@ echo
 #Contador de todos los scripts
 contador=0
 
-carpetas="$(curl -s $WEB/$DIRECTORIOHTML | grep "item dir" | sed 's/<[^>]\+>//g')"
+carpetas="$(curl -sk $WEB | xargs -0 python -c "import urllib, sys; print urllib.unquote(sys.argv[1])" |grep "$PRGNAM/tree/master/" | grep -Po 'href=\K.*(?=" )' | cut -d" " -f1 | sed 's/"//g' | rev | cut -d/ -f1 | rev)"
 #Obtenemos la carpeta del server, y la usamos como carpeta local
 for carpeta in $carpetas; do
-   archivos="$(curl -s $WEB/$DIRECTORIOHTML/$carpeta | grep "item file" | sed 's/<[^>]\+>//g' | sed 's/^[[:space:]]*//g' | grep -vE *~$)"
+   archivos="$(curl -sk $WEB/tree/master/$carpeta | xargs -0 python -c "import urllib, sys; print urllib.unquote(sys.argv[1])" |grep "$PRGNAM/blob/master/" | grep -Po 'href=\K.*(?=" )' | cut -d" " -f1 | sed 's/"//g' | rev | cut -d/ -f1 | rev)"
    #Obtenemos el archivo del server, y lo usamos como archivo local
    for archivo in $archivos; do
       let contador=$contador+1
@@ -67,10 +67,10 @@ for carpeta in $carpetas; do
             #Si se trata de funciones.sh, usamos variables distintas al habitual, si no,
             if [ ${archivo} == "funciones_updater" ]; then
                LOCAL_VERSION=$(cat /opt/$ELDIRECTORIO/$carpeta/$archivo | grep -m1 "FUNCIONES_VERSION=" | cut -d "=" -f2)
-               WEB_VERSION=$(curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo | iconv -f windows-1251 | head -5 | grep "FUNCIONES_VERSION=" | head -1 |cut -d "=" -f2)
+               WEB_VERSION=$(curl -sk $WEB_RAW/$carpeta/$archivo | iconv -f windows-1251 | head -5 | grep "FUNCIONES_VERSION=" | head -1 |cut -d "=" -f2)
             else
                LOCAL_VERSION=$(cat /opt/$ELDIRECTORIO/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
-               WEB_VERSION=$(curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo | iconv -f windows-1251 | head -5 | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
+               WEB_VERSION=$(curl -sk $WEB_RAW/$carpeta/$archivo | iconv -f windows-1251 | head -5 | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
             fi
          echo -n "${VERDE}EXISTE$CIERRE"
          #Ademas de mirar si existe, comprobamos si existe version mas nueva a la que tenemos nosotros
@@ -79,7 +79,7 @@ for carpeta in $carpetas; do
             if [ ! -d $PKG/opt/$ELDIRECTORIO/$carpeta ]; then
                mkdir -p $PKG/opt/$ELDIRECTORIO/$carpeta/
             fi
-            curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo -o $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
+            curl -sk $WEB_RAW/$carpeta/$archivo -o $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
             echo " + ${AMARILLO}ACTUALIZADO $ROSA(${WEB_VERSION:6}/${WEB_VERSION:4:2}/${WEB_VERSION:0:4})$CIERRE"
             chmod +x $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
          else
@@ -91,7 +91,7 @@ for carpeta in $carpetas; do
          if [ ! -d $PKG/opt/$ELDIRECTORIO/$carpeta ]; then
             mkdir -p $PKG/opt/$ELDIRECTORIO/$carpeta/
          fi
-         curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo -o $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
+         curl -sk $WEB_RAW/$carpeta/$archivo -o $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
          LOCAL_VERSION=$(cat $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
          chmod +x $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
          echo "${ROJO}DESCARGADO$CIERRE $BLANCO($ROSA${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4}$BLANCO)$CIERRE"
