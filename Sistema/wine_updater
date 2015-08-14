@@ -1,0 +1,108 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+#################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+#################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables(){
+	PRGNAM=wine
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://sourceforge.net/projects/wine/files/Slackware%20Packages/
+	VERSION=$(curl -s $WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
+	GECKO_WEB=http://sourceforge.net/projects/wine/files/Wine%20Gecko/
+	GECKO_VERSION=$(curl -s $GECKO_WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
+	MONO_WEB=http://sourceforge.net/projects/wine/files/Wine%20Mono/
+	MONO_VERSION=$(curl -s $MONO_WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION-$ARCH-1sg.txz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB/$VERSION/$ARCH/$PRGNAM-$VERSION-$ARCH-1sg.txz
+	fi
+# Si gecko no existe se descargara de internet
+	if [ ! -f ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi ]; then
+	echo ""
+	echo "$CYAN"Descargando plugin ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi"$CIERRE"
+	sleep 3
+	aria2c -x 3 $GECKO_WEB/$GECKO_VERSION/${PRGNAM}_gecko-$GECKO_VERSION-x86.msi
+	fi
+# Si mono no existe se descargara de internet
+	if [ ! -f ${PRGNAM}-mono-$MONO_VERSION.msi ]; then
+	echo ""
+	echo "$CYAN"Descargando plugin ${PRGNAM}-mono-$MONO_VERSION.msi"$CIERRE"
+	sleep 3
+	aria2c -x 3 $MONO_WEB/$MONO_VERSION/${PRGNAM}-mono-$MONO_VERSION.msi
+fi
+}
+
+# Tareas de conversion de formato
+F_compilar(){
+echo ""
+echo "$VERDE"
+txz2dir $PRGNAM-$VERSION-$ARCH-1sg.txz $PKG
+mkdir $PKG/usr/share/wine/gecko $PKG/usr/share/wine/mono
+mv ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi $PKG/usr/share/wine/gecko
+mv ${PRGNAM}-mono-$MONO_VERSION.msi $PKG/usr/share/wine/mono
+rm $PKG/var/log/packages/wine*
+# El desktop winecfg viene mal ..se repara
+rm $PKG/usr/share/applications/winecfg.desktop
+echo "[Desktop Entry]
+[Desktop Entry]
+Categories=Application;Settings
+Comment=Settings Tool for WINE
+Encoding=UTF-8
+Exec=winecfg
+Icon=winecfg
+Name=Wine Configuration
+Terminal=false
+Type=Application
+" > $PKG/usr/share/applications/winecfg.desktop
+
+# Se da permiso de ejecucion a los plugins
+chmod 777 $PKG/usr/share/wine/gecko/${PRGNAM}_gecko-$GECKO_VERSION-x86.msi
+chmod 777 $PKG/usr/share/wine/mono/${PRGNAM}-mono-$MONO_VERSION.msi
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

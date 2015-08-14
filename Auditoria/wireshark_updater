@@ -1,0 +1,375 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://www.wireshark.org/download/src/
+	VERSION=`curl -s https://www.wireshark.org | grep -i stable | head -1 | cut -d " " -f 4 | cut -d "<" -f-1`
+	PRGNAM=wireshark
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes/}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB/$PRGNAM-$VERSION.tar.bz2
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+tar xvf $PRGNAM-$VERSION.tar.bz2
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+
+# Definimos el sistema
+cat > svnversion.h << "EOF"
+#define SVNVERSION "wifislax"
+#define SVNPATH "source"
+EOF
+
+cat > make-version.pl << "EOF"
+#!/usr/bin/perl
+EOF
+
+# Configuramos
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --with-ssl=/usr/lib${LIBDIRSUFFIX} \
+  --without-lua \
+  --with-qt=no \
+  --disable-usr-local \
+  --with-plugins=/usr/lib/wireshark/plugins \
+  --with-gtk2=yes \
+  --enable-packet-editor \
+  --enable-setuid-install \
+  --build=$ARCH-slackware-linux
+  
+make -j$NUCLEOS || exit 1
+make install DESTDIR=$PKG || exit 1
+
+# Creamos las headers
+clear
+echo "$VERDE"Copiando wireshark headers"$BLANCO"...."$CIERRE"
+HEADERS=$PKG/usr/include/wireshark
+find . ! -name "*.h" -exec rm -f {} \; &> /dev/null
+sleep 1
+find . -type d -depth -empty -exec rmdir '{}' ';' &> /dev/null
+sleep 1
+mkdir -p $HEADERS &> /dev/null
+cp -r ./* $HEADERS &> /dev/null
+
+# Creamos icono
+echo "
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjwh
+LS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgo8
+c3ZnCiAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIKICAgeG1s
+bnM6Y2M9Imh0dHA6Ly93ZWIucmVzb3VyY2Uub3JnL2NjLyIKICAgeG1sbnM6cmRmPSJodHRwOi8v
+d3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIgogICB4bWxuczpzdmc9Imh0dHA6
+Ly93d3cudzMub3JnLzIwMDAvc3ZnIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9z
+dmciCiAgIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIgogICB4bWxu
+czpzb2RpcG9kaT0iaHR0cDovL3NvZGlwb2RpLnNvdXJjZWZvcmdlLm5ldC9EVEQvc29kaXBvZGkt
+MC5kdGQiCiAgIHhtbG5zOmlua3NjYXBlPSJodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy9uYW1lc3Bh
+Y2VzL2lua3NjYXBlIgogICB3aWR0aD0iOTkuOTk2MzYxIgogICBoZWlnaHQ9Ijk5Ljg0MTkyNyIK
+ICAgaWQ9InN2ZzEzMTUiCiAgIHNvZGlwb2RpOnZlcnNpb249IjAuMzIiCiAgIGlua3NjYXBlOnZl
+cnNpb249IjAuNDQiCiAgIHNvZGlwb2RpOmRvY25hbWU9IndzaWNvbi5zdmciCiAgIGlua3NjYXBl
+OmV4cG9ydC14ZHBpPSIyMzAuNDEiCiAgIGlua3NjYXBlOmV4cG9ydC15ZHBpPSIyMzAuNDEiCiAg
+IHZlcnNpb249IjEuMCI+CiAgPGRlZnMKICAgICBpZD0iZGVmczEzMTciPgogICAgPGxpbmVhckdy
+YWRpZW50CiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQzOTUzIj4KICAgICAgPHN0b3AKICAgICAg
+ICAgaWQ9InN0b3AzOTU1IgogICAgICAgICBvZmZzZXQ9IjAiCiAgICAgICAgIHN0eWxlPSJzdG9w
+LWNvbG9yOiNkOGQ4ZDg7c3RvcC1vcGFjaXR5OjAuODE5NjcyMTEiIC8+CiAgICAgIDxzdG9wCiAg
+ICAgICAgIGlkPSJzdG9wMzk1NyIKICAgICAgICAgb2Zmc2V0PSIxLjAwMDAwMDAiCiAgICAgICAg
+IHN0eWxlPSJzdG9wLWNvbG9yOiNmZmZmZmY7c3RvcC1vcGFjaXR5OjAuMDEwOTI4OTYiIC8+CiAg
+ICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50CiAgICAgICBpZD0ibGluZWFy
+R3JhZGllbnQzNTAwIj4KICAgICAgPHN0b3AKICAgICAgICAgc3R5bGU9InN0b3AtY29sb3I6I2Zm
+ZmZmZjtzdG9wLW9wYWNpdHk6MC43NDIyNjgwMzsiCiAgICAgICAgIG9mZnNldD0iMC4wMDAwMDAw
+IgogICAgICAgICBpZD0ic3RvcDM1MDIiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJz
+dG9wLWNvbG9yOiNmZmZmZmY7c3RvcC1vcGFjaXR5OjAuMjc4MzUwNTA7IgogICAgICAgICBvZmZz
+ZXQ9IjEuMDAwMDAwMCIKICAgICAgICAgaWQ9InN0b3AzNTA0IiAvPgogICAgPC9saW5lYXJHcmFk
+aWVudD4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAgaWQ9ImxpbmVhckdyYWRpZW50MjAzMiI+
+CiAgICAgIDxzdG9wCiAgICAgICAgIHN0eWxlPSJzdG9wLWNvbG9yOiM0MGIyZTc7c3RvcC1vcGFj
+aXR5OjEuMDAwMDAwMDsiCiAgICAgICAgIG9mZnNldD0iMC4wMDAwMDAwIgogICAgICAgICBpZD0i
+c3RvcDIwMzQiIC8+CiAgICAgIDxzdG9wCiAgICAgICAgIGlkPSJzdG9wMjA0MCIKICAgICAgICAg
+b2Zmc2V0PSIxIgogICAgICAgICBzdHlsZT0ic3RvcC1jb2xvcjojMTY3OWE3O3N0b3Atb3BhY2l0
+eTowLjkzODE0NDMzOyIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGll
+bnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5rOmhyZWY9IiNs
+aW5lYXJHcmFkaWVudDIwMzIiCiAgICAgICBpZD0icmFkaWFsR3JhZGllbnQyNzcwIgogICAgICAg
+Y3g9IjE4Ni44Njg1IgogICAgICAgY3k9IjMxOS42MjQ2OSIKICAgICAgIGZ4PSIxODYuODY4NSIK
+ICAgICAgIGZ5PSIzMTkuNjI0NjkiCiAgICAgICByPSI0OS45OTgxOCIKICAgICAgIGdyYWRpZW50
+VHJhbnNmb3JtPSJtYXRyaXgoMSwwLDAsMC45OTg0NTYsMCwwLjUwMTI1NCkiCiAgICAgICBncmFk
+aWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgLz4KICAgIDxsaW5lYXJHcmFkaWVudAogICAgICAg
+aW5rc2NhcGU6Y29sbGVjdD0iYWx3YXlzIgogICAgICAgeGxpbms6aHJlZj0iI2xpbmVhckdyYWRp
+ZW50MzUwMCIKICAgICAgIGlkPSJsaW5lYXJHcmFkaWVudDM1MDYiCiAgICAgICB4MT0iMTY4Ljg4
+NDkzIgogICAgICAgeTE9IjI4My4zNjIxOCIKICAgICAgIHgyPSIxNzMuNjM4ODQiCiAgICAgICB5
+Mj0iMzE3LjQzODIzIgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiCiAgICAg
+ICBncmFkaWVudFRyYW5zZm9ybT0ibWF0cml4KDEuMDIzNjg0LDAsMCwxLC00LjM4Njg5MiwtMSki
+IC8+CiAgICA8bGluZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIK
+ICAgICAgIHhsaW5rOmhyZWY9IiNsaW5lYXJHcmFkaWVudDM5NTMiCiAgICAgICBpZD0ibGluZWFy
+R3JhZGllbnQzOTUxIgogICAgICAgeDE9IjE3MS40ODYzNiIKICAgICAgIHkxPSIyNzguNzUxMTMi
+CiAgICAgICB4Mj0iMTcxLjY5NjgyIgogICAgICAgeTI9IjI4Ni41Mzc3MiIKICAgICAgIGdyYWRp
+ZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIgogICAgICAgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJp
+eCgxLjAwNDcwNSwwLDAsMS4zMDc3MDksLTAuNjc4MDc5LC04NS43MzMxNSkiIC8+CiAgICA8bGlu
+ZWFyR3JhZGllbnQKICAgICAgIGlua3NjYXBlOmNvbGxlY3Q9ImFsd2F5cyIKICAgICAgIHhsaW5r
+OmhyZWY9IiNsaW5lYXJHcmFkaWVudDM5NTMiCiAgICAgICBpZD0ibGluZWFyR3JhZGllbnQxMzMw
+IgogICAgICAgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiCiAgICAgICBncmFkaWVudFRy
+YW5zZm9ybT0ibWF0cml4KDEuMDA0NzA1LDAsMCwxLjMwNzcwOSwtMC42NzgwNzksLTg1LjczMzE1
+KSIKICAgICAgIHgxPSIxNzEuNDg2MzYiCiAgICAgICB5MT0iMjc4Ljc1MTEzIgogICAgICAgeDI9
+IjE3Mi4wNjg2MiIKICAgICAgIHkyPSIyODkuODcwMjQiIC8+CiAgPC9kZWZzPgogIDxzb2RpcG9k
+aTpuYW1lZHZpZXcKICAgICBpZD0iYmFzZSIKICAgICBwYWdlY29sb3I9IiNmZmZmZmYiCiAgICAg
+Ym9yZGVyY29sb3I9IiM2NjY2NjYiCiAgICAgYm9yZGVyb3BhY2l0eT0iMS4wIgogICAgIGlua3Nj
+YXBlOnBhZ2VvcGFjaXR5PSIwLjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBp
+bmtzY2FwZTp6b29tPSIyLjAwNzgyMjUiCiAgICAgaW5rc2NhcGU6Y3g9IjE2OS4yNzkzNCIKICAg
+ICBpbmtzY2FwZTpjeT0iMzUuNDY0NTg0IgogICAgIGlua3NjYXBlOmRvY3VtZW50LXVuaXRzPSJw
+eCIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJsYXllcjEiCiAgICAgc2hvd2dyaWQ9InRy
+dWUiCiAgICAgc2hvd2d1aWRlcz0idHJ1ZSIKICAgICBpbmtzY2FwZTpncmlkLXBvaW50cz0idHJ1
+ZSIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9Ijg5MyIKICAgICBpbmtzY2FwZTp3aW5kb3ct
+aGVpZ2h0PSI3MzMiCiAgICAgaW5rc2NhcGU6d2luZG93LXg9IjgzIgogICAgIGlua3NjYXBlOndp
+bmRvdy15PSItMTMiIC8+CiAgPG1ldGFkYXRhCiAgICAgaWQ9Im1ldGFkYXRhMTMyMCI+CiAgICA8
+cmRmOlJERj4KICAgICAgPGNjOldvcmsKICAgICAgICAgcmRmOmFib3V0PSIiPgogICAgICAgIDxk
+Yzpmb3JtYXQ+aW1hZ2Uvc3ZnK3htbDwvZGM6Zm9ybWF0PgogICAgICAgIDxkYzp0eXBlCiAgICAg
+ICAgICAgcmRmOnJlc291cmNlPSJodHRwOi8vcHVybC5vcmcvZGMvZGNtaXR5cGUvU3RpbGxJbWFn
+ZSIgLz4KICAgICAgPC9jYzpXb3JrPgogICAgPC9yZGY6UkRGPgogIDwvbWV0YWRhdGE+CiAgPGcK
+ICAgICBpbmtzY2FwZTpsYWJlbD0iTGF5ZXIgMSIKICAgICBpbmtzY2FwZTpncm91cG1vZGU9Imxh
+eWVyIgogICAgIGlkPSJsYXllcjEiCiAgICAgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTEzMy44NzY4
+LC0yNzQuNjQxOCkiPgogICAgPHJlY3QKICAgICAgIHN0eWxlPSJvcGFjaXR5OjE7ZmlsbDp1cmwo
+I3JhZGlhbEdyYWRpZW50Mjc3MCk7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOmJsYWNrO3N0cm9rZS13
+aWR0aDo0LjU1Mzk5OTk7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7
+c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiCiAgICAgICBpZD0icmVjdDU4
+MTEiCiAgICAgICB3aWR0aD0iOTUuNDQyMzYiCiAgICAgICBoZWlnaHQ9Ijk1LjI4NzkyNiIKICAg
+ICAgIHg9IjEzNi4xNTM4MiIKICAgICAgIHk9IjI3Ni45MTg3OSIKICAgICAgIHJ4PSIxMCIKICAg
+ICAgIHJ5PSIxMCIKICAgICAgIGlua3NjYXBlOmV4cG9ydC1maWxlbmFtZT0iL2hvbWUvZ2VyYWxk
+L2RldmVsL3dzd2ViL2ltYWdlL3dzaWNvbjI1Ni5wbmciCiAgICAgICBpbmtzY2FwZTpleHBvcnQt
+eGRwaT0iMjMwLjQxIgogICAgICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9IjIzMC40MSIgLz4KICAg
+IDxwYXRoCiAgICAgICBzdHlsZT0iZmlsbDpub25lO2ZpbGwtb3BhY2l0eTowLjc1O2ZpbGwtcnVs
+ZTpldmVub2RkO3N0cm9rZTpibGFjaztzdHJva2Utd2lkdGg6NC4yOTcyMzY5MjtzdHJva2UtbGlu
+ZWNhcDpidXR0O3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9r
+ZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIgogICAgICAgZD0iTSAxMzYuODgwNDUs
+MzQ3LjM2MjE4IEwgMTYwLjg4MDQ1LDM0Ny4zNjIxOCBDIDE2MC44ODA0NSwzNDcuMzYyMTggMTY0
+LjY2MzY1LDI5OS4xNzQ0OSAyMDYuNzMxODMsMjk4LjUxMDggQyAxOTMuMTYxNDYsMzE5Ljc0ODY4
+IDIwNS44ODA0NSwzNDcuMzYyMTggMjA1Ljg4MDQ1LDM0Ny4zNjIxOCBMIDIzMC44ODA0NSwzNDcu
+MzYyMTgiCiAgICAgICBpZD0icGF0aDEzMjgiCiAgICAgICBzb2RpcG9kaTpub2RldHlwZXM9ImNj
+Y2NjIgogICAgICAgaW5rc2NhcGU6ZXhwb3J0LWZpbGVuYW1lPSIvaG9tZS9nZXJhbGQvZGV2ZWwv
+d3N3ZWIvaW1hZ2Uvd3NpY29uMjAwLnBuZyIKICAgICAgIGlua3NjYXBlOmV4cG9ydC14ZHBpPSIx
+ODAuMDA5OTkiCiAgICAgICBpbmtzY2FwZTpleHBvcnQteWRwaT0iMTgwLjAwOTk5IiAvPgogICAg
+PHBhdGgKICAgICAgIHN0eWxlPSJmaWxsOnVybCgjbGluZWFyR3JhZGllbnQxMzMwKTtmaWxsLW9w
+YWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MDtzdHJva2UtbGluZWNhcDpyb3VuZDtz
+dHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2Utb3BhY2l0eTox
+IgogICAgICAgZD0iTSAxNDEsMjc3LjM2MjE4IEMgMTQ4LjQzMzU4LDI3NS44NDQ2NSAyMTcuNDEw
+MjEsMjc1LjM2MjE4IDIyNiwyNzcuMzYyMTggQyAyMzQuMDMxMzksMjc5LjIzMjE2IDIwNCwzMDUu
+MzYyMTggMTg0LDMwNS4zNjIxOCBDIDE2NCwzMDUuMzYyMTggMTMzLjQ1NzYzLDI3OC45MDE5MiAx
+NDEsMjc3LjM2MjE4IHogIgogICAgICAgaWQ9InJlY3QzMDcwIgogICAgICAgc29kaXBvZGk6bm9k
+ZXR5cGVzPSJjenp6IiAvPgogICAgPHJlY3QKICAgICAgIHN0eWxlPSJvcGFjaXR5OjE7ZmlsbDp3
+aGl0ZTtmaWxsLW9wYWNpdHk6MC4wMTA5Mjg5NDtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MDtz
+dHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGlt
+aXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgIGlkPSJy
+ZWN0NTcwNSIKICAgICAgIHdpZHRoPSIxIgogICAgICAgaGVpZ2h0PSIwIgogICAgICAgeD0iMTU3
+IgogICAgICAgeT0iMjg1LjM2MjE4IgogICAgICAgcng9IjguOTQ5NjkzNyIKICAgICAgIHJ5PSIw
+IiAvPgogIDwvZz4KPC9zdmc+Cg==
+
+" | base64 -d >/$PKG/usr/share/pixmaps/$PRGNAM.svg
+
+# Generamos desktop
+echo "[Desktop Entry]
+Categories=Redes;
+Exec=wireshark
+Name=Wireshark Network Analyzer
+Icon=wireshark
+StartupNotify=true
+Terminal=false
+Type=Application" > $PKG/usr/share/applications/wifislax/Redes/$PRGNAM.desktop
+
+# Creamos una config basica
+CONFIG=$PKG/$HOME/.$PRGNAM
+mkdir -p $CONFIG
+echo "# Recent settings file for Wireshark $VERSION
+#
+# This file is regenerated each time Wireshark is quit.
+# So be careful, if you want to make manual changes here.
+
+######## Recent capture files (latest last), cannot be altered through command line ########
+
+
+######## Recent capture filters (latest last), cannot be altered through command line ########
+
+
+######## Recent display filters (latest last), cannot be altered through command line ########
+
+
+# Main window geometry.
+# Decimal numbers.
+gui.geometry_main_x: -3
+gui.geometry_main_y: -3
+gui.geometry_main_width: 1366
+gui.geometry_main_height: 713
+
+# Main window maximized.
+# TRUE or FALSE (case-insensitive).
+gui.geometry_main_maximized: TRUE
+
+# Statusbar left pane size.
+# Decimal number.
+gui.geometry_status_pane: 250
+
+# Statusbar middle pane size.
+# Decimal number.
+gui.geometry_status_pane_right: 866
+
+# Last used Configuration Profile.
+gui.last_used_profile: Default
+
+# WLAN statistics upper pane size.
+# Decimal number.
+gui.geometry_status_wlan_stats_pane: 200
+
+# Warn if running with elevated permissions (e.g. as root).
+# TRUE or FALSE (case-insensitive).
+privs.warn_if_elevated: FALSE
+
+# Warn if npf.sys isn't loaded on Windows >= 6.0.
+# TRUE or FALSE (case-insensitive).
+privs.warn_if_no_npf: TRUE
+" > $CONFIG/recent_common
+
+echo "# Recent settings file for Wireshark $VERSION
+#
+# This file is regenerated each time Wireshark is quit
+# and when changing configuration profile.
+# So be careful, if you want to make manual changes here.
+
+
+# Main Toolbar show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.toolbar_main_show: TRUE
+
+# Filter Toolbar show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.filter_toolbar_show: TRUE
+
+# Wireless Settings Toolbar show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.wireless_toolbar_show: FALSE
+
+# Packet list show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.packet_list_show: TRUE
+
+# Tree view show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.tree_view_show: TRUE
+
+# Byte view show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.byte_view_show: TRUE
+
+# Statusbar show (hide).
+# TRUE or FALSE (case-insensitive).
+gui.statusbar_show: TRUE
+
+# Packet list colorize (hide).
+# TRUE or FALSE (case-insensitive).
+gui.packet_list_colorize: TRUE
+
+# Timestamp display format.
+# One of: RELATIVE, ABSOLUTE, ABSOLUTE_WITH_DATE, DELTA, DELTA_DIS, EPOCH, UTC, UTC_WITH_DATE
+gui.time_format: RELATIVE
+
+# Timestamp display precision.
+# One of: AUTO, SEC, DSEC, CSEC, MSEC, USEC, NSEC
+gui.time_precision: AUTO
+
+# Seconds display format.
+# One of: SECONDS, HOUR_MIN_SEC
+gui.seconds_format: SECONDS
+
+# Zoom level.
+# A decimal number.
+gui.zoom_level: 0
+
+# Bytes view.
+# A decimal number.
+gui.bytes_view: 0
+
+# Main window upper (or leftmost) pane size.
+# Decimal number.
+
+# Main window middle pane size.
+# Decimal number.
+
+# Packet list column pixel widths.
+# Each pair of strings consists of a column format and its pixel width.
+column.width: %m, -1, %t, -1, %s, -1, %d, -1, %p, -1, %L, -1, %i, -1
+
+# Last directory navigated to in File Open dialog.
+gui.fileopen_remembered_dir: /
+" > $CONFIG/recent
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

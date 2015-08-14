@@ -1,0 +1,170 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150704
+CATEGORIA="Editores de audio"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://sourceforge.net/projects/audacity/files/audacity/
+	VERSION=`curl -s $WEB | grep -m 1 "<tr title="|cut -d '"' -f2| sed "s/ //g"`
+	PRGNAM=audacity
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DESCARGA=${WEB}$VERSION/$PRGNAM-minsrc-$VERSION.tar.xz
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	echo 
+	if [ -f /usr/bin/wx-config ]; then
+	EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+	else
+	EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+	fi
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"wxPython"$CIERRE: $EXIST"
+	DEPENDENCIA=`ps -A | grep -o wxPython_updat`
+	if [ ! $DEPENDENCIA = "" ]; then
+	echo ""
+	echo ""$ROJO"Se ha detectado en funcionamiento el "$AMARILLO"wxPython_updater"$CIERRE"..."
+	echo ""
+	echo ""$ROJO"Cuando acabe dicho updater lanza de nuevo este"$CIERRE"..."
+	echo ""
+	exit 1
+	fi
+	if [ ! -f /usr/bin/wx-config ]; then
+	echo ""
+	echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
+	sleep 3
+	cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/wxPython_updater && cd $TMP
+else
+	echo ""
+	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+	echo ""
+sleep 3
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ $VERSION = 2.1.0 ]; then
+	DESCARGA=http://ponce.cc/slackware/sources/repo/$PRGNAM-src-$VERSION.tar.xz
+	SOURCE="src"
+	else
+	SOURCE="minsrc"
+	fi
+	if [ ! -f $PRGNAM-$SOURCE-$VERSION.tar.xz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$SOURCE-$VERSION.tar.xz
+cd $PRGNAM-$SOURCE-$VERSION
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Fix vamp plugin search path on x86_64 - thanks to B. Watson
+sed -i "s,lib/vamp,lib$LIBDIRSUFFIX/vamp,g" \
+       lib-src/libvamp/src/vamp-hostsdk/PluginHostAdapter.cpp
+       
+# Renombramos temporalmente este fichero y al acabar lo devolvemos
+if [ -f /usr/lib/libvamp-hostsdk.la ]; then
+mv -f /usr/lib/libvamp-hostsdk.la /usr/lib/libvamp-hostsdk.la.RENOMBRADO
+fi
+  
+# Configuramos paquete
+echo ""
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 3
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+WX_CONFIG=/usr/bin/wx-config-2.8 ./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --disable-dynamic-loading \
+  --with-libvamp \
+  --enable-unicode \
+  --enable-nyquist \
+  --enable-vamp \
+  --with-expat \
+  --with-libvorbis \
+  --with-libmad \
+  --with-libflac \
+  --with-libsndfile \
+  --with-libid3tag \
+  --with-libresample \
+  --with-ffmpeg \
+  --with-soundtouch \
+  --with-libtwolame
+
+make -j$NUCLEOS
+make install DESTDIR=$PKG
+
+# Devolvemos el fichero renombrado anteriormente
+if [ -f /usr/lib/libvamp-hostsdk.la.RENOMBRADO ]; then
+mv -f /usr/lib/libvamp-hostsdk.la.RENOMBRADO /usr/lib/libvamp-hostsdk.la
+fi
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+# Comprobar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

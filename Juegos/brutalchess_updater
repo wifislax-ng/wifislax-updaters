@@ -1,0 +1,204 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://downloads.sourceforge.net/brutalchess/
+	VERSION=0.5.2
+	PRGNAM=brutalchess
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/usr/share/{applications,pixmaps}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-alpha-$VERSION-src.tar.gz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB$PRGNAM-alpha-$VERSION-src.tar.gz
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-alpha-$VERSION-src.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+echo ""
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 3
+
+# Si la version es 0.5.2 necesita parches
+if [ $VERSION = 0.5.2 ]; then
+echo "
+LS0tIHNyYy9tZDN2aWV3LmNwcC5vcmlnCTIwMDgtMDctMTkgMDk6MDA6MjMuMDAwMDAwMDAwICsw
+MjAwCisrKyBzcmMvbWQzdmlldy5jcHAJMjAwOC0wNy0xOSAwOTowMDozOS4wMDAwMDAwMDAgKzAy
+MDAKQEAgLTcyLDcgKzcyLDcgQEAKIAlleGl0KCByZXR1cm5Db2RlICk7CiB9CiAKLWludCBpbml0
+R0woIEdMdm9pZCApOworaW50IGluaXRHTCggdm9pZCApOwogLy8gZnVuY3Rpb24gdG8gcmVzZXQg
+b3VyIHZpZXdwb3J0IGFmdGVyIGEgd2luZG93IHJlc2l6ZQogaW50IHJlc2l6ZVdpbmRvdyggaW50
+IHdpZHRoLCBpbnQgaGVpZ2h0ICkKIHsKQEAgLTEwOCw3ICsxMDgsNyBAQAogCiAKIC8vIGdlbmVy
+YWwgT3BlbkdMIGluaXRpYWxpemF0aW9uIGZ1bmN0aW9uCi1pbnQgaW5pdEdMKCBHTHZvaWQgKQor
+aW50IGluaXRHTCggdm9pZCApCiB7CiAJY291dCA8PCAiSW5pdGlhbGl6aW5nIE9wZW5HTCIgPDwg
+ZW5kbDsKIAkvLyBFbmFibGUgc21vb3RoIHNoYWRpbmcKLS0tIHNyYy9vYmp2aWV3LmNwcC5vcmln
+CTIwMDgtMDctMTkgMDk6MDA6NTUuMDAwMDAwMDAwICswMjAwCisrKyBzcmMvb2Jqdmlldy5jcHAJ
+MjAwOC0wNy0xOSAwOTowMTowNC4wMDAwMDAwMDAgKzAyMDAKQEAgLTczLDcgKzczLDcgQEAKIAll
+eGl0KCByZXR1cm5Db2RlICk7CiB9CiAKLWludCBpbml0R0woIEdMdm9pZCApOworaW50IGluaXRH
+TCggdm9pZCApOwogLy8gZnVuY3Rpb24gdG8gcmVzZXQgb3VyIHZpZXdwb3J0IGFmdGVyIGEgd2lu
+ZG93IHJlc2l6ZQogaW50IHJlc2l6ZVdpbmRvdyggaW50IHdpZHRoLCBpbnQgaGVpZ2h0ICkKIHsK
+QEAgLTEwOSw3ICsxMDksNyBAQAogCiAKIC8vIGdlbmVyYWwgT3BlbkdMIGluaXRpYWxpemF0aW9u
+IGZ1bmN0aW9uCi1pbnQgaW5pdEdMKCBHTHZvaWQgKQoraW50IGluaXRHTCggdm9pZCApCiB7CiAJ
+Y291dCA8PCAiSW5pdGlhbGl6aW5nIE9wZW5HTCIgPDwgZW5kbDsKIAkvLyBFbmFibGUgc21vb3Ro
+IHNoYWRpbmcKQEAgLTE1OCw3ICsxNTgsNyBAQAogfQogCiAvLyBIZXJlIGdvZXMgb3VyIGRyYXdp
+bmcgY29kZQotaW50IGRyYXdHTFNjZW5lKCBHTHZvaWQgKQoraW50IGRyYXdHTFNjZW5lKCB2b2lk
+ICkKIHsKIAkvLyBUaGVzZSBhcmUgdG8gY2FsY3VsYXRlIG91ciBmcHMKIAlzdGF0aWMgR0xpbnQg
+VDAgICAgID0gMDsK
+" | base64 -d > $TMP/brutalchess-0.5.2-fix-FTBFS.patch
+
+echo "
+LS0tIHNyYy9icnV0YWxwbGF5ZXIuY3BwLm9yaWcJMjAwOC0wNy0xOSAwOTowNTo1Ny4wMDAwMDAw
+MDAgKzAyMDAKKysrIHNyYy9icnV0YWxwbGF5ZXIuY3BwCTIwMDgtMDctMTkgMDk6MDY6MDguMDAw
+MDAwMDAwICswMjAwCkBAIC0xMiw2ICsxMiw3IEBACiANCiAjaW5jbHVkZSA8dmVjdG9yPg0KICNp
+bmNsdWRlIDx0aW1lLmg+DQorI2luY2x1ZGUgPGNsaW1pdHM+DQogDQogdXNpbmcgbmFtZXNwYWNl
+IHN0ZDsNCiANCg==
+" | base64 -d > $TMP/brutalchess-0.5.2-gcc4.3.patch
+
+echo "
+ZGlmZiAtTmF1ciBicnV0YWxjaGVzcy0wLjUuMi5vcmlnL3NyYy9mYWlsZXBsYXllci5jcHAgYnJ1
+dGFsY2hlc3MtMC41LjIvc3JjL2ZhaWxlcGxheWVyLmNwcAotLS0gYnJ1dGFsY2hlc3MtMC41LjIu
+b3JpZy9zcmMvZmFpbGVwbGF5ZXIuY3BwCTIwMDYtMTItMjAgMjE6MTk6NTAuMDAwMDAwMDAwICsw
+MTAwCisrKyBicnV0YWxjaGVzcy0wLjUuMi9zcmMvZmFpbGVwbGF5ZXIuY3BwCTIwMTItMDQtMDIg
+MjE6NDY6NDAuNzAyMDAwMDI1ICswMjAwCkBAIC0xNCw2ICsxNCw3IEBACiAjaW5jbHVkZSA8Y2Fz
+c2VydD4KICNpbmNsdWRlIDxzc3RyZWFtPgogI2luY2x1ZGUgPHN0cmluZz4KKyNpbmNsdWRlIDx1
+bmlzdGQuaD4KIAogdXNpbmcgbmFtZXNwYWNlIHN0ZDsKIApkaWZmIC1OYXVyIGJydXRhbGNoZXNz
+LTAuNS4yLm9yaWcvc3JjL3hib2FyZHBsYXllci5jcHAgYnJ1dGFsY2hlc3MtMC41LjIvc3JjL3hi
+b2FyZHBsYXllci5jcHAKLS0tIGJydXRhbGNoZXNzLTAuNS4yLm9yaWcvc3JjL3hib2FyZHBsYXll
+ci5jcHAJMjAwNi0xMi0xOSAwNTowMDowMS4wMDAwMDAwMDAgKzAxMDAKKysrIGJydXRhbGNoZXNz
+LTAuNS4yL3NyYy94Ym9hcmRwbGF5ZXIuY3BwCTIwMTItMDQtMDIgMjE6NTA6MDkuNzc1MDAwMDI1
+ICswMjAwCkBAIC0xNCw2ICsxNCw3IEBACiAjaW5jbHVkZSA8Y2Fzc2VydD4KICNpbmNsdWRlIDxz
+c3RyZWFtPgogI2luY2x1ZGUgPHN0cmluZz4KKyNpbmNsdWRlIDx1bmlzdGQuaD4KIAogdXNpbmcg
+bmFtZXNwYWNlIHN0ZDsKIAo=
+" | base64 -d > $TMP/brutalchess-0.5.2-gcc4.7.patch
+
+# Aplicamos parches
+patch -p0 -i $TMP/brutalchess-0.5.2-fix-FTBFS.patch || exit 1
+patch -p0 -i $TMP/brutalchess-0.5.2-gcc4.3.patch || exit 1
+patch -p1 -i $TMP/brutalchess-0.5.2-gcc4.7.patch || exit 1
+fi
+
+# Pasamos a configurar y compilar
+
+CXXFLAGS="$SLKCFLAGS" \
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --bindir=/usr/games \
+  --libdir=/usr/lib$LIBDIRSUFFIX \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --build=$ARCH-slackware-linux \
+  || exit 1
+
+make -j$NUCLEOS
+make install DESTDIR=$PKG
+
+# Creamos icono y desktop
+echo "
+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
+" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+echo "[Desktop Entry]
+Name=Brutal Chess
+Exec=$PRGNAM
+Icon=$PRGNAM
+Type=Application
+Categories=Game" > $PKG/usr/share/applications/$PRGNAM.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

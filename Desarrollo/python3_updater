@@ -1,0 +1,194 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150503
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=https://www.python.org/downloads/
+	VERSION=`curl -s $WEB | grep .tar.xz | head -1 | cut -d "-" -f2 | cut -d "t" -f-1 | sed "s/.$//g"`
+	PRGNAM=python3
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	PRGNAM2=Python
+	PYVER=$(cut -d. -f1,2 <<< "$VERSION")
+	SITEPK=$PKG/usr/lib${LIBDIRSUFFIX}/python${PYVER}/site-packages
+	TOOLSDIR=/usr/lib${LIBDIRSUFFIX}/python${PYVER}/site-packages
+	DESCARGA=https://www.python.org/ftp/python/$VERSION/$PRGNAM2-$VERSION.tar.xz
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM2-$VERSION.tar.xz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM2-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+rm -rf $PRGNAM2-$VERSION
+tar xvf $PRGNAM2-$VERSION.tar.xz
+cd $PRGNAM2-$VERSION
+
+# Parcheamos
+echo "
+ZGlmZiAtdWFyIFB5dGhvbi0zLjQuMy5vcmlnL01ha2VmaWxlLnByZS5pbiBQeXRob24tMy40LjMv
+TWFrZWZpbGUucHJlLmluCi0tLSBQeXRob24tMy40LjMub3JpZy9NYWtlZmlsZS5wcmUuaW4JMjAx
+NS0wMi0yNSAxMzoyNzo0NS4wMDAwMDAwMDAgKzAyMDAKKysrIFB5dGhvbi0zLjQuMy9NYWtlZmls
+ZS5wcmUuaW4JMjAxNS0wMi0yNSAyMToyOTowMS4zMjIwNTYzMTkgKzAyMDAKQEAgLTUzOCw3ICs1
+MzgsNyBAQAogCSQoUlVOU0hBUkVEKSAkKFBZVEhPTl9GT1JfQlVJTEQpIC4vVG9vbHMvY2xpbmlj
+L2NsaW5pYy5weSAtLW1ha2UKIAogIyBCdWlsZCB0aGUgaW50ZXJwcmV0ZXIKLSQoQlVJTERQWVRI
+T04pOglNb2R1bGVzL3B5dGhvbi5vICQoTElCUkFSWSkgJChMRExJQlJBUlkpICQoUFkzTElCUkFS
+WSkKKyQoQlVJTERQWVRIT04pOglNb2R1bGVzL3B5dGhvbi5vICQoTERMSUJSQVJZKSAkKFBZM0xJ
+QlJBUlkpCiAJJChMSU5LQ0MpICQoUFlfTERGTEFHUykgJChMSU5LRk9SU0hBUkVEKSAtbyAkQCBN
+b2R1bGVzL3B5dGhvbi5vICQoQkxETElCUkFSWSkgJChMSUJTKSAkKE1PRExJQlMpICQoU1lTTElC
+UykgJChMRExBU1QpCiAKIHBsYXRmb3JtOiAkKEJVSUxEUFlUSE9OKSBweWJ1aWxkZGlyLnR4dApA
+QCAtNTczLDE4ICs1NzMsNiBAQAogCQlfVENMVEtfSU5DTFVERVM9JyQoVENMVEtfSU5DTFVERVMp
+JyBfVENMVEtfTElCUz0nJChUQ0xUS19MSUJTKScgXAogCQkkKFBZVEhPTl9GT1JfQlVJTEQpICQo
+c3JjZGlyKS9zZXR1cC5weSAkJHF1aWV0IGJ1aWxkCiAKLSMgQnVpbGQgc3RhdGljIGxpYnJhcnkK
+LSMgYXZvaWQgbG9uZyBjb21tYW5kIGxpbmVzLCBzYW1lIGFzIExJQlJBUllfT0JKUwotJChMSUJS
+QVJZKTogJChMSUJSQVJZX09CSlMpCi0JLXJtIC1mICRACi0JJChBUikgJChBUkZMQUdTKSAkQCBN
+b2R1bGVzL2dldGJ1aWxkaW5mby5vCi0JJChBUikgJChBUkZMQUdTKSAkQCAkKFBBUlNFUl9PQkpT
+KQotCSQoQVIpICQoQVJGTEFHUykgJEAgJChPQkpFQ1RfT0JKUykKLQkkKEFSKSAkKEFSRkxBR1Mp
+ICRAICQoUFlUSE9OX09CSlMpIFB5dGhvbi9mcm96ZW4ubwotCSQoQVIpICQoQVJGTEFHUykgJEAg
+JChNT0RVTEVfT0JKUykgJChTSUdOQUxfT0JKUykKLQkkKEFSKSAkKEFSRkxBR1MpICRAICQoTU9E
+T0JKUykKLQkkKFJBTkxJQikgJEAKLQogbGlicHl0aG9uJChMRFZFUlNJT04pLnNvOiAkKExJQlJB
+UllfT0JKUykKIAlpZiB0ZXN0ICQoSU5TVFNPTkFNRSkgIT0gJChMRExJQlJBUlkpOyB0aGVuIFwK
+IAkJJChCTERTSEFSRUQpIC1XbCwtaCQoSU5TVFNPTkFNRSkgLW8gJChJTlNUU09OQU1FKSAkKExJ
+QlJBUllfT0JKUykgJChNT0RMSUJTKSAkKFNITElCUykgJChMSUJDKSAkKExJQk0pICQoTERMQVNU
+KTsgXApAQCAtNjc0LDcgKzY2Miw3IEBACiAJCWVjaG8gIi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tIjsgXAogCWZpCiAKLU1vZHVsZXMvX3Rlc3RlbWJlZDog
+TW9kdWxlcy9fdGVzdGVtYmVkLm8gJChMSUJSQVJZKSAkKExETElCUkFSWSkgJChQWTNMSUJSQVJZ
+KQorTW9kdWxlcy9fdGVzdGVtYmVkOiBNb2R1bGVzL190ZXN0ZW1iZWQubyAkKExETElCUkFSWSkg
+JChQWTNMSUJSQVJZKQogCSQoTElOS0NDKSAkKFBZX0xERkxBR1MpICQoTElOS0ZPUlNIQVJFRCkg
+LW8gJEAgTW9kdWxlcy9fdGVzdGVtYmVkLm8gJChCTERMSUJSQVJZKSAkKExJQlMpICQoTU9ETElC
+UykgJChTWVNMSUJTKSAkKExETEFTVCkKIAogIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwpAQCAtMTMyNSwx
+OCArMTMxMyw2IEBACiAJCWVsc2UJdHJ1ZTsgXAogCQlmaTsgXAogCWRvbmUKLQlAaWYgdGVzdCAt
+ZCAkKExJQlJBUlkpOyB0aGVuIDo7IGVsc2UgXAotCQlpZiB0ZXN0ICIkKFBZVEhPTkZSQU1FV09S
+S0RJUikiID0gbm8tZnJhbWV3b3JrOyB0aGVuIFwKLQkJCWlmIHRlc3QgIiQoU0hMSUJfU1VGRklY
+KSIgPSAuZGxsOyB0aGVuIFwKLQkJCQkkKElOU1RBTExfREFUQSkgJChMRExJQlJBUlkpICQoREVT
+VERJUikkKExJQlBMKSA7IFwKLQkJCWVsc2UgXAotCQkJCSQoSU5TVEFMTF9EQVRBKSAkKExJQlJB
+UlkpICQoREVTVERJUikkKExJQlBMKS8kKExJQlJBUlkpIDsgXAotCQkJCSQoUkFOTElCKSAkKERF
+U1RESVIpJChMSUJQTCkvJChMSUJSQVJZKSA7IFwKLQkJCWZpOyBcCi0JCWVsc2UgXAotCQkJZWNo
+byBTa2lwIGluc3RhbGwgb2YgJChMSUJSQVJZKSAtIHVzZSBtYWtlIGZyYW1ld29ya2luc3RhbGw7
+IFwKLQkJZmk7IFwKLQlmaQogCSQoSU5TVEFMTF9EQVRBKSBNb2R1bGVzL2NvbmZpZy5jICQoREVT
+VERJUikkKExJQlBMKS9jb25maWcuYwogCSQoSU5TVEFMTF9EQVRBKSBNb2R1bGVzL3B5dGhvbi5v
+ICQoREVTVERJUikkKExJQlBMKS9weXRob24ubwogCSQoSU5TVEFMTF9EQVRBKSAkKHNyY2Rpcikv
+TW9kdWxlcy9jb25maWcuYy5pbiAkKERFU1RESVIpJChMSUJQTCkvY29uZmlnLmMuaW4K
+" | base64 -d > $TMP/python3.no-static-library.diff
+
+patch -p1 -i $TMP/python3.no-static-library.diff || exit 1
+
+echo "
+LS0tIC4vTW9kdWxlcy9yZWFkbGluZS5jLm9yaWcJMjAwOS0xMC0yNiAyMTozMjo1MS4wMDAwMDAw
+MDAgKzAyMDAKKysrIC4vTW9kdWxlcy9yZWFkbGluZS5jCTIwMTAtMDUtMzAgMTQ6MDc6MTAuMDAw
+MDAwMDAwICswMzAwCkBAIC0xMiw2ICsxMiw5IEBACiAjaW5jbHVkZSA8ZXJybm8uaD4KICNpbmNs
+dWRlIDxzeXMvdGltZS5oPgogCisvKiBUaGlzIHNlZW1zIHRvIGJlIG5lZWRlZCBmb3Igc2V0X3By
+ZV9pbnB1dF9ob29rIHRvIHdvcmsgKi8KKyNkZWZpbmUgSEFWRV9STF9QUkVfSU5QVVRfSE9PSyAx
+CisKICNpZiBkZWZpbmVkKEhBVkVfU0VUTE9DQUxFKQogLyogR05VIHJlYWRsaW5lKCkgbWlzdGFr
+ZW5seSBzZXRzIHRoZSBMQ19DVFlQRSBsb2NhbGUuCiAgKiBUaGlzIGlzIGV2aWwuICBPbmx5IHRo
+ZSB1c2VyIG9yIHRoZSBhcHAncyBtYWluKCkgc2hvdWxkIGRvIHRoaXMhCg==
+" | base64 -d > $TMP/python3.readline.set_pre_input_hook.diff
+
+patch -p1 -i $TMP/python3.readline.set_pre_input_hook.diff || exit 1
+
+# Fixes
+sed -i '1s|^#.*/usr/local/bin/python|#!/usr/bin/python3|' Lib/cgi.py
+sed -i 's|\("install",\)|\1 "--ignore-installed",|' Lib/ensurepip/__init__.py
+sed -i 's|@SO@|@EXT_SUFFIX@|' Misc/python-config.sh.in
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1  
+  
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --with-threads \
+  --enable-ipv6 \
+  --enable-shared \
+  --with-system-expat \
+  --with-system-ffi \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilamos ..."$CIERRE"
+sleep 1  
+  
+make
+make install DESTDIR=$PKG
+
+# Restore original ensurepip behaviour.
+sed -i 's|\("install",\) "--ignore-installed",|\1|' \
+  $PKG/usr/lib${LIBDIRSUFFIX}/python${PYVER}/ensurepip/__init__.py
+
+# Remove to avoid overwriting a copy from Python2.
+rm -f $PKG/usr/bin/2to3
+
+# We'll install the python-tools under site-packages:
+mkdir -p $SITEPK
+cp -a Tools/* $SITEPK
+
+# Remove DOS batch/exe files.
+find $PKG \( -name '*.exe' -o -name '*.bat' \) -exec rm -f '{}' \;
+
+# Fix permissions on dynamic libraries.
+find $PKG -type f -perm 555 -exec chmod 755 '{}' \;
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

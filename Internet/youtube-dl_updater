@@ -1,0 +1,201 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150706
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=youtube-dl
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://pypi.python.org/pypi/youtube_dl
+	VERSION=`curl -s $WEB | grep -m1 .gz | cut -d- -f3 | cut -d t -f1 | sed "s/.$//g"`
+	DOWNLOAD=https://github.com/rg3/youtube-dl/archive/$VERSION.tar.gz
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.gz || tar xvf $VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+  
+
+#########################
+### Generamos parche ####
+#########################
+cat > setup.patch << "EOF"
+--- youtube-dl-2015.05.20/Makefile.orig	2015-05-25 04:09:16.056234902 +0300
++++ youtube-dl-2015.05.20/Makefile	2015-05-25 04:13:42.180907886 +0300
+@@ -4,22 +4,22 @@
+ 	rm -rf youtube-dl.1.temp.md youtube-dl.1 youtube-dl.bash-completion README.txt MANIFEST build/ dist/ .coverage cover/ youtube-dl.tar.gz youtube-dl.zsh youtube-dl.fish *.dump *.part *.info.json *.mp4 *.flv *.mp3 *.avi CONTRIBUTING.md.tmp youtube-dl youtube-dl.exe
+ 	find . -name "*.pyc" -delete
+ 
+-PREFIX ?= /usr/local
++PREFIX ?= 
+ BINDIR ?= $(PREFIX)/bin
+ MANDIR ?= $(PREFIX)/man
+ SHAREDIR ?= $(PREFIX)/share
+-PYTHON ?= /usr/bin/env python
++PYTHON ?= /usr/bin/python
+ 
+ # set SYSCONFDIR to /etc if PREFIX=/usr or PREFIX=/usr/local
+-ifeq ($(PREFIX),/usr)
+-	SYSCONFDIR=/etc
+-else
+-	ifeq ($(PREFIX),/usr/local)
+-		SYSCONFDIR=/etc
+-	else
+-		SYSCONFDIR=$(PREFIX)/etc
+-	endif
+-endif
++#ifeq ($(PREFIX),/usr)
++#SYSCONFDIR=/etc
++#else
++#	ifeq ($(PREFIX),/usr/local)
++#		SYSCONFDIR=/etc
++#	else
++#		SYSCONFDIR=$(PREFIX)/etc
++#	endif
++#endif
+ 
+ install: youtube-dl youtube-dl.1 youtube-dl.bash-completion youtube-dl.zsh youtube-dl.fish
+ 	install -d $(DESTDIR)$(BINDIR)
+@@ -50,7 +50,7 @@
+ 
+ .PHONY: all clean install test tar bash-completion pypi-files zsh-completion fish-completion ot offlinetest codetest supportedsites
+ 
+-pypi-files: youtube-dl.bash-completion README.txt youtube-dl.1 youtube-dl.fish
++pypi-files: youtube-dl.bash-completion README.md youtube-dl.1 youtube-dl.fish
+ 
+ youtube-dl: youtube_dl/*.py youtube_dl/*/*.py
+ 	zip --quiet youtube-dl youtube_dl/*.py youtube_dl/*/*.py
+@@ -70,11 +70,11 @@
+ 	python devscripts/make_supportedsites.py docs/supportedsites.md
+ 
+ README.txt: README.md
+-	pandoc -f markdown -t plain README.md -o README.txt
++	#pandoc -f markdown -t plain README.md -o README.txt
+ 
+ youtube-dl.1: README.md
+ 	python devscripts/prepare_manpage.py >youtube-dl.1.temp.md
+-	pandoc -s -f markdown -t man youtube-dl.1.temp.md -o youtube-dl.1
++	#pandoc -s -f markdown -t man youtube-dl.1.temp.md -o youtube-dl.1
+ 	rm -f youtube-dl.1.temp.md
+ 
+ youtube-dl.bash-completion: youtube_dl/*.py youtube_dl/*/*.py devscripts/bash-completion.in
+@@ -92,7 +92,7 @@
+ 
+ fish-completion: youtube-dl.fish
+ 
+-youtube-dl.tar.gz: youtube-dl README.md README.txt youtube-dl.1 youtube-dl.bash-completion youtube-dl.zsh youtube-dl.fish
++youtube-dl.tar.gz: youtube-dl README.md youtube-dl.1 youtube-dl.bash-completion youtube-dl.zsh youtube-dl.fish
+ 	@tar -czf youtube-dl.tar.gz --transform "s|^|youtube-dl/|" --owner 0 --group 0 \
+ 		--exclude '*.DS_Store' \
+ 		--exclude '*.kate-swp' \
+@@ -105,7 +105,7 @@
+ 		--exclude 'docs/_build' \
+ 		-- \
+ 		bin devscripts test youtube_dl docs \
+-		LICENSE README.md README.txt \
++		LICENSE README.md \
+ 		Makefile MANIFEST.in youtube-dl.1 youtube-dl.bash-completion \
+ 		youtube-dl.zsh youtube-dl.fish setup.py \
+ 		youtube-dl
+--- youtube-dl-2015.05.20/setup.orig.py	2015-05-25 04:08:00.477179771 +0300
++++ youtube-dl-2015.05.20/setup.py	2015-05-25 04:18:55.835986658 +0300
+@@ -46,10 +46,8 @@
+     params = py2exe_params
+ else:
+     files_spec = [
+-        ('etc/bash_completion.d', ['youtube-dl.bash-completion']),
+-        ('etc/fish/completions', ['youtube-dl.fish']),
+-        ('share/doc/youtube_dl', ['README.txt']),
+-        ('share/man/man1', ['youtube-dl.1'])
++        ('/etc/bash_completion.d', ['youtube-dl.bash-completion']),
++        ('/etc/fish/completions', ['youtube-dl.fish']),
+     ]
+     root = os.path.dirname(os.path.abspath(__file__))
+     data_files = []
+
+EOF
+
+echo 
+echo "$VERDE"Aplicando patch ..."$CIERRE"
+sleep 1
+patch -p1 < setup.patch || exit 1
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make
+python setup.py install --root=$PKG
+
+chmod 0755 $PKG/etc/bash_completion.d/${PRGNAM}.bash-completion
+chmod 0755 $PKG/etc/fish/completions/${PRGNAM}.fish
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Creamos directorios extra
+#F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+#F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

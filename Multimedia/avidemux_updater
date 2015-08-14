@@ -1,0 +1,224 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150729
+CATEGORIA="Editores de video"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+
+F_variables() {
+	PRGNAM=avidemux
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://fixounet.free.fr/avidemux/download.html
+	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d _ -f2 | cut -d t -f1 | sed "s/.$//g"`
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f ${PRGNAM}_${VERSION}.tar.gz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x3 `curl -s http://www.fosshub.com/Avidemux.html/${PRGNAM}_${VERSION}.tar.gz | grep tar\.gz | grep -Po 'src="\K.*(?=">)'`
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+
+rm -rf ${PRGNAM}_${VERSION}
+tar xvf ${PRGNAM}_${VERSION}.tar.gz
+cd ${PRGNAM}_${VERSION}
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+ 
+WITH_CLI=${WITH_CLI:-YES}
+WITH_QT4=${WITH_QT4:-YES}
+WITH_GTK=${WITH_GTK:-NO}
+
+mkdir -p build_core
+cd build_core
+cmake \
+  -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+  -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DFAKEROOT="$PKG" \
+  ../avidemux_core
+make -j 1 || exit 1
+make -j 1 install DESTDIR=$PKG
+cd ..
+
+if [ "x$WITH_QT4" = "xYES" ]; then
+  mkdir -p build_qt4
+  cd build_qt4
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DFAKEROOT="$PKG" \
+    ../avidemux/qt4
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_GTK" = "xYES" ]; then
+  mkdir -p build_gtk
+  cd build_gtk
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DFAKEROOT="$PKG" \
+    ../avidemux/gtk
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_CLI" = "xYES" ]; then
+  mkdir -p build_cli
+  cd build_cli
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DFAKEROOT="$PKG" \
+    ../avidemux/cli
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+mkdir -p build_plugins_common
+cd build_plugins_common
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=COMMON \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+cd ..
+
+if [ "x$WITH_QT4" = "xYES" ]; then
+  mkdir -p build_plugins_qt4
+  cd build_plugins_qt4
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=QT4 \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_GTK" = "xYES" ]; then
+  mkdir -p build_plugins_gtk
+  cd build_plugins_gtk
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=GTK \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_CLI" = "xYES" ]; then
+  mkdir -p build_plugins_cli
+  cd build_plugins_cli
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=CLI \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+mkdir -p $PKG/usr/share/applications
+mkdir -p $PKG/usr/share/pixmaps
+if [ "x$WITH_QT4" = "xYES" ]; then
+	cat avidemux2.desktop | sed -e 's/avidemux2$/avidemux/' -e 's/2_gtk/3_qt4/' >\
+		$PKG/usr/share/applications/avidemux_qt.desktop
+fi
+if [ "x$WITH_GTK" = "xYES" ]; then
+	cat avidemux2.desktop | sed -e 's/avidemux2$/avidemux/' -e 's/2_gtk/3_gtk/' >\
+		$PKG/usr/share/applications/avidemux_gtk.desktop
+fi
+install -m644 avidemux_icon.png $PKG/usr/share/pixmaps/avidemux.png
+for sz in 16x16 32x32 48x48 64x64 ; do
+  mkdir -p $PKG/usr/share/icons/hicolor/$sz/apps
+  convert avidemux_icon.png -resize $sz \
+    $PKG/usr/share/icons/hicolor/$sz/apps/avidemux.png
+done
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

@@ -1,0 +1,174 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+#################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+#################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables(){
+	WEB=http://winetricks.googlecode.com/svn/trunk/src/winetricks
+	VERSION=`curl -s $WEB | grep WINETRICKS_VERSION= |cut -d "=" -f 2 | sed "s/ //g"`
+	PRGNAM=winetricks
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+# Comprobar dependencias ( si hay mas de una se separan por un espacio )
+F_dependencias(){
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+echo ""
+DEPENDENCIAS="wine"
+CONTINUAR=0
+
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+sleep 3
+
+for X in $DEPENDENCIAS; do
+	
+	if hash $X 2>/dev/null ; then
+		echo ""$AMARILLO"$X :$VERDE Instalada"$CIERRE""
+	else
+		echo ""$AMARILLO"$X :$ROJO  No instalada"$CIERRE""
+		CONTINUAR=1
+	fi
+done
+
+if [ $CONTINUAR -eq 1 ]; then
+	echo ""
+	echo ""$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE""
+	echo ""
+	sleep 3
+	exit 1
+else
+	echo ""
+	echo ""$VERDE"Bien ..podemos continuar"$CIERRE""
+	echo ""
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+if [ ! -f $PRGNAM ]; then
+echo ""
+echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+sleep 3
+aria2c -x 3 $WEB
+fi
+}
+
+# Es un paquete sencillo ya que solo es un script se mueve a su sitio y poco mas
+F_compilar(){
+mkdir -p $PKG/{usr/bin,usr/share/pixmaps,usr/share/applications}
+chmod 755 $PRGNAM
+mv -f $PRGNAM $PKG/usr/bin/$PRGNAM
+}
+
+# Creamos el fichero desktop
+F_desktop(){
+echo "[Desktop Entry]
+Categories=Settings
+Comment=Settings Tool for WINE
+Encoding=UTF-8
+Exec=winetricks
+Icon=winetricks
+Name=winetricks
+Terminal=false
+Type=Application" > $PKG/usr/share/applications/$PRGNAM.desktop
+}
+
+# Creamos el icono
+F_icono(){
+echo "
+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
+" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobar dependencias de este paquete
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos la entrada al menu
+F_desktop
+#Creamos icono
+F_icono
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

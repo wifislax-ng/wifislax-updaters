@@ -1,0 +1,276 @@
+#!/bin/bash
+
+# Script by vk496 for www.seguridadwireless.net 
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=mars
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://courses.missouristate.edu/KenVollmar//mars/download.htm
+	VERSION=$(curl -s $WEB | grep "jar archive including" -m1 | grep -Po '<font \K.*(?=</font>)' | grep -Po '>\K.*(?=</font>)' | cut -d, -f1 | cut -c 2-)
+	LINK=$(curl -s $WEB | grep -Po '<a\K.*(?=>)' | grep "MARS_" | sort -h | tail -1 | grep -Po 'href="\K.*(?=")')
+	DESCARGAR="$(echo "$WEB"|cut -d/ -f-6)/$LINK"
+	ARCHIVO=$(echo "$LINK" | rev | cut -d/ -f1 | rev)
+}
+
+# Comprobar dependencias
+F_dependencias(){
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+echo ""
+DEPENDENCIAS="jre"
+CONTINUAR=0
+
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+sleep 3
+
+for X in $DEPENDENCIAS; do
+	
+	if hash java 2>/dev/null ; then
+		echo ""$AMARILLO"jre :$VERDE Instalada"$CIERRE""
+	else
+		echo ""$AMARILLO"jre :$ROJO  No instalada"$CIERRE""
+		CONTINUAR=1
+	fi
+done
+
+if [ $CONTINUAR -eq 1 ]; then
+	echo ""
+	echo ""$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE""
+	echo ""
+	sleep 3
+	exit 1
+else
+	echo ""
+	echo ""$VERDE"Bien ..podemos continuar"$CIERRE""
+	echo ""
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $ARCHIVO ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 2
+	aria2c -x 3 $DESCARGAR
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+mkdir -p $PKG/usr/bin $PKG/usr/share/pixmaps $PKG/usr/share/applications
+mv $ARCHIVO $PKG/usr/bin
+
+#Desktop
+echo "[Desktop Entry]
+Name=MARS
+Comment=Mips Assembly and Runtime Simulator
+Exec=java -jar $ARCHIVO
+Icon=mars
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Categories=Development;
+Path=/usr/bin
+" > $PKG/usr/share/applications/mars.desktop
+
+#Icono de FPC
+echo "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABmJLR0QA/wD/AP+gvaeTAAAACXBI
+WXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wQUEBkySrY5ugAAIABJREFUeNrNu3vMrelZ3ve7n8P7
+vuvwnfZx9uzxeGY8M3hsGDBkjDE2LnFsSAwRJEGEUlSKMCZESqrURFUUNQlq0yhKSFspSpxICTkg
+0qqpgorjNgQDTQoYc7LB9jCePbNjz57Dnr33d1iH9/A8z333j2ftbVMFBXNKlrT0aX36vrXWe7/3
+4bqu+3qE3+XHu97+JD/+bz5+7/XXvfXJNvqyfPdbH9t/zX3z/Zt3+tcK7rEL55f3PXR5vpw14s5W
+afvK8fbWlNNzr7lv71kRjn/u4y+u/8Lf/dDp+owBMH6PHvK7+WZf8fhD/OIz1wH4tm948x9825MP
+fvPDV/efDNE9vOy6w+U8zGNwPgRP20SyGk6UADgK4iAVRUvZinOroe8/e+d0evpf/dzz//df+sBP
+/nOg//v/3Tfx3h/4F/9JBiD8+fe+69IixG964+OX//sr55dHCPjQ4ENg1gjz6EDAnBCcZ9YEQBEU
+J45SYN0PDGNPzsb+smFvMWMzFTariV96+sW/u7/X/fW/+fd//JWf+thntwDvfPPr+Ymff/o/TgD+
+xn/7rbz/r/2vvPnJh97xn3/Dm77/4sH8qy7sL87NF3Ni9HRdiwi0AYIXvPOEpsVJ/WRvIBQUAYyc
+leNtInhPdI555+nHkVdPeu6slM2QicGG1cnqV55+/qUf+qt/7199AOArH32Ujzz77O9PAB44f54X
+bt8G4E//ybdf3T+Y/fnXv/bcn4nOcf7wkMWypWkc9x3tkwDNBcQRxOiaiISAA3LJWM5kUxShqDCM
+mdtnIyYGBo2HJgqaM/iAEnjx1shyFjk523B2dvpvdRzf9z/9ow8988nPrPK3f+Nb+eH/82d+fzLg
+z33Xu7/vofuWf+XS4ezCweEhMQhi0LaRw4Mli1nLMAyEIOiuhTkEA8QU04L3Dh+FflRSBqyw7jNt
+cKgaUzamokwJiio+BC7stbjgGSflE9dPGKcp7bntP/mOv/DD3wOU3/MMuHrf+YPv+ManPvDk4+e/
+ddG2qBnz+YImQNd2hOhpG0cXG4xCSongBHMe5wJehOAKZo7FImLFeOnWGVMpoJABVOm3mZO+UAwE
+wZnQNIbDEBHO7c852gt85NdPOD4beehyePnDP3ftHf/zP/nwM1/I9fgv5I+/+PUPftX7vvVr/sUX
+P371aw+Xc8biCLGlaSJd2xGd4YOwmLU4EUoxDMF5RwwBJx4RxYmw6By5KHdOt2zHzJiUkiF4x8u3
+toxFGaaMmSHAmCdyKRQtlFxIxUA8Tz58nmde3LIadPnmN1z61ne+9Yn0oz/x8Y/8sT/yWj716dPf
+vQD8l3/inW/5+q9+w4fuv7j/4HLWsJ0gxMjesmXZdSyWM+bzhnN7LU6MdT+SVREneBcQcTgviAno
+xKyLbPqRYcr0YyFNRhGP4fAxoCrgQE3IBUwEcYIqqCq2y4QrF+fMO8fxypjP3OLLH7/09V/zlkdW
+P/C//PRHAPvKr3yUGzfu/M4C8Ke+8xv/64cuz3/k0rm9+cWjOcMkNE3g6GDOwd4+oQl0UWiC49bx
+hpu3N5RihBgJ3u+qX1EztCS0ZGLbklJhSoWcCkWVLgb2Fi3DmDjdJDCIISBiOBG8d2CCiwEnoNkw
+g8OF576jyLIDMO67cPnr/uR73vLELz9984Pf/LZ35Q///Ed/+wH4L77l3W953ZX9H7l8YT9cOrfH
+8dnA/uEBVy8fMetmOOeYponghNPVFucbDvdnzLuAdw7nI947uggmnugdXeMYx0IbPN4LuShqyjQV
+zh10vHrc0zUBh+B9oAmONoSaHcFhangXCMFjCFM2Zp3naBmZhhFwLBfdGx957ZXp+37gb//0b7sE
+nvySL3rru972pn9537nFfDELbIaJxfKAxx48T9cGtqNilsGUzTZx4XDOxfP7zLqI9yDiCU6I3hNC
+oPXCrPU00QPKZkgMUyaGgAJd13LhcI4LAVzAOcM7oW08zhnROZyr2YAabRSCE5rWc/tkYNEFlsuO
+zah4B/df2nvHt3zjf5Z+6H//qX/73d/+h/mlX332PxyACxcusN1uuXL/5YP3fvt7fvTSYfea6D23
+T09pm8jli3vszeecrDK5FPZmnuADTQyIeDClFCUXqXc/RERg0QrLZUMzi7gQmEbDFHJR5q0HhKP9
+OW2MxKZBgDY4nA/gPCKO2EREBC8CokwZFvPAneMBMdiMmXk0zHmmCbxHZtG97cu/9A3/+i//4I+8
+8Lf/h+/jX374o7+1Mfhnvvfb/rcvfvTqtwQSVkY6P7C/f47Dc0dMU8GHwP480gZhPmsAmKZCShnv
+BO+NNnqa4DBNeOdYzDyCUQpsx5FtP3IwF26fDrRNy94sstpsMGlRE0YVhskYpozEFk0TgpJSIk2Z
+lDMpZWSHLe6/OOP8wYIpZ26vJprY0nWBMfvnv+yP/qUngPG3VALf81/9iT/9ZU+87vtVM9u+56UX
+rnN0sGRvf7+itgzz+Yz5LDBftvjgURPW28JqGEg5IeJxFFIp5ALTlElZ2fSF4IRbx2sgo0lp2oZz
+B3O2w4Q4IXpBNbM3C8Tg6UfDO4/zEXGO6B3OQym1RJzoDm84rpyfkVRw4tgOI32vNNEdvf+9f+Rr
+Xzo5/aef/PUXy28agH/+Q3+HdiYPvPHxh/6Z926eFW6/8CnOnz/HuaN9lvMFRYXYtsTG07UBHz3F
+4Padkc1QcAKzNhK8o5SRNI6MaWAYE2Ma2Q4D46D000RRRZwjT5lxmBARsNrtm+AxE1JKDNPEup9Q
+jOAChoEpYkopGRCKFhRPbBoWXUCLYKaYKWebESv6wMP3X7n2zz74cx/7/Gt2n//ij3/nn2J/uff+
+2Xx2wXtHv9mwzi0XL1xgsVxiLuBcuFeHJmBWgU1shMU8culwxsGiwUshJ0W8Yxwz0zSQpgmviePV
+MX2/ZexHcupZbzZstlv6YcM0DZSiFK3v3Q8Dq9MVZ8d3GDcrtttTxrEnl4JRQBUtuhu3mSYoRTPF
+MsFBypmSJo7PenfxXPcX///Z/hsC8OQbX/+ORx65+mfVjCY2LGaBtz31JIvFkhBnRG+IAyhEZzgv
+mIEVZdEK950LHB14nEGeejyKlor5xQeSCkV30yEElouG1bag4lAD1coB+qEnl4xqIjgQZ1w8N8NT
+KGnCtL6v7O6wCIQYWHSes02P4lj3E0NRGm/szT3oyDSmx37yH//Zv/WbBSC8/R1Pfb8YzGJknDJt
+dHgvxOCZtxG8JzgluIzmAcmZYIYHFk0giCMNxrbvKQaKUXAgkRjnFGvos2ObHW3XMUwwn88JbQeh
+QcIMcw3ifQ2wE3xwPHBpjzZAE2DeQrBEkEzwka6LeCdMU2LoE9OYOTndcvskced44HiVaIJjb9lQ
+0ogz+fYPfuB7r/yGAFy9epX3fMPXXd5fzL8qeIdzQpkm2rYhZYhNQ9MGvAs0oWHWRKY0YWOPZHBq
+iMKwnrhzsqKUhOEQ35IynG0zmyFRitHNuor5nWc+nxFCx95iDxdnuBCI7QykYVJPyQ7BEX3kYNmx
+v2wQhOCVYUiY1amgCsE5puKYsnB8NnLxqCMVZTMWNkNGFGatw8TOH58O77wXgCeeeIIbN26w6OIf
+nc+ac9OUKUWJTcCFgLiK6LIWDFBRSlY2Q6GYst2esVkNnJ6tuH12TD8NJHWMWdns+P1YjFunI30y
+Gi+89so+3jmaZgZ4+qGQpsS27zk9W7HtJ/qx0BfFvMeHQNfO2ZvN8dGjOMQ5SlFUdSeqQNM09FPh
+5unAK7dPOX84Y9YGTjaZfswUNWbBuSsX97773hS4detWFTPf9fYfn3ehs6JEH2hCZtG1iI8c7jeo
+OkpKCIWpKCE4vAilFEwypSS2QyIVY0gTmHC2Hkhq5AzDmDl/2FDyVGf8mOiHgWEaa70bqBpGIcaG
+ENpKhcWBacX+4jGDlDJNEFJWBEcqhhPDzDjYaxiSMmZD1fPogxfoGsdqW4Fb8MKsax5Cun/0S5+8
+fuIB3vQVX/q1X/bkY+8LUufivI0sWvA+IM7TNJ5+05PzwDhN5CmTcyKlwpAKU8pshoyakc1heLZD
+YZzqhDDNgPHsCyu0CDdXhe1kBA+nW8UFz5QcqgpaqlpkCSFURmmCeMEJlJw4XWe2/VR1RK1YAJQh
+K1NxjGOiaVoevH+PT33mjINlw3ozAUbwgpnnySeuzP7h//GzP+YB3vrWp/6bCxcO37zfBLwJ0Rfm
+XQNSu3bjhWkcmVIGM0opOPHgDFGt8xtjKsYwVF4QY21as9YTgxAcnG4KsYlc2u9om8rorr2c+Pln
+XuXaC2dcvzlx8cKSc3ueYZxQy5Rcu75Qm6IIFDO01OeUMzFUHSEET86J4/VI17b86vUNF/cblo2w
+aI2UDS0FKt44fOpNT/yD8MBrrrZH5w6fRJVrz3yK17/hDQRXSY7g2J/V51lxzLuOnArDOGGlChhq
+CgIpF/oEfZ8JzkAjiJLGAs4TXOAPvP4y5w8im0FZzBo+88opl/cdN447DucNj1yKPP7AglmnrM6E
+zaZmGVpwBDClaRp88HStY6sF7yrKnC8azi86rr/Uo5qYtZ7nbq4x4Pw80gbFi7LaJg4OW6ZcLrx6
+0l8OTYzLtokPb1Z9JRtOKEDKwuGixTnjbDNgVoi+oXVGyTAUsLEgEWzKCErrBBeVVJQyKSaCE6Np
+G/aWCxad4+R0i2KMfY+3wp218uBRswta4oUXT/BiZM3MdjL6vGtZzAPjoJScKSkzpUIpBUyZdZ6u
+iayHwsVzM+Ztw+lm4LHLM1LO3DzxnFsqmLJcdMxbjzhZvOby3sPhkdc9tB+COzy+eczVKweUVHAe
+fIjgBEUqx84Dd0qijYJzDs0jqgmXhYJQcgUmYHgKKUklQQLeKdMAKU84BJEKUxed49KBsVpPOOcY
+xqoYHR7OSckTBI6WkZfvrFlvPW10LGYtTYR+gJQrUmzjgn6YePkYLh1FLh9FttOAmjClwnGfCT4w
+pcLHr9/hXV9+gTS5+CufvP6asFh0+9OY5imNNO1Fiha6rmXMhW5MiIdNP9J4w2UjTZmiBdFCSiOS
+YEjKvGspZvRjwZFRVe6/MK9cYOzRkvA+VoCktWsXhdNNZrOdGHPhcNlRdMFmPbAdC8vO8cnjEdHC
+uT0lZcdqoxQzmuCIzjg4N+d0k/il61s+++rE6x7Y52tev8eyE8ZSuLUpHMw9fTKGUbhycYni+czN
+NYeHBw+H09PVa88dHvluPgfxpGIkNbwzBGGYtnVEFZgsU0qhbYR+SgRnTOOE+Mgmwc2Tkccud4hv
+OVpGTBNt7PAozkdKUXDC2VbJWlitJ6Z+5Gg559W156d+9TZfdHvgvqOOg2VH27S8dKvnqcf36To4
+PR0ZRyWVgu7o78kq8dFnNzz9whkHy5ZcjJtnyv48EiTTNZGXTjIHy4ZNgv3ljGEobIdM1zSPhmlM
+j6cp0ywiZkYuDi0FC4HVukekEEJArXZ8s0IaC8tZYLvNu4XGxLVXVsy7yKYXmuB5ZRhwFKDgxdE0
+CTOH202DIXumBH122Dbz8MU5+7OLvHzcs03KninXXlzx2JUZn7nZM0wTy0buKUJmxo1XV0zZsR4K
+R/sdr39gWWWxnLl1angRDjvh1sp4+XhiPRgX9o3VUEAKRfOVIE4uj9PEwX5LPyZUYTFrSNOIeEeM
+EcTwPmKp4J0SME7WE09/ds3hTJg18Nh9gTE7zrbKdhxxTnFmLDrPvIOsSvSegtFFIfrMnaxECby6
+Snz8s7d43eWWRRc42yZec77hVp/I2vLw5Y4pN2RTbh8PFXxpQUQ4XLY8djWz6QuzCNFnrBSKspPR
+hFkUbp5mFrPAMBVSTgxDAsphSDntbVZ30KMFUzacZCx7igI+UEohNnPSuKIflU0/cvUwsu4r+Dm/
+bNhbtBVmemEzwtlWOd0kzgbFe6PzjkuHgUUbEOd45XjLyVY5mDmGMfPAxY7LC2O1HohReOVUuX3a
+M2XjztmWd7/pIvuLwGZdR/C5vY62bXjl1obN6SkPnW956bgwqaJFQGAqghVjzDBrBe8ML4XtBGIF
+QQloF8Z+I2NjKI6cE+Yd4wjNvGUaJ9rZ7B7QaaLQmHDztOcztybWQ6ZpZqhVQSIlBRP2Z0J3dz53
+LZeOOm6fjdw523Ll/Iz5bMYmjWwm4WybePXaGct5gzPl6rmGx+5r2VtEVD0fe/6E07Mtd04y2QTv
+G168eYZSuHRuj5AdXVS61nFynAiAeMWo2+bTTcFwmGXUzfFhopWEoIypiN9bzv/QYt68ZX//ECEh
+ZHzwVXfDI87XxheVlCZO+9pA7qwm2ih0AcygqN1bYjipEviy87QNzKOy1zoevjLjylHD0SIwbz3H
+64nNlPnyR8/zyKVZpb8+MBZhvU0UhcuHLUWVGD2zGHAUQvQUKuSOvo44EeHG7UxSdlI7jAmGbLxy
+ktiMSj9MrEfDkTlZTUylvOgXi70/sFg0fzC2HfPG76TnwJhK1QKaquX3Q2I9GGfbhOXC0UJY94nT
+jdK4QkWYUpUaBVBAaIPgPcRojMnwCMFT69iM/ZmjDZGbZ5nlPGLiaL1jOxnrIeOc4/ZZAi10UZhy
+YdkFvBhNEMARY1WVj9daZTMvpAKG48UTQ60aMZz3bMdCysqrpz1Oyqf9Yj67OuvaPz6ftcy7gAue
+YUw4qV/U76RjdZ7GwbYfGaZCKRNOYJyUeVNJjJlQVClaMDUExUrB+8oXmuAIrqpDNbOMWfTsLz3z
+zjGMha6pe4D9ecOQCpu+sBqUfoLNWAiitNGIvu6bYnBsemU9QrbKGVQhqWPbCz6AmKGqzKLndD0R
+vZJS5mw1/EJQx7NjqkxuvZ0YkrCcN4BiqoxjQjBkt+FZzGakNOLF0bXCslFEfCUnaqjU3Z0DnBNU
+lVIcIoYGY8wZA7rGs+ggm9GGqsy8OmVOeziaB4xEdELyEEwJPpDV8embmc/e6TmcwbLzzGYBo6EL
+CmqYKtNkqJOqYwwFjxFdYUrKojMwBwiapueDmj9G4jarzXMxCDCOmflue+tEmVKmjIXZfM44JbyL
+CErWBOYQB2eTcDhj1xAdRQpm4EQqCzNQKzRRakmNlUSZwlSMk1VCEc42BUfBRAgCizYwTYWTbeL+
+ruVoL3Kydjx/e8c/wkAXRo4WQowBtYoR0ghnY6YYdeRJ5qw3stXdxKU9zysvrZ/1hjSLefdd+3vL
+ZWhaxDlSVtoYiMHhQ8RQpqzkkhFKVYJ3xi21ghq0EYyIApjVjY4J3teyEMBLvSs4GIuSi6HmyaVu
+eotCGz3ZjBA8pWRu3BloguC9p1jBFeVg7qq5QmBSz6tr47mbE/1YyZKaoibcWRdW24lSMtsRhmTE
+AOf2AnuNFXHuA2EapjOMF6YxXc4zZTYLlGycbBNt26JjxkomBgMC5hyo7RxeIC5gWu+wd+BdQBGk
+qve7qeAwhKxCGY0hKWZWjRNSUPXE4NjrBMVQApaFFYFcJiaFTpRShOSEfqrSmhdP1sx+p0QfMRHu
+9MLxaqBrct1Ja6EUR9o1Z2dKFwqn26l//oVXr4eSx369HZ8epvErFkWZUmFvMeP0bM0wH1nMZxiF
+UqqthaapuzkKOWecl53xoda7qSE+YKZA2WEIR6m7DESoNYoyC3VtLt4o6gne4UWJzpExFmbcfy7i
+MeZtXbSC0TVVlElqRO9YNIF9VU63ibOhTpvVUMt3HgUTh1VvDk4cm20mFztOU7nhaxq7+Xze/bGm
+2a2yg+66LDt5WhG38/aUjHe7MaZah50YIg5ByCaI7UxBtls+iiBiZBW2Scm1/PECuvtbJ7Irneoj
+8s4IAbogFTpHCL4+xVdfwJSrPogYp4My5FpG3tUJcW4ZiDGS8m4ylQJmNN44Oxv+3x/78C/+Aw+Q
+pvGZ2DZ/cdbWNBLNRCeYKsFVHx/Yzs8n9UvLbqVgtkt43YEhQ6q5g0mrUOkFxgJZjeAcXYC9LlC0
+UmK1+rO+v8dJJV8OxXsIQXGuAi6RUjUFB14c2WA7wXrIOzse9KMypqo3yK4MkapZNLu/+Ymf/bXv
+OT3bXvfvfve7uXbtWvbOX+669qn6NYTolKK1EyN1xNQ8qhdlVOAjrq7EjXpXNJddEwJnhjjDTBhT
+fY95AzHUnjFmI+8CVq2DtYOrVZscziFmmMpuA1SBlJb6HaZU5/tZb3gP9+07Gu857ctOMgdxHjVj
+O05g1VNw687muY/88q//OQB/7do1um6OiftUcLxPkADVz4PVOxtq/u9caLbbqdeUtXtBqXPhbvbr
+LkiatapFGEVrH5lKzY4h1UBgslN2a5bkkslZKblmRtEaPI+hVhvoOBlno7HqlfWo7DWw3wl9Nm6e
+Kl6qQcsHIaWClrsgSXnmxst/9ZWX7/wMQAAYhi0M8lJs/K/4EN9SjU1gM60AyJT5rCGL0jX1Qp1W
+sCEIztWCr7Xr6hdG8GIUtaro7hridgLIuwuuKu9YXO0Xrta/o/IKR6EJFTe4CFOu4KzssMNmgClV
+ytt4uLVW+gS5FJwIAqRUAZoXIasxpHR60M0++O9bj+dSSgyh+QbnqrXNAalU/V6L1vtuO+/2LlVt
+Z3PdtQNMlaxCzgVVZSr1n1KBaaqzPxfdBYZqgxPDcpW6SqliZ1GtEBqra+7dhWfzZFW2I8wa48qB
+0AZj1hgnm7q8XW2qjc7vAjpNhVyq0j2m/LP/+qd/8QcfuO8+ztbr3+gP0KK/IMG/yzv/oHMB7x3B
+G6kISJ2pXurlqtW0Z5eSqnUZqjWnKVpFS1QZJiPlammZkt2t9t1ycvc/VlO9QucdxtilrJXaU1Kp
+5bMdldVQe1LajdY768r8BOXWWalTxkHeAbiSR/oprT917YWvPjlebc/Wa+6VwOc/Uirv3U7pY34c
+YhMFJy1TmtCcmc0imDKXDleM4CtbC64iOcRRTFCt6M/MqgOUUO/grnSGIMxi5fES5F75qN7rfbhi
+TCq1iQKt1QzJxSi7ppoKNMlhVh2k8xau36yyvBPHOJS6Rqdujc9W279x/bkbt5944iE+9anr/36L
+TEnpxLCHvPdfBh6kdlN319KugloG84yl1qUqbDNsJ2U9KJsx0Y+Jfqqrs3EqTDkzlULW3bjUHVBQ
+7r0udrdRVvNFzQxBdr7hXKBkZcqGUtfyZhWVNg6Ot8ZLJ8O97dE4FfI0MU6F7Tjc6Mf0va+8cmt9
+69bJf9AkJbO95cvL+fzSctExny9oozGPwqyLNE3A+4C5tm7YrQIitdp4itZpoWo4Z1UNpnZ6Xzsm
+zjna4IkOYvA4VwVPDGIUgtQ770R22oJDtao7Y6oaw10c0XgjOLhxnBhyLTHTmi0pT+RUbL05/ZJP
+fOK5Tzz88CWef/7m50wRv0kAbNz2b48h/Bvx7pKIULIHdcwaw4tDTMl5AHy1zuyWHSp3BQTAlJzK
+vYngxYFmTAQtyqiFEjxp5yLRnT9oLkYxq1ZZrSYoM0OpK7ikQikwlUrEDmeO9Vg47SsDnbWOKeUK
+znIuw7j93k984rlPPPXUF/PRj/7ab80oaWa3i2lyIX59hbK1dUUPTgve++oNEsVTLWuCgpUKmsQw
+rS4xJ/Uuy04luttE1epEyKUuVstdH7Dujs7symLMdYpsxx12UCM4JYpx2MLpoByvqsIUvJKzMZWM
+aWYYpg+/epzff/XK0j7+8U9/YU5RLeUjZqzEu6+LvpoUDberTd2BQ63zX/gcYdoBJrRSYMMo5XN1
+rsoOQNWfxeoFDhny7o6X3QgdJ2PIRj8ZY1G81DX5VArbpKzHQj9p3RMiNe1LJkphGocP/eIvP/2e
+1emdcuvW6RdulRVxlDR9RMQ9YdgbnQTECYhH84gBqXjGXDdJzlc3dyVBFQTdXWVju4vewV7n3W5H
+WD+ra8JOGbJ7ZomslWQtGpg1jm5X932qGmQuRsnVKyxi96S4upss1+6cpm8+vnPn7HdglzcAy2n6
+oMKYS36Hc17ECbiIlqmiLXVk9fXcjxqmdo8YcZc4OQOpBx9kh9LMDH/X+Ci56rw7CT76+vu9rvYP
+1cJ6MlLZvbcaWSu4wu1el4IXo5/0Q33ff/Mzz1x78cEHH+T09PR3ZpfvFos8brf/j8SY+mF6m4Qm
+VIocKaVaXrIKyXblIR5z9aiM4SofJ1Rfghkm4J2wnLm6JC0Z5yqMjlIZqJfK/EpRVsm4szKGCaZc
+cQa7plioXKKOT8qY+PDHfuXj73n11vHZo48+yPPPf+Z398hMiPEtvul+eG/ZPrKYtXRdJIrhvEfx
++BCJwSHmaRqjFIdJZWVOCh6pwoQJswgmSvQ7BXrHeY3K9VcDVV8QVy+aKmhUbaFQyq7EslI029BP
+32Mp/8NPP3/9t3x2yH+hAVDVF0qa/l4q5R2puNeoWiWpu3WTqVbIzMQwZvJdJidK9TPUYzBOPkev
+3eexvD7BZjTWY4XgZpXE6K7ZQl3QVIaXyfXQxY1hm7762Wef/b/a+czWqzW/ZwGo0EGz5vLDpeTn
+plzekFXP18uwKo9ZuXfWtZK+Qsr1Yr1Qlxq+ghmx6iQpKqxH6FNdaujdgFu1wxatnT7lQs6FMRnD
+mNbbdf8/Tjm97/rzzz/3+OOP8++u/7vf/5Ojrmn/ZjPrvmPWxPOzzrsueJpYm5gA4iOtd4ivNvro
+PY4dwRLHmKUegtrhAqGmvbh6pqBYPSBR7C5T5LSo/fKLn3nxW4Zxe+vuOYe7lr//KEdnJcQrwft3
+uhC/u23CO2ITaZtI4z0heHyo8Lfy9AqsFLejw76KqLsxWftAQDV/TmAphX4Yn1Mtf2e53P/gp595
+5mnA9vb2WK1W/2kcnv68xyN+1r6/aWbvisFdCC4uxPsYnPuc3393Cowd+8Pk3rnH3XIjYzbg3PHQ
+9x979eWbP6imP3n3Ax599FGe/W0el/39CMDd4lhIjJdjaB52wT+A6SNOwmM+uMve+0NEZiIqIKOI
+rE3Ly1bSdZBPN01zYxqn5310N27fvH3ye/UnkjiMAAAAB0lEQVQN/z+Y4SQHUGw5pgAAAABJRU5E
+rkJggg==" | base64 -d >$PKG/usr/share/pixmaps/mars.png
+sleep 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Creamos directorios extra
+# F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura i386
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

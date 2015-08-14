@@ -1,0 +1,161 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150729
+CATEGORIA="Editores de video"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=aegisub
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://ftp.aegisub.org/pub/archives/releases/source/
+	VERSION=`curl -s $WEB | grep .xz | tail -1 | cut -d- -f2 | cut -d t -f1 | sed "s/.$//g"`
+	RAMA=`echo $VERSION | cut -d . -f-2`
+	DOWNLOAD=http://ftp.aegisub.org/pub/archives/releases/source/$PRGNAM-$VERSION.tar.xz
+}
+
+F_dependencias(){
+if [ -f /usr/bin/ffmsindex ]; then
+FFMS2_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+FFMS2_EXIST2=SI
+else
+FFMS2_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+FFMS2_EXIST2=NO
+fi
+
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+echo
+sleep 3
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+echo "$AMARILLO"ffms2"$CIERRE: $FFMS2_EXIST"
+if [ $FFMS2_EXIST2 = NO ]; then
+echo "$AMARILLO"
+echo "Resolviendo dependencia ffms2 ..."
+sleep 3
+if [ ! -f /opt/wifislax-updaters/Librerias/ffms2_updater ]; then
+echo $ROJO
+echo "No tienes el updater ffms2..."
+sleep 1
+echo "No se puede continuar..."
+sleep 1
+echo "El script se cierra aqui."
+sleep 1
+echo $CIERRE
+exit 0
+fi
+cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/ffms2_updater && cd $TMP
+fi
+
+# Verificamos que salio bien ffms2_updater
+if [ ! -f /usr/bin/ffmsindex ]; then
+echo $ROJO
+echo "Algo salio mal al instalar ffms2..."
+sleep 1
+echo "No se puede continuar..."
+sleep 1
+echo "El script se cierra aqui."
+sleep 1
+echo $CIERRE
+exit 0
+fi
+
+# Si todo salio bien
+echo ""
+echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+echo ""
+sleep 3
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.xz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+sed 's/$(LIBS_BOOST) $(LIBS_ICU)/$(LIBS_BOOST) $(LIBS_ICU) -pthread/' -i tools/Makefile  
+
+LDFLAGS="$LDFLAGS -lz" \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --without-{portaudio,openal,oss} \
+  --disable-update-checker \
+  --build=$ARCH-slackware-linux
+
+make
+make install DESTDIR=$PKG
+
+ln -s $PRGNAM-$RAMA $PKG/usr/bin/$PRGNAM
+
+rm -f $PKG/usr/bin/aegisub
+(
+ cd $PKG/usr/bin
+ ln -s aegisub-$RAMA aegisub
+)
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+# Comprobar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

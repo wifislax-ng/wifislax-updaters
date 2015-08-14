@@ -1,0 +1,197 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150801
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=https://www.thc.org/thc-hydra/
+	VERSION=`curl -k -s $WEB | grep .tar.gz | head -1 | cut -d ">" -f 2 | cut -d- -f 2 | cut -d "t" -f-1 | sed "s/.$//g" | sed "s/ //g"`
+	PRGNAM=hydra
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DOWNLOAD=http://www.thc.org/releases/$PRGNAM-$VERSION.tar.gz
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+tar xvf $PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+# Configuramos
+./configure --prefix=$PKG/usr
+make OPTS="-I. $SLKCFLAGS"
+mkdir -p $PKG/usr/etc
+make install
+mkdir -p $PKG/usr/share/$PRGNAM
+mv $PKG/usr/etc/* $PKG/usr/share/$PRGNAM
+rm -rf $PKG/usr/etc
+sed -i -e "s|^INSTALLDIR=.*|INSTALLDIR=/usr|" $PKG/usr/bin/dpl4hydra.sh
+sed -i -e "s|^LOCATION=.*|LOCATION=share/$PRGNAM|" $PKG/usr/bin/dpl4hydra.sh
+
+# Generamos desktop
+echo "[Desktop Entry]
+Categories=Redes;
+Exec=xhydra
+Icon=hydra
+MimeType=
+Name=Hydra (Network Password Cracker)
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application" > $PKG/usr/share/applications/wifislax/Redes/$PRGNAM.desktop
+
+# Creamos el icono
+echo "
+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
+" | base64 -d > $PKG/usr/share/pixmaps/hydra.png
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal 
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

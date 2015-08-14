@@ -1,0 +1,95 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=google-chrome
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
+	VERSION="$(curl -s $WEB|grep -om1 "google-chrome-stable_[0-9]*.*"|awk -F'_' '{print $2}')"
+	DOWNLOAD=http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${VERSION}_i386.deb
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f google-chrome-stable_${VERSION}_i386.deb ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo "$VERDE"
+echo "Etrayendo contenido del fichero .deb"
+echo "$CIERRE"
+sleep 3
+mkdir -p "$TMP/deb"
+deb2dir $TMP/google-chrome-stable_${VERSION}_i386.deb "$TMP/deb"
+rm -rf "$TMP/deb"/{etc,usr/share/man/,usr/share/doc,/usr/share/menu,/usr/share/gnome-control-center}
+find ""$TMP/deb"/opt/google/chrome/locales" -iname "*.pak" \
+	-not -iname "es.pak" \
+	-not -iname "en-US.pak" -and \
+	-exec rm -rf {} \;
+	
+rm -rf "$TMP/deb"/usr/share/applications/*.desktop
+
+echo "[Desktop Entry]
+Name=Google Chrome
+GenericName=Web Browser
+GenericName[es]=Navegador web
+Exec=/opt/google/chrome/google-chrome --user-data-dir=
+Terminal=false
+Icon=/opt/google/chrome/product_logo_48.png
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml_xml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;" > "$TMP/deb"/usr/share/applications/$PRGNAM.desktop
+
+cp -rfp "$TMP"/deb/* "$PKG"
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura i386
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

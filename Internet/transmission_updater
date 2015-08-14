@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+#Definicion de variables
+F_variables() {
+	WEB=http://www.transmissionbt.com/download/
+	VERSION=`curl -s $WEB | grep .tar.xz | cut -d "-" -f2 | cut -d "t" -f1 | sed "s/.$//g" | sed "s/ //g"`
+	PRGNAM=transmission
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DOWNLOAD=https://$PRGNAM.cachefly.net/$PRGNAM-$VERSION.tar.xz
+}
+
+# Si el paquete no existe se descargara de internet
+F_descargaPaquete() {
+if [ ! -f $PRGNAM-$VERSION.tar.xz ]; then
+echo ""
+echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+sleep 3
+aria2c -x 3 $DOWNLOAD
+fi
+}
+
+#Descomprime el fichero descargado
+F_descomprime() {
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+}
+
+#Compilando
+F_compilar() {
+echo ""
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+sed -i -e 's%-g -O3 -funroll-loops %%g' configure.ac
+sed -i -e 's%-ggdb3 %%g' configure.ac
+
+# Fix hard-coded path of man file of Qt client
+sed -i "s|share/man/|man/|" qt/qtr.pro
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --disable-static \
+  --with-gtk \
+  --verbose \
+  --build=$ARCH-slackware-linux \
+  --host=$ARCH-slackware-linux
+  
+echo ""
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+make -j$NUCLEOS
+echo ""
+echo "$VERDE"Instalando ..."$CIERRE"
+sleep 1
+make install DESTDIR=$PKG
+}
+
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Descargamos el paquete si no existe
+F_descargaPaquete
+#Descomprimimos el paquete descargado 
+F_descomprime
+#Compilamos el paquete
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales 

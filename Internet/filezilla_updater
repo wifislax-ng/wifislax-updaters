@@ -1,0 +1,204 @@
+#!/bin/bash
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150718
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+#Definicion de variables
+F_variables() {
+	PRGNAM=filezilla
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	PRGNAM2=FileZilla
+	WEB=http://sourceforge.net/projects/filezilla/files/FileZilla_Client/
+	VERSION=`curl -s $WEB | grep -m 1 "<tr title="|cut -d '"' -f2| sed "s/ //g"`
+	DESCARGA=${WEB}${VERSION}/${PRGNAM2}_${VERSION}_src.tar.bz2
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	echo 
+	if [ -f /usr/lib/wx/config/gtk2-unicode-3.0 ]; then
+	EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+	else
+	EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+	fi
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"wxGTK3"$CIERRE: $EXIST"
+	DEPENDENCIA=`ps -A | grep -o wxGTK3_updat`
+	if [ ! $DEPENDENCIA = "" ]; then
+	echo ""
+	echo ""$ROJO"Se ha detectado en funcionamiento el "$AMARILLO"wxPython_updater"$CIERRE"..."
+	echo ""
+	echo ""$ROJO"Cuando acabe dicho updater lanza de nuevo este"$CIERRE"..."
+	echo ""
+	exit 1
+	fi
+	if [ ! -f /usr/lib/wx/config/gtk2-unicode-3.0 ]; then
+	echo ""
+	echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
+	sleep 3
+	cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/wxGTK3_updater && cd $TMP
+else
+	echo ""
+	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+	echo ""
+sleep 3
+fi
+}
+
+
+# Si el paquete no existe se descargara de internet
+F_descargaPaquete() {
+	if [[ ! -f ${PRGNAM2}_${VERSION}_src.tar.bz2 ]]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+#Descomprime el fichero descargado
+F_descomprime() {
+	echo ""
+	echo "$VERDE"Descomprimiendo ..."$CIERRE"
+	sleep 3
+	rm -rf $PRGNAM-$VERSION
+	tar xvf ${PRGNAM2}_${VERSION}_src.tar.bz2
+	cd ${PRGNAM}-${VERSION}
+	chown -R root:root .
+	find -L . \
+	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+	  -o -perm 511 \) -exec chmod 755 {} \; -o \
+	\( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+	-o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+}
+
+#Compilamos el paquete
+F_compilar() {
+
+# Generamos parche y aplicamos
+if [ $VERSION = "3.10.2" ]; then
+echo $VERDE
+echo "APlicando parche ..."
+echo $CIERRE
+sleep 1
+cat > fix-missing-include-fz-bug-10280.patch << "EOF"
+--- FileZilla3/trunk/src/interface/Mainfrm.h	2015/03/02 20:28:30	6542
++++ FileZilla3/trunk/src/interface/Mainfrm.h	2015/03/03 15:54:36	6543
+@@ -1,13 +1,18 @@
+ #ifndef __MAINFRM_H__
+ #define __MAINFRM_H__
+ 
++#include "statusbar.h"
++#include "engine_context.h"
++
++#include "wx/timer.h"
++
+ #ifndef __WXMAC__
+ #include <wx/taskbar.h>
+ #endif
+ 
+-#include "statusbar.h"
+-
+-#include "engine_context.h"
++#if FZ_MANUALUPDATECHECK
++#include "updater.h"
++#endif
+ 
+ class CAsyncRequestQueue;
+ class CContextControl;
+@@ -25,13 +30,7 @@
+ class CToolBar;
+ class CWindowStateManager;
+ 
+-
+-#if FZ_MANUALUPDATECHECK
+-#include "updater.h"
+-#endif
+-class CWindowStateManager;
+-
+-class CMainFrame : public wxNavigationEnabled<wxFrame>
++class CMainFrame final : public wxNavigationEnabled<wxFrame>
+ #if FZ_MANUALUPDATECHECK
+ 	, protected CUpdateHandler
+ #endif
+
+EOF
+# Aplicamos parche
+patch -p2 < fix-missing-include-fz-bug-10280.patch
+fi
+
+	echo ""
+	echo "$VERDE"Configurando ..."$CIERRE"
+	sleep 3
+
+	LDFLAGS="-ldl" \
+	CFLAGS="$SLKCFLAGS" \
+	CXXFLAGS="$SLKCFLAGS" \
+	./configure \
+	  --prefix=/usr \
+	  --libdir=/usr/lib${LIBDIRSUFFIX} \
+	  --sysconfdir=/etc \
+	  --localstatedir=/var \
+	  --mandir=/usr/man \
+	  --docdir=/usr/doc/$PRGNAM-$VERSION \
+	  --disable-static \
+	  --disable-manualupdatecheck \
+	  --disable-autoupdatecheck \
+	  --enable-locales \
+	  --with-tinyxml=builtin \
+	  --build=$ARCH-slackware-linux
+
+	make -j$NUCLEOS LDFLAGS=-latomic || exit 1
+	make install DESTDIR=$PKG || exit 1
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Descargamos el paquete si no existe
+F_descargaPaquete
+#Descomprimimos el paquete descargado 
+F_descomprime
+#Compilamos el paquete
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales 

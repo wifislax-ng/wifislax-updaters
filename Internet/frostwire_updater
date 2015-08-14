@@ -1,0 +1,212 @@
+#!/bin/bash
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+#Definicion de variables
+F_variables() {
+	WEB=http://www.frostwire.com/download/
+	#VERSION=`curl -s $WEB | grep pageTracker | cut -d '/' -f 9`
+	VERSION=5.7.7
+	SOURCES=http://dl.frostwire.com/frostwire
+	PRGNAM=frostwire
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/{opt,usr/bin,usr/share/pixmaps}
+}
+
+#Comprobar dependencias
+F_dependencias() {
+if [ -f /usr/lib/java/bin/java ]; then
+EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+else
+EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+fi
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+sleep 3
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+echo "$AMARILLO"Jre/Jdk"$CIERRE: $EXIST"
+if [ ! -f /usr/lib/java/bin/java ]; then
+echo ""
+echo "$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE"
+echo ""
+sleep 3
+exit 1
+else
+echo ""
+echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+echo ""
+sleep 3
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_descargaPaquete() {
+	if [ ! -f $PRGNAM-$VERSION.$ARCH.tar.gz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $SOURCES/$VERSION/$PRGNAM-$VERSION.$ARCH.tar.gz
+	fi
+}
+
+#Descomprime el fichero descargado
+F_descomprime() {
+	tar xvf $TMP/$PRGNAM-$VERSION.$ARCH.tar.gz -C $PKG/opt
+	mv $PKG/opt/$PRGNAM-$VERSION.$ARCH $PKG/opt/$PRGNAM-$VERSION
+}
+
+#Configurando
+F_configurar() {
+# Creamos el paquete
+cat << EOF > $PKG/usr/bin/$PRGNAM
+#!/bin/sh
+cd /opt/frostwire
+./frostwire
+EOF
+chmod 0755 $PKG/usr/bin/$PRGNAM
+
+ln -s $PRGNAM-$VERSION $PKG/opt/$PRGNAM
+
+# Generamos el icono usando base64 gracias vk489 por enseñarme esto
+echo "
+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
+
+" | base64 -d >/$PKG/usr/share/pixmaps/$PRGNAM.png
+
+# Install desktop file
+install -D -m 0644 $PKG/opt/$PRGNAM-$VERSION/$PRGNAM.desktop $PKG/usr/share/applications/$PRGNAM.desktop
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+}
+
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del script
+f_versionInstalada
+#Comprobar dependencias
+F_dependencias
+#Descargamos el paquete si no existe
+F_descargaPaquete
+#Descomprimimos el paquete descargado 
+F_descomprime
+#Compilamos el paquete
+F_configurar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales 

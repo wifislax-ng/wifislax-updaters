@@ -1,0 +1,98 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150630
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=tor-browser
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://dist.torproject.org/torbrowser/
+	VERSION=$(curl -s $WEB | sed -e 's/\(<[^<][^<]*>\)//g' | grep "\." | grep - | awk '{print $1}' | sort -g |tail -1 | cut -d "/" -f1)
+	ARCHIVO=$(curl -s $WEB/$VERSION/ | sed -e 's/\(<[^<][^<]*>\)//g' | awk '{print $1}' | grep tar.xz$ | grep -i es | grep 32)
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p  $PKG/{opt,usr/share/applications/}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $ARCHIVO ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB/$VERSION/$ARCHIVO
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+tar xvf $TMP/$ARCHIVO -C $PKG/opt/
+mv $PKG/opt/* $PKG/opt/Tor
+#Permitimos usuarios root para ejecutar Tor
+find $PKG/opt/Tor -type f -name start-tor-browser -exec sed -i -e 's/`" -eq 0/`" -eq 1/g' {} \;
+#Cambiamos de propietario
+chown -R root:root $PKG/*
+# Creamos entrada de menu desktop
+echo "[Desktop Entry]
+Exec=/opt/Tor/Browser/start-tor-browser
+Icon=/opt/Tor/Browser/browser/icons/mozicon128.png
+MimeType=
+Name[es]=Tor Browser
+Name=Tor Browser
+Categories=Network;
+StartupNotify=false
+Terminal=false
+TerminalOptions=
+Type=Application
+">$PKG/usr/share/applications/Tor.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+#Definicion de variables
+F_variables() {
+	WEB=https://linux.dropbox.com/packages/fedora/
+	ARCHIVO=$(curl -s https://linux.dropbox.com/packages/fedora/ | grep dropbox| sed -e 's/\(<[^<][^<]*>\)//g' | awk '{print $1}' | sort -r | grep i386 -m1)
+	VERSION=$(echo $ARCHIVO | cut -d "-" -f3,4 | cut -d "." -f1,2,3)
+	PRGNAM=dropbox
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+
+# Si el paquete no existe se descargara de internet
+F_descargaPaquete() {
+	if [ ! -f $ARCHIVO ]; then
+		echo ""
+		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+		sleep 3
+		aria2c -x 3 $WEB/$ARCHIVO
+	fi
+}
+
+#Descomprime el fichero descargado
+F_descomprime() {
+	echo ""
+	echo "$VERDE"Descomprimiendo ..."$CIERRE"
+	sleep 3
+	rpm2dir $ARCHIVO $PKG
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del script
+f_versionInstalada
+#Descargamos el paquete si no existe
+F_descargaPaquete
+#Descomprimimos el paquete descargado 
+F_descomprime
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

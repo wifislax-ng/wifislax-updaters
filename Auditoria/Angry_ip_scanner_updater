@@ -1,0 +1,179 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150630
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://sourceforge.net/projects/ipscan/files/ipscan3-binary/
+	VERSION=`curl -s $WEB | grep .jar | head -1 | cut -d y -f2 | cut -d / -f2`
+	PRGNAM=Angry_ip_scanner
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DESCARGA=http://sourceforge.net/projects/ipscan/files/ipscan3-binary/$VERSION/ipscan-linux-$VERSION.jar
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/usr/share/{applications/wifislax/Redes,pixmaps} $PKG/usr/{bin,lib/ipscan/}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f ipscan-linux-$VERSION.jar ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+mv -f ipscan-linux-$VERSION.jar $PKG/usr/lib/ipscan/
+
+echo "#!/bin/sh
+java -jar /usr/lib/ipscan/ipscan-linux-$VERSION.jar" > $PKG/usr/bin/ipscan
+chmod 777 $PKG/usr/bin/ipscan
+
+# Creamos icono
+echo "
+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
+" | base64 -d > $PKG/usr/share/pixmaps/ipscan.png
+
+# Creamos entrada a menu
+echo "[Desktop Entry]
+Encoding=UTF-8
+Name=Angry IP Scanner
+Comment=Fast and friendly network scanner
+GenericName=Fast and friendly network scanner
+Exec=ipscan
+Terminal=false
+Type=Application
+Icon=ipscan
+Categories=Redes;
+StartupWMClass=Angry IP Scanner
+StartupNotify=true" > $PKG/usr/share/applications/wifislax/Redes/ipscan.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

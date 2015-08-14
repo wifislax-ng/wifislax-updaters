@@ -1,0 +1,177 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://sourceforge.net/projects/networkminer/files/networkminer/
+	VERSION=`curl -s $WEB | grep /latest | cut -d "/" -f8 | cut -d "-" -f 2`
+	VERSION2=`echo $VERSION | tr '.' '-'`
+	PRGNAM=NetworkMiner
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/{opt,usr/share/applications/wifislax/Testing,usr/share/pixmaps}
+}
+
+# Comprobar dependencias
+F_dependencias(){
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+echo ""
+
+DEPENDENCIAS="wine"
+CONTINUAR=0
+
+echo "$CYAN"Dependencias de este paquete:""
+sleep 3
+
+for X in $DEPENDENCIAS; do
+	
+	if [ -f /usr/bin/$X ]; then
+		echo ""$AMARILLO"$X :$VERDE Instalada"$CIERRE""
+	else
+		echo ""$AMARILLO"$X :$ROJO  No instalada"$CIERRE""
+		CONTINUAR=1
+	fi
+done
+
+if [ $CONTINUAR -eq 1 ]; then
+	echo ""
+	echo ""$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE""
+	sleep 3
+	exit 1
+else
+	echo ""
+	echo ""$VERDE"Bien ..podemos continuar"$CIERRE""
+	echo ""
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f ${PRGNAM}_${VERSION2}.zip ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB/$PRGNAM-$VERSION/${PRGNAM}_${VERSION2}.zip
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+unzip ${PRGNAM}_${VERSION2}.zip -d $PKG/opt/
+mv -f $PKG/opt/${PRGNAM}_${VERSION2} $PKG/opt/$PRGNAM
+
+# Creamos icono
+echo "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
+GNmMn5QH/gPJROxyC87rGwAAAABJRU5ErkJggg==" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+# Generamos desktop file
+cat > $PKG/usr/share/applications/wifislax/Testing/$PRGNAM.desktop << "EOF"
+[Desktop Entry]
+Categories=testing
+Exec=sh -c "wine /opt/NetworkMiner/NetworkMiner.exe;${SHELL:-bash}"
+GenericName[es]=Analizador de capturas
+GenericName=Capture file analyzer
+Icon=NetworkMiner
+MimeType=
+Name=Networkminer
+Path=/opt/Networkminer
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+EOF
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

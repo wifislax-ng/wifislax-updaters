@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://ardownload.adobe.com/pub/adobe/reader/unix/9.x/9.5.5/enu/AdbeRdr9.5.5-1_i486linux_enu.tar.bz2
+	PRGNAM=adobe-reader
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	VERSION=9.5.5
+}
+
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f AdbeRdr${VERSION}-1_${ARCH}linux_enu.tar.bz2 ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB
+fi
+}
+
+# Descomprimimos el fichero descargado
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+tar xvf AdbeRdr${VERSION}-1_${ARCH}linux_enu.tar.bz2
+mkdir -p $PKG/opt $PKG/usr/bin
+VERSION=${VERSION}_enu
+cd $PKG/opt
+tar xf $TMP/AdobeReader/COMMON.TAR
+tar xf $TMP/AdobeReader/ILINXR.TAR
+
+cd $PKG/opt/Adobe
+
+# Eliminamos cosas innecesarias
+rm -rf Reader9/Reader/HowTo
+rm -r Reader9/Browser/{HowTo,install_browser_plugin}
+
+# Creamos enlaces del binario y las librerias
+( cd $PKG/usr/bin ; ln -sf /opt/Adobe/Reader9/bin/acroread . )
+
+mkdir -p $PKG/usr/lib/mozilla/plugins
+cd $PKG/usr/lib/mozilla/plugins
+  ln -sf ../../../../opt/Adobe/Reader9/Browser/intellinux/nppdf.so .
+cd -
+
+mkdir -p $PKG/usr/share/mime/packages
+cd $PKG/usr/share/mime/packages
+  ln -sf ../../../../opt/Adobe/Reader9/Resource/Support/AdobeReader.xml .
+cd -
+
+# Fix para el fichero desktop
+mkdir -p $PKG/usr/share/{applications,pixmaps}
+cd $PKG/usr/share/applications
+  ln -sf ../../../opt/Adobe/Reader9/Resource/Support/AdobeReader.desktop .
+cd -
+
+# Linkeamos el icono a /usr/share/pixmaps
+cd $PKG/usr/share/pixmaps
+  ln -sf ../../../opt/Adobe/Reader9/Resource/Icons/48x48/AdobeReader9.png .
+cd -
+
+# Fix bug in bash completion script by redefining "_filedir" function
+# to "_acroread_filedir" as suggested on the adobe forum:
+# http://forums.adobe.com/thread/745833
+sed -i 's/_filedir/_acroread_filedir/g' $PKG/opt/Adobe/Reader9/Resource/Shell/acroread_tab
+
+# Link bash_completion script to /etc/bash_completion.d
+mkdir -p $PKG/etc/bash_completion.d
+cd $PKG/etc/bash_completion.d
+  ln -sf ../../opt/Adobe/Reader9/Resource/Shell/acroread_tab acroread
+cd -
+
+# Fix ownership and permissions
+cd $PKG
+find . -type d -exec chmod 755 {} \;
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

@@ -1,0 +1,133 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+CATEGORIA=Grabacion
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=https://download.gnome.org/sources/brasero/
+	RAMA=`curl -s $WEB | grep DIR | tail -1 | cut -d "=" -f5 | cut -d '"' -f2 | cut -d "/" -f1`
+	VERSION=`curl -s ${WEB}${RAMA}/ | grep LATEST | cut -d '"' -f8 | sed "s/LATEST-IS-//g" | sed "s/ //g"`
+	PRGNAM=brasero
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DESCARGA=https://download.gnome.org/sources/brasero/$RAMA/$PRGNAM-$VERSION.tar.xz
+}
+
+# Comprobar dependencias
+F_dependencias(){
+if [ -f /usr/lib/libgstbadbase-1.0.la ]; then
+EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+else
+EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+fi
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+sleep 3
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+echo "$AMARILLO"gst1-plugins-bad"$CIERRE: $EXIST"
+if [ ! -f /usr/lib/libgstbadbase-1.0.la ]; then
+echo ""
+echo "$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE"
+echo ""
+sleep 3
+exit 1
+else
+echo ""
+echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+echo ""
+sleep 3
+fi
+}
+
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.xz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+ 
+# Configuramos paquete
+echo ""
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 3
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --enable-static=no \
+  --enable-shared=yes \
+  --enable-gtk-doc=no \
+  --disable-schemas-compile \
+  --enable-nautilus=no \
+  --enable-libburnia=yes
+
+make || exit 1
+make install DESTDIR=$PKG
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+# Comprobar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

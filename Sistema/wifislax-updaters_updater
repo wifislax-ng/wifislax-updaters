@@ -1,0 +1,182 @@
+#!/bin/sh
+
+# Script for www.seguridadwireless.net by vk496
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+   . /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Si el ftp no responde al ping , salimos del script
+F_ping() {
+if [ ! "$(ping -w 5 -c1 downloadwireless.net 2>/dev/null)" ]; then
+echo "$ROJO"
+echo "Parece que el ftp no responde,intentalo mas tarde."
+echo "$CIERRE"
+sleep 3
+exit 0
+fi
+}
+
+# Definicion de variables
+F_variables() {
+   WEB="http://www.downloadwireless.net"
+   ELDIRECTORIO="wifislax-updaters"
+   PRGNAM=wifislax-updaters
+   echo -ne "\033]2;${PRGNAM}_updater\007"
+   DIRECTORIOHTML="?dir=$ELDIRECTORIO"
+   VERSION=`echo $(date +"%Y%m%d")`
+   CREAR_MODULO=NO
+}
+
+#Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG $PKG/usr/share/applications/wifislax/Actualizadores
+}
+
+# Directorios de trabajo y actualizar
+F_actualizar(){
+
+#Creamos la carpeta donde van a estar los scripts
+if [ ! -d $PKG/opt/$ELDIRECTORIO ]; then
+   mkdir -p $PKG/opt/$ELDIRECTORIO
+fi
+
+echo
+#Contador de todos los scripts
+contador=0
+
+carpetas="$(curl -s $WEB/$DIRECTORIOHTML | grep "item dir" | sed 's/<[^>]\+>//g')"
+#Obtenemos la carpeta del server, y la usamos como carpeta local
+for carpeta in $carpetas; do
+   archivos="$(curl -s $WEB/$DIRECTORIOHTML/$carpeta | grep "item file" | sed 's/<[^>]\+>//g' | sed 's/^[[:space:]]*//g' | grep -vE *~$)"
+   #Obtenemos el archivo del server, y lo usamos como archivo local
+   for archivo in $archivos; do
+      let contador=$contador+1
+      echo -n "${CYAN}Buscando $archivo... $CIERRE"
+         
+         #Comprobamos si ya existe ese script
+         if [ -f /opt/$ELDIRECTORIO/$carpeta/$archivo ]; then
+            #Si se trata de funciones.sh, usamos variables distintas al habitual, si no,
+            if [ ${archivo} == "funciones_updater" ]; then
+               LOCAL_VERSION=$(cat /opt/$ELDIRECTORIO/$carpeta/$archivo | grep -m1 "FUNCIONES_VERSION=" | cut -d "=" -f2)
+               WEB_VERSION=$(curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo | iconv -f windows-1251 | head -5 | grep "FUNCIONES_VERSION=" | head -1 |cut -d "=" -f2)
+            else
+               LOCAL_VERSION=$(cat /opt/$ELDIRECTORIO/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
+               WEB_VERSION=$(curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo | iconv -f windows-1251 | head -5 | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
+            fi
+         echo -n "${VERDE}EXISTE$CIERRE"
+         #Ademas de mirar si existe, comprobamos si existe version mas nueva a la que tenemos nosotros
+         if [[ $LOCAL_VERSION -lt $WEB_VERSION ]]; then
+            CREAR_MODULO=SI
+            if [ ! -d $PKG/opt/$ELDIRECTORIO/$carpeta ]; then
+               mkdir -p $PKG/opt/$ELDIRECTORIO/$carpeta/
+            fi
+            curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo -o $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
+            echo " + ${AMARILLO}ACTUALIZADO $ROSA(${WEB_VERSION:6}/${WEB_VERSION:4:2}/${WEB_VERSION:0:4})$CIERRE"
+            chmod +x $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
+         else
+            echo -e " $BLANCO(${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4})$CIERRE"
+         fi
+      #Si no existe ese escript en nuestro sistema, procedemos a descargarlo
+      else
+         CREAR_MODULO=SI
+         if [ ! -d $PKG/opt/$ELDIRECTORIO/$carpeta ]; then
+            mkdir -p $PKG/opt/$ELDIRECTORIO/$carpeta/
+         fi
+         curl -s $WEB/$ELDIRECTORIO/$carpeta/$archivo -o $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
+         LOCAL_VERSION=$(cat $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
+         chmod +x $PKG/opt/$ELDIRECTORIO/$carpeta/$archivo
+         echo "${ROJO}DESCARGADO$CIERRE $BLANCO($ROSA${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4}$BLANCO)$CIERRE"
+         PRGNAM_CORTO=${archivo%_updater}
+         mkdir -p $PKG/usr/share/applications/wifislax/Actualizadores/$carpeta
+#Creamos el desktop del menu
+echo "[Desktop Entry]
+Categories=$carpeta;
+Exec=sh -c \"/opt/wifislax-updaters/$carpeta/$archivo;${SHELL:-bash}\"
+Icon=updaters
+MimeType=
+Name=$PRGNAM_CORTO
+Path=/opt/wifislax-updaters/$carpeta/
+Terminal=true
+TerminalOptions=
+Type=Application">$PKG/usr/share/applications/wifislax/Actualizadores/$carpeta/$PRGNAM_CORTO.desktop
+
+      fi
+
+   done
+
+done
+
+sleep 2
+echo
+}
+
+# Crear estructura
+F_estructura(){
+if [ $CREAR_MODULO = SI ]; then
+   
+   echo -n ${CYAN}Creando logs e instalando....$CIERRE
+   echo -ne "${CYAN} $ROJO$contador${CYAN} scripts$CIERRE"
+   sleep 3
+
+   mkdir -p $PKG/usr/share/applications/wifislax/Actualizadores $PKG/opt/wifislax-updaters
+   cp -Ru /usr/share/applications/wifislax/Actualizadores/ $PKG/usr/share/applications/wifislax/
+   cp -Ru /opt/wifislax-updaters/ $PKG/opt/
+   
+if [ -d $PKG/usr/share/applications/wifislax/Actualizadores/Funciones ]; then
+   rm -rf $PKG/usr/share/applications/wifislax/Actualizadores/Funciones
+fi
+fi
+}
+
+F_final(){
+if [ $CREAR_MODULO = SI ]; then
+f_tareasFinales
+else
+echo $VERDE
+echo No hay actualizaciones para los updaters
+sleep 3
+echo
+echo Bye Bye
+echo $CIERRE
+fi
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Si el ftp no responde al ping , salimos del script
+F_ping
+#Creamos directorios extra
+F_extradirs
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+# Directorios de trabajo y actualizar
+F_actualizar
+# Crear estructura
+F_estructura
+#Creamos xzm , instalamos y salimos
+F_final
