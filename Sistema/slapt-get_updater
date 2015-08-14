@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150614
+SCRIPT_VERSION=20150803
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,9 +18,9 @@ f_variables(){
 F_variables() {
 	PRGNAM=slapt-get
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://software.jaos.org/source/slapt-get/
-	VERSION=`curl -s $WEB | grep .tar.gz | tail -1 | cut -d - -f3 | sed 's/.tar.gz">slapt//g'`
-	DOWNLOAD=${WEB}$PRGNAM-$VERSION.tar.gz
+	WEB=http://software.jaos.org/
+	VERSION=`curl -s $WEB | grep slapt-get | grep source | grep .tar.gz | cut -d- -f4 | cut -d '>' -f2 | cut -d ' ' -f1 |sed "s/ //g"`
+	DOWNLOAD=${WEB}source/slapt-get/$PRGNAM-$VERSION.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet
