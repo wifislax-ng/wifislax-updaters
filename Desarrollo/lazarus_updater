@@ -1,0 +1,165 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150804
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=lazarus
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=ftp://freepascal.dfmk.hu/pub/lazarus/releases/Lazarus%20Zip%20_%20GZip/
+	VERSION=`curl -s $WEB | grep -v RC | grep Lazarus | tail -1 |rev|cut -d ' ' -f1|rev`
+	DOWNLOAD=http://sourceforge.net/projects/lazarus/files/Lazarus%20Zip%20_%20GZip/Lazarus%20$VERSION/$PRGNAM-$VERSION-0.tar.gz
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPEND=fpc
+RUTADEPEND=/usr/bin
+UPDATER=${DEPEND}_updater
+CATEGORIAUPDATER=Desarrollo
+if [ -f $RUTADEPEND/$DEPEND ] ;then
+DEPEND_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+DEPEND_EXIST2=SI
+else
+DEPEND_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+DEPEND_EXIST2=NO
+fi
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+echo
+sleep 3
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+echo "$AMARILLO"$DEPEND"$CIERRE: $DEPEND_EXIST"
+if [ $DEPEND_EXIST2 = NO ]; then
+echo "$AMARILLO"
+echo "Resolviendo dependencia $DEPEND ..."
+sleep 3
+if [ ! -f /opt/wifislax-updaters/$CATEGORIAUPDATER/${DEPEND}_updater ]; then
+echo $ROJO
+echo "No tienes el updater $DEPEND..."
+sleep 1
+echo "No se puede continuar..."
+sleep 1
+echo "El script se cierra aqui."
+sleep 1
+echo $CIERRE
+exit 0
+fi
+cd /opt/wifislax-updaters/$CATEGORIAUPDATER/ && xterm /opt/wifislax-updaters/$CATEGORIAUPDATER/$UPDATER && cd $TMP
+fi
+
+# Verificamos que salio bien graphviz_updater
+if [ ! -f $RUTADEPEND/$DEPEND ] ;then
+echo $ROJO
+echo "Algo salio mal al instalar $DEPEND..."
+sleep 1
+echo "No se puede continuar..."
+sleep 1
+echo "El script se cierra aqui."
+sleep 1
+echo $CIERRE
+exit 0
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION-0.tar.gz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+
+rm -rf $PRGNAM
+tar xvf $TMP/$PRGNAM-$VERSION-0.tar.gz
+cd $PRGNAM
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+  
+LCL=${LCL:-gtk2}
+if [ "$LCL" = "qt" ]; then
+  OPT="-dUSE_QT_45"
+fi
+
+# Compilation doesn't need ./configure
+make clean
+make -j1 all \
+  PREFIX=/usr \
+  LCL_PLATFORM=${LCL} \
+  OPT=${OPT}
+make install \
+  INSTALL_PREFIX=$PKG/usr \
+  INSTALL_MAN_DIR=$PKG/usr/man
+
+# fix links at /usr/bin
+( cd $PKG/usr/bin
+  ln -sf ../share/lazarus/lazarus
+  ln -sf ../share/lazarus/lazbuild
+  ln -sf ../share/lazarus/startlazarus
+)
+
+# Install desktop file, icon, and mime entry
+mkdir -p $PKG/usr/share/{applications,pixmaps,mime/packages}
+cat install/lazarus.desktop > $PKG/usr/share/applications/lazarus.desktop
+cat images/ide_icon48x48.png > $PKG/usr/share/pixmaps/lazarus.png
+cat install/lazarus-mime.xml > $PKG/usr/share/mime/packages/lazarus-mime.xml
+}
+
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

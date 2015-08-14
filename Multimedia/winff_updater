@@ -1,0 +1,159 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150804
+CATEGORIA="Editores de video"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=winff
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://projects.archlinux.org/svntogit/community.git/tree/trunk/PKGBUILD?h=packages/winff
+	VERSION=`curl -s $WEB | grep pkgver | head -1|rev|cut -d ' ' -f1| cut -d '<' -f2|rev|cut -d '>' -f2`
+	DOWNLOAD=git://github.com/WinFF/winff
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPEND=lazarus
+RUTADEPEND=/usr/bin
+UPDATER=${DEPEND}_updater
+CATEGORIAUPDATER=Desarrollo
+if [ -f $RUTADEPEND/$DEPEND ] ;then
+DEPEND_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+DEPEND_EXIST2=SI
+else
+DEPEND_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+DEPEND_EXIST2=NO
+fi
+echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+echo
+sleep 3
+echo "$CYAN"Dependencias de este paquete:""
+echo ""
+echo "$AMARILLO"$DEPEND"$CIERRE: $DEPEND_EXIST"
+if [ $DEPEND_EXIST2 = NO ]; then
+echo "$AMARILLO"
+echo "Resolviendo dependencia $DEPEND ..."
+sleep 3
+if [ ! -f /opt/wifislax-updaters/$CATEGORIAUPDATER/$UPDATER ]; then
+echo $ROJO
+echo "No tienes el updater $DEPEND..."
+sleep 1
+echo "No se puede continuar..."
+sleep 1
+echo "El script se cierra aqui."
+sleep 1
+echo $CIERRE
+exit 0
+fi
+cd /opt/wifislax-updaters/$CATEGORIAUPDATER/ && xterm /opt/wifislax-updaters/$CATEGORIAUPDATER/$UPDATER && cd $TMP
+fi
+
+# Verificamos que salio bien graphviz_updater
+if [ ! -f $RUTADEPEND/$DEPEND ] ;then
+echo $ROJO
+echo "Algo salio mal al instalar $DEPEND..."
+sleep 1
+echo "No se puede continuar..."
+sleep 1
+echo "El script se cierra aqui."
+sleep 1
+echo $CIERRE
+exit 0
+fi
+
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -d $TMP/$PRGNAM ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	git clone $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Compilando..."$CIERRE"
+sleep 1
+cd $PRGNAM/$PRGNAM
+lazbuild --lazarusdir=/usr/share/lazarus winff.lpr --ws=gtk2
+
+install -Dm755 $PRGNAM $PKG/usr/bin/$PRGNAM
+  install -d $PKG/usr/share/winff/
+  find . -name "*.xml" \
+    -exec install -Dm644 {} $PKG/usr/share/winff/ \; &> /dev/null
+  install -Dm644 'winff-icons/48x48/winff.png' \
+    $PKG/usr/share/pixmaps/winff.png
+  for size in 16x16 24x24 32x32 48x48; do
+    install -Dm644 "winff-icons/$size/winff.png" \
+      $PKG/usr/share/icons/hicolor/$size/apps/winff.png
+  done
+  install -dm755 $PKG/usr/share/winff/languages/
+  find . -name "*.po" \
+    -exec install -Dm644 {} $PKG/usr/share/winff/languages/ \; &> /dev/null
+  rm -f 'presets.xml'
+
+# Entrada a menu
+mkdir -p $PKG/usr/share/applications
+echo '[Desktop Entry]
+Name=WinFF
+GenericName[es]=Conversor de formatos de video
+GenericName=Video format converter
+Comment=Multimedia File Converter
+Exec=winff
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Icon=winff
+Categories=AudioVideo;AudioVideoEditing;' > $PKG/usr/share/applications/$PRGNAM.desktop
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

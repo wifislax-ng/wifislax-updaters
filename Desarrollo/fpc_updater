@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150804
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,51 +20,108 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://sourceforge.net/projects/freepascal/files/Linux/
 	VERSION=$(curl -s $WEB/ | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
-	ARCHIVO=$(curl -s $WEB/$VERSION/ | grep "class=\"file " | awk '{print $2}' | cut -d "\"" -f 2 | awk '{print $1}' | grep "i386")
-}
-
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/{etc/fppkg,usr/share/applications,usr/share/pixmaps}
+	DOWNLOAD=$(curl -s $WEB/$VERSION/ | grep "class=\"file " | awk '{print $2}' | cut -d "\"" -f 2 | awk '{print $1}' | grep "i386")
+	DOWNLOAD2=http://downloads.sourceforge.net/freepascal/${PRGNAM}build-$VERSION.tar.gz
+	DOWNLOAD3=http://downloads.sourceforge.net/project/freepascal/Source/$VERSION/$PRGNAM-$VERSION.source.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f $ARCHIVO ]; then
+	if [ ! -f $DOWNLOAD ]; then
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 2
-	aria2c -x 3 $WEB/$VERSION/$ARCHIVO
+	aria2c -x 3 $WEB/$VERSION/$DOWNLOAD
+	fi
+	if [ ! -f ${PRGNAM}build-$VERSION.tar.gz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de ${PRGNAM}build-$VERSION"$CIERRE"
+	sleep 2
+	aria2c -x 3 $DOWNLOAD2
+	fi
+	if [ ! -f $PRGNAM-$VERSION.source.tar.gz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION.source"$CIERRE"
+	sleep 2
+	aria2c -x 3 $DOWNLOAD3
 	fi
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-#Modificamos la variable $PKG para usarla en sed
-PKG_SED=$(echo $PKG | sed 's/\//\\\//g')
+
 echo 
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
-tar xvf $ARCHIVO
-cd $TMP/${ARCHIVO%.tar}
-echo -e "$PKG\nY\nY\nY\nn\nn" | ./install.sh
-cd $TMP
-rm -Rf $PKG/man
-rm -Rf $PKG/share
+rm -rf $PRGNAM-$VERSION ${PRGNAM}build-$VERSION
+mkdir $PRGNAM-$VERSION ${PRGNAM}build-$VERSION
+cd $TMP/$PRGNAM-$VERSION
+tar xvf $TMP/$PRGNAM-$VERSION.$ARCH-linux.tar --strip-components=1
+cd $TMP/${PRGNAM}build-$VERSION
+tar xvf $TMP/${PRGNAM}build-$VERSION.tar.gz
 
-mv /etc/fpc.cfg $PKG/etc/fpc.cfg 
-mv /etc/fppkg.cfg $PKG/etc/fppkg.cfg 
-mv /etc/fppkg/default $PKG/etc/fppkg/default
+# Unpack binary files.
+(
+  mkdir -p $TMP/$PRGNAM-$VERSION/binary
+  cd $TMP/$PRGNAM-$VERSION/binary
+  tar xvf $TMP/$PRGNAM-$VERSION/binary.$ARCH-linux.tar
 
-for files in "$(find $PKG -type f -name *.cfg)"; do
-	sed -i "s/$PKG_SED//g" $files
-done
+  cd  $TMP/$PRGNAM-$VERSION
+  tar xvf $TMP/$PRGNAM-$VERSION/binary/base.$ARCH-linux.tar.gz
+  tar xvf $TMP/$PRGNAM-$VERSION/binary/utils.$ARCH-linux.tar.gz
 
-sed -i "s/$PKG_SED//g" $PKG/etc/fppkg/default  
+  cd $TMP/$PRGNAM-$VERSION/bin
+  if [ "$ARCH" = "x86_64" ]; then
+    ln -s ../lib/fpc/$VERSION/ppcx64
+  else
+    ln -s ../lib/fpc/$VERSION/ppc386
+  fi
+)
 
 
-if [ ! -d $HOME/FPC ]; then
-mkdir $HOME/FPC
+export PATH="$TMP/$PRGNAM-$VERSION/bin":$PATH
+echo $PATH
+
+cd $TMP/${PRGNAM}build-$VERSION/${PRGNAM}build-$VERSION
+fpcmake -Tall
+make build NOGDB=1
+make -j1 NOGDB=1 PREFIX=$PKG/usr install
+
+# Fix library dir
+[ "$LIBDIRSUFFIX" = "64" ] && mv $PKG/usr/lib $PKG/usr/lib${LIBDIRSUFFIX}
+
+cd $PKG/usr/bin
+if [ "$ARCH" = "x86_64" ]; then
+  ln -s ../lib$LIBDIRSUFFIX/fpc/$VERSION/ppcx64
+else
+  ln -s ../lib$LIBDIRSUFFIX/fpc/$VERSION/ppc386
 fi
+
+# Create compiler config file.
+mkdir -p $PKG/etc $PKG/usr/lib$LIBDIRSUFFIX/fpc/$VERSION/ide/text
+$PKG/usr/lib$LIBDIRSUFFIX/fpc/$VERSION/samplecfg \
+  $PKG/usr/lib$LIBDIRSUFFIX/fpc/$VERSION \
+  $PKG/etc
+  
+# Clean up the configs by removing our package directory.
+sed -i -e "s:$PKG::g" $PKG/etc/fpc.cfg
+sed -i -e "s:$PKG::g" $PKG/usr/lib$LIBDIRSUFFIX/fpc/$VERSION/ide/text/fp.cfg
+
+# Creamos las sources
+mkdir -p $PKG/usr/src
+cd $PKG/usr/src
+tar xvf $TMP/$PRGNAM-$VERSION.source.tar.gz
+ln -sf $PRGNAM-$VERSION $VERSION
+
+# fix permissions for program docs and demos.
+cd $PKG
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/share/applications $PKG/usr/share/pixmaps 
 
 #Desktop
 echo "[Desktop Entry]
@@ -179,14 +236,10 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-#Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Compronar dependencias
-#F_dependencias
 #Asignamos o detectamos arquitectura
 f_arquitectura i386
 #Comprobamos version instalada del paquete
