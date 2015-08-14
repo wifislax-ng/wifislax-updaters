@@ -2,7 +2,7 @@
 
 # Script for www.seguridadwireless.net by vk496
 
-SCRIPT_VERSION=20150515
+SCRIPT_VERSION=20150815
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
