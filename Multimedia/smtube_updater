@@ -1,0 +1,94 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150518
+CATEGORIA="Reproductores streaming"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://smtube.sourceforge.net/
+	VERSION=`curl -s $WEB | grep bz2 |head -1| cut -d- -f3|cut -d t -f1| sed "s/.$//g"`
+	RAMA=`curl -s $WEB | grep bz2 |head -1| cut -d / -f10`
+	PRGNAM=smtube
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DOWNLOAD=http://sourceforge.net/projects/smtube/files/SMTube/$RAMA/$PRGNAM-$VERSION.tar.bz2
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.bz2
+cd $PRGNAM-$VERSION
+# Configuramos paquete
+echo ""
+echo "$VERDE"Configurando y compilano..."$CIERRE"
+sleep 3
+chown -R root:root .
+
+sed -i "/^PREFIX/s/=.*$/=\/usr/;
+        /^DOC_PATH/s/\/.*$/\/doc\/$PRGNAM-$VERSION/;
+        s/share\/man/man/g;
+        s/^QMAKE_OPTS=/QMAKE_OPTS+=/" Makefile
+
+QMAKE_OPTS="QMAKE_CXXFLAGS=\"$SLKCFLAGS\"" \
+make
+make install DESTDIR=$PKG
+  
+# Corregimos el nombre en el fichero desktop
+sed -i "s/Name=SMPlayer YouTube Browser/Name=SMTube/g" $PKG/usr/share/applications/$PRGNAM.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

@@ -1,0 +1,130 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://sourceforge.net/projects/wxhexeditor/files/wxHexEditor/
+	VERSION_REAL=$(curl -s $WEB | grep -m1 "class=\"folder" | grep -Po 'title="\K.*(?=" )' | sed 's/ /%20/g')
+	PRGNAM=wxHexEditor
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	VERSION=$(echo $VERSION_REAL | cut -d% -f1 | cut -d "v" -f2)
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	echo 
+	if [ -f /var/log/packages/wxPython* ]; then
+	EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+	else
+	EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+	fi
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"wxPython"$CIERRE: $EXIST"
+	if [ ! -f /var/log/packages/wxPython* ]; then
+	echo ""
+	echo "$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE"
+	echo ""
+sleep 3
+	exit 1
+else
+	echo ""
+	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+	echo ""
+sleep 3
+fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-v$VERSION-src.tar.bz2 ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-v$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $WEB/$VERSION_REAL/$PRGNAM-v$VERSION-src.tar.bz2
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM
+tar xvf $PRGNAM-v$VERSION-src.tar.bz2
+cd $PRGNAM
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 3 
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+
+# Forcemos wx-config-2.8
+sed -i 's/wx-config/wx-config-2.8/g' Makefile
+
+make
+make install DESTDIR=$PKG
+find $PKG -type f -name *.desktop -exec sed -i 's/Categories=Utility/Categories=Development/g' {} \;
+mv $PKG/usr/local/* $PKG/usr
+rmdir $PKG/usr/local
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
+
+
+

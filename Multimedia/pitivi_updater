@@ -1,0 +1,170 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150602
+CATEGORIA="Editores de video"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=pitivi
+	ARCH=x86
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://pitivi.ecchi.ca/bundles/releases/
+	FICHERO=`curl -s $WEB | grep $ARCH.tar | head -1 | cut -d '"' -f2`
+	VERSION=`echo $FICHERO | sed 's/pitivi-//g' | cut -d - -f-2`
+	SUBVERSION=`echo $FICHERO | sed 's/pitivi-//g' | cut -d - -f-1`
+	DOWNLOAD=`echo "$WEB$FICHERO"`
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $FICHERO ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+mkdir -p $PKG/opt/$PRGNAM/
+mkdir -p $PKG/usr/bin/
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+tar xpvf $FICHERO
+rm -rf *.md5sum
+mv -f ${PRGNAM}-$SUBVERSION-$ARCH $PKG/opt/$PRGNAM/${PRGNAM}
+ln -sf ../../opt/${PRGNAM}/${PRGNAM} $PKG/usr/bin/${PRGNAM}
+rm -rf $FICHERO
+}
+
+F_desktop(){
+# Icono
+mkdir -p $PKG/usr/share/pixmaps/
+echo "
+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
+" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+# Fichero desktop
+mkdir -p $PKG/usr/share/applications
+echo "[Desktop Entry]
+Type=Application
+Name=$PRGNAM
+Icon=$PRGNAM
+Exec=$PRGNAM
+Terminal=false
+Categories=AudioVideo;" > $PKG/usr/share/applications/$PRGNAM.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos la entrada al menu
+F_desktop
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

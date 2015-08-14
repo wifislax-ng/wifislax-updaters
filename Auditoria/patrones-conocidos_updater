@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	LOCAL="$(cat "$HOME/swireless/patrones_conocidos.txt" 2>/dev/null|grep "^# VERSION [0-9]*$"|awk '{print $3}')"
+	VERSION="$(timeout -s SIGTERM 3 curl -s "http://www.downloadwireless.net/scripts-live/patrones_conocidos.txt"|grep "^# VERSION [0-9]*$"|awk '{print $3}')"
+	PRGNAM=patrones-conocidos
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DESCARGA=http://www.downloadwireless.net/scripts-live/patrones_conocidos.txt
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	if [ ! "$(ping downloadwireless.net -c1 2>/dev/null)" ]; then
+	echo ""
+	echo "$ROJO"Parece que el FTP no responde ..."$CIERRE"
+	sleep 1
+	echo ""
+	echo "$AMARILLO"Prueba mas tarde."$CIERRE"
+	sleep 1
+	echo ""
+	echo "$VERDE"Bye Bye"$CIERRE"
+	echo ""
+	sleep 3
+	exit 0
+	fi
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f patrones_conocidos.txt ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA
+	mkdir -p $PKG/$HOME/swireless
+	mv -f patrones_conocidos.txt $PKG/$HOME/swireless/patrones_conocidos.txt
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+#F_compilar(){
+
+#}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+#F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+#F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

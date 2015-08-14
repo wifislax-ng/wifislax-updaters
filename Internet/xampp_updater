@@ -1,0 +1,263 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=xampp
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://sourceforge.net/projects/xampp/files/XAMPP%20Linux/
+	VERSION=$(curl -s $WEB | grep class=\"folder | grep -Po 'title="\K.*(?=" )' | sort | tail -1)
+	ARCHIVO=$(curl -s $WEB$VERSION/ | grep class=\"file | grep -Po 'title="\K.*(?=" )' | head -2 | grep -v x64)
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/{opt,usr/bin} $PKG/usr/share/{pixmaps,applications/wifislax/Testing}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $ARCHIVO ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 ${WEB}${VERSION}/${ARCHIVO}
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+mkdir -p $PKG/opt $PKG/usr/share/applications/
+chmod +x $ARCHIVO
+# Creamos xzm , instalamos y salimos
+echo ""
+sleep 3
+rm -rf /tmp/bitrock*.log &
+$TMP/$ARCHIVO --debuglevel 4 --mode unattended
+echo $AMARILLO
+echo "Detenemos el servicio xampp y movemos ficheros ..."
+/opt/lampp/lampp stop
+echo $AMARILLO
+echo "Moviendo /opt/lampp -->>  $PKG/opt/lampp..."
+mv -f /opt/lampp $PKG/opt/lampp
+
+# Generamos pequeño script de inicio para xampp
+echo "#!/bin/sh
+/opt/lampp/lampp start && \
+firefox localhost" > $PKG/usr/bin/xampp
+
+# Permiso de ejecucion para el script
+chmod 755 $PKG/usr/bin/xampp
+
+# Entrada a menu para xampp
+echo "[Desktop Entry]
+Categories=servidores;
+Exec=xampp
+Icon=xampp
+MimeType=
+Name=Xampp server
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application" > $PKG/usr/share/applications/wifislax/Testing/$PRGNAM.desktop
+
+# Entrada a menu para xampp_control_pannel
+echo "[Desktop Entry]
+Categories=servidores;
+Exec=/opt/lampp/share/xampp-control-panel/xampp-control-panel
+Icon=xampp-stop
+MimeType=
+Name[es]=Xampp panel de control
+Name=xampp_control_pannel
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application" > $PKG/usr/share/applications/wifislax/Testing/xampp_control_pannel.desktop
+
+# Icono del panel control
+echo "
+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
+" | base64 -d > $PKG/usr/share/pixmaps/xampp-stop.png
+
+# Icono desktop xampp
+echo "
+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
+RU5ErkJggg==
+" | base64 -d > $PKG/usr/share/pixmaps/xampp.png
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

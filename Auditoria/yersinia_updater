@@ -1,0 +1,233 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20141101
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://www.yersinia.net/download.htm
+	VERSION=`curl -s $WEB | grep Current | head -1 | cut -d " " -f7 | cut -d "<" -f-1 | sed "s/ //g"`
+	PRGNAM=yersinia
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DOWNLOAD=http://www.yersinia.net/download/$PRGNAM-$VERSION.tar.gz
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes}
+}
+
+# Definimos arquitectura del sitema
+F_arquitectura(){
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i486 ;;
+    arm*) export ARCH=arm ;;
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+case "$ARCH" in
+    i486)
+	SLKCFLAGS="-O2 -march=i486 -mtune=i686"; CHOST="i486"
+	SLKLDFLAGS=""; LIBDIRSUFFIX=""
+        ;;
+    i686)
+	SLKCFLAGS="-O2 -march=i686 -pipe -fomit-frame-pointer"; CHOST="i486"
+	SLKLDFLAGS=""; LIBDIRSUFFIX=""
+        ;;
+    x86_64)
+	SLKCFLAGS="-O2 -fPIC -pipe -fomit-frame-pointer"; CHOST="x86_64"
+	SLKLDFLAGS="-L/lib64 -L/usr/lib64"; LIBDIRSUFFIX="64"
+        ;;
+    *)
+	SLKCFLAGS="-O2"; CHOST=$ARCH
+	SLKLDFLAGS=""; LIBDIRSUFFIX=""
+	;;
+esac
+
+set -eu
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DOWNLOAD
+fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.gz
+echo ""
+echo "$VERDE"Configurando y compilando..."$CIERRE"
+sleep 3
+chown -R root:root .
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# Configure
+LDFLAGS="$SLKLDFLAGS" \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --with-ncurses \
+  --with-pcap-includes=/usr/include/pcap \
+  --host=$CHOST-slackware-linux \
+  --build=$CHOST-slackware-linux
+  
+make clean || exit 1
+make || exit 1
+make DESTDIR=$PKG install-strip || exit 1
+
+# Generamos una entrada desktop
+echo "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
+AAAK6wAACusBgosNWgAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAQ/UlE
+QVRogcWa2a9k13Wfvz2cqU5Nt6rufJvsJilaJC1TtBO7aUB+MB0DSQQbMBAg8Jue8qR/JkqAxM4k
+R7IjJ4At2BIMJY6iKJBpWiLFbjbZffv2neehqu6tOnWmPeThykwcUBT7WkbW6xn2+tbe67fXWfsI
+fkp2uHPknzx5zHtbj8gmBVqUJEmXZlsx1wnppS0a3Zhm2qGTLtNfekb8NMa98Uumk5Hf3Nzk4fou
+T3Z2WOj1WFpcZfH2s3RTRYNLiuqCqs4oiiHFNGdW5ZRlTT6tmcxqsjJE6TmisEWvN0+axnTnmnQ7
+AxqtNsvzvZ/o31MB7O8f+vc/+ID19XXyqmRlZYXlpdssL8+j9DHCO2qrUX6KKMdEQY5wFuHHIAUO
+jSbCiwAjFVYP8LbBLFNkRUlpJkynhvHYkReG8eU5qwsDfvu3/+mP9VN/nMMXl1d+f2ud9z94xP7B
+CV//xjdZXbvFL7z+OZrNNs45pJ+BPUeJPTQZ2gVgZyiVUxcZgStQbgpIMB4rJU5GOKGp5RlKpzTD
+DkkMVkao5ducnUre+v67vPfDbYZLJx8b1I8EePMv/8r/1Tvv8rv/7qusri1y686LvPTZuyilCJQi
+z2YMT0/wxpJ7TSKHpMEVjeiYyFdIW1FUQ3zhQY2QpQMRoUSNk5ZaBgS6gQjnQIRI1cT5iL1tw5t/
+8T0ePhpjCdEqQkr59AB/9Cff4Gdefo2kGbI7mvFg9wFlWTIrciSCdrtLHIQ04pRIQa95zq2liiDO
+aEVD/OySSF6hhaWalcSVRYYJwswwONApjUZJJXKmpWB8KdjYmbB1kDIa9ZEqIIgijDf0+/2nB3Bo
+hE4pS8ndV57HeENta4q6YDqdUpY13jjyvKQsr7jIDpicHjLXvGClOeJTqx18WeKrIe0yg7xChn2U
+rUicIZJTqplnbBKStMf0LIMyJfAWpXLSZoeilijhmUwmTw8QRDHGKra2D0jTPt25Fu3OHMvdiG6n
+yejslKODAxpxQpyO6QcpDdWiIS4I6y1cfUWzv0o+LmgenjCzAu27+HKCL/cIpCVuLxGvvMLxwXto
+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" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+echo "[Desktop Entry]
+Categories=Redes;
+Exec=yersinia -G
+Icon=yersinia
+MimeType=
+Name[es]=Yersinia
+Name=Yersinia
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application" > $PKG/usr/share/applications/wifislax/Redes/$PRGNAM.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+F_arquitectura
+#Comprobamos version instalada paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

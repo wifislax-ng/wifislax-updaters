@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=jdk
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=$(curl -s http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html | grep -E i586.tar.gz | grep linux | cut -d ":" -f4- | cut -d "\"" -f2)
+	ARCHIVO=${WEB##*/}
+	VERSION=$(echo $ARCHIVO | cut -d "-" -f 2)
+	DVER=1.8.0_$(printf $VERSION | cut -du -f2)
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+echo ".oracle.com	TRUE	/	FALSE	1906724535	oraclelicense	accept-securebackup-cookie">cookie
+	if [ ! -f $ARCHIVO ]; then
+		echo ""
+		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+		sleep 3
+		aria2c -x 3 --load-cookies=cookie $WEB
+	fi
+}
+
+# Empezamos a crear el paquete
+F_crearpaquete(){
+	echo ""
+	echo "$VERDE"Descomprimiendo ..."$CIERRE"
+	sleep 3
+	LIB_ARCH=i386
+	LIBDIRSUFFIX=""
+	SRC_ARCH="i586"
+	cd $TMP
+	tar xvf $PRGNAM-$VERSION-linux-$SRC_ARCH.tar.gz
+	chown -R root.root $PKG
+	find $PKG \
+	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+	-exec chmod 755 {} \; -o \
+	\( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+	-exec chmod 644 {} \;
+
+mkdir -p $PKG/etc/profile.d
+echo "#!/bin/csh
+setenv JAVA_HOME /usr/lib/java
+setenv MANPATH \${MANPATH}:\${JAVA_HOME}/man
+setenv PATH \${PATH}:\${JAVA_HOME}/bin:\${JAVA_HOME}/jre/bin" >$PKG/etc/profile.d/jdk.csh
+
+echo "#!/bin/sh
+export JAVA_HOME=/usr/lib/java
+export MANPATH=\"\${MANPATH}:\${JAVA_HOME}/man\"
+export PATH=\"\${PATH}:\${JAVA_HOME}/bin:\${JAVA_HOME}/jre/bin\"" >$PKG/etc/profile.d/jdk.sh
+	chmod +x $PKG/etc/profile.d/jdk.sh
+	chmod +x $PKG/etc/profile.d/jdk.csh
+
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}
+( cd $PKG/usr/lib${LIBDIRSUFFIX}
+  mv ${TMP}/${PRGNAM}${DVER} java
+  ln -sf java ${PRGNAM}${DVER}
+)
+
+
+	mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/mozilla/plugins
+	cd $PKG/usr/lib${LIBDIRSUFFIX}/mozilla/plugins
+	ln -sf /usr/lib${LIBDIRSUFFIX}/java/jre/lib/${LIB_ARCH}/libnpjp2.so libnpjp2.so
+
+	cd $PKG/usr/lib${LIBDIRSUFFIX}
+	ln -sf ./java/jre/lib/${LIB_ARCH}/server/libjvm.so .
+
+# Entrada a escritorio
+mkdir -p $PKG/usr/share/{applications,icons,mime}
+cp -a $PKG/usr/lib${LIBDIRSUFFIX}/java/jre/lib/desktop/applications/* \
+  $PKG/usr/share/applications/
+cp -a $PKG/usr/lib${LIBDIRSUFFIX}/java/jre/lib/desktop/icons/hicolor \
+  $PKG/usr/share/icons/
+cp -a $PKG/usr/lib${LIBDIRSUFFIX}/java/jre/lib/desktop/mime/packages \
+  $PKG/usr/share/mime/
+
+# Si el sistema tiene jre ya no es necesario ya que este paquete incluye jre
+if [ -f /var/log/packages/jre-[0-9]* ]; then
+echo ""
+echo "Se detecto en el sistema el paquete Jre..."
+echo "Se eliminara antes de instalar jdk..."
+echo ""
+sleep 2
+removepkg /var/log/packages/jre-[0-9]*
+fi
+
+# Ejecutamos l script que define las variables de sistema asi no es necesraio reiniciar
+sh $PKG/etc/profile.d/jdk.sh
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+# Empezamos a crear el paquete
+F_crearpaquete
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

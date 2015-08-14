@@ -1,0 +1,95 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150706
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=apulse
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/i-rinat/apulse/archive
+	BRANCH=master
+	VERSION=20150705.git
+	DOWNLOAD=$WEB/$BRANCH.zip
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$BRANCH.zip ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$BRANCH"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+rm -rf $PRGNAM-$BRANCH
+unzip $PRGNAM-$BRANCH.zip -d $TMP/
+cd $PRGNAM-$BRANCH
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -pv build
+cd build
+cmake \
+  -DAPULSEPATH=/usr/lib${LIBDIRSUFFIX}/apulse \
+  -DAPULSE_SEARCH_PATHS=/usr/lib/apulse:/usr/lib${LIBDIRSUFFIX}/apulse \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DCMAKE_BUILD_TYPE=Release \
+  ..
+make VERBOSE=1
+make install DESTDIR=$PKG
+cd ..
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

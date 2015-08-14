@@ -1,0 +1,138 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150704
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://hashcat.net/oclhashcat/
+	VERSION=`curl -s $WEB | grep .7z | head -1 | cut -d "v" -f2 | cut -d "<" -f 1 | sed "s/ //g"`
+	PRGNAM=hashcat
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DRIVER_ATI=`curl -s $WEB|grep "AMD users"|head -1|sed "s/ //g"|rev|cut -d "t" -f-2|cut -d '<' -f2|rev|sed "s/orla//g"`
+	DRIVER_NVIDIA=`curl -s $WEB | grep "NV users" | head -1 | sed "s/ //g" | cut -d "e" -f 6 | sed "s/orlat//g"`
+	DESCARGA_NVIDIA=http://hashcat.net/files/cudaHashcat-$VERSION.7z
+	DESCARGA_AMD=http://hashcat.net/files/oclHashcat-$VERSION.7z
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/opt/$PRGNAM $PKG/usr/{bin,share/pixmaps,}
+}
+
+# Comprobar dependencias
+F_dependencias(){
+clear
+echo $ROJO
+echo "ATENCION:"$CYAN" esta aplicacion requiere para su correcto funcionamiento
+          o el driver oficial ATI/AMD o el de NVIDIA , 
+          segun sea el fabricante de tu grafica.
+$ROJO      
+          ¡¡¡   NO SOPORTA GRAFICAS INTEL   !!!"
+echo $VERDE
+echo "Driver NVIDIA requerido: NVIDIA-Linux-x86-$DRIVER_NVIDIA"
+echo $ROJO
+echo "Driver AMD/ATI requerido: linux-amd-catalyst-$DRIVER_ATI"
+echo $AMARILLO
+echo "Pulse ENTER tras leer la informacion."
+echo $CIERRE
+read junk
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+if [ ! -f cudaHashcat-$VERSION.7z ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de cudaHashcat-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA_NVIDIA
+fi
+if [ ! -f oclHashcat-$VERSION.7z ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de oclHashcat-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA_AMD
+fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo cudaHashcat-$VERSION ..."$CIERRE"
+sleep 3
+7z -y x cudaHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
+echo ""
+echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
+rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/kernels/4318/*.64.ptx
+rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*.exe
+rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*.cmd
+rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*64.bin
+cp -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/* $PKG/opt/$PRGNAM
+rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION
+
+echo ""
+echo "$VERDE"Descomprimiendo oclHashcat-$VERSION ..."$CIERRE"
+sleep 3
+7z -y x oclHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
+echo ""
+echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
+rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*.exe
+rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*.cmd
+rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*64.bin
+cp -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/* $PKG/opt/$PRGNAM
+rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION
+
+# Relinkeamos los ejecutables para engañar a la gui
+cd $PKG/opt/$PRGNAM
+ln -fs /opt/$PRGNAM/oclHashcat32.bin $PKG/opt/$PRGNAM/oclHashcat-plus32.bin
+ln -fs /opt/$PRGNAM/cudaHashcat32.bin $PKG/opt/$PRGNAM/cudaHashcat-plus32.bin
+
+
+# Añadimos el fichero eula.aceppted
+echo "ZQAAAA==" | base64 -d > $PKG/opt/$PRGNAM/eula.accepted
+
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura 
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

@@ -1,0 +1,203 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=fpc
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://sourceforge.net/projects/freepascal/files/Linux/
+	VERSION=$(curl -s $WEB/ | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
+	ARCHIVO=$(curl -s $WEB/$VERSION/ | grep "class=\"file " | awk '{print $2}' | cut -d "\"" -f 2 | awk '{print $1}' | grep "i386")
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/{etc/fppkg,usr/share/applications,usr/share/pixmaps}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $ARCHIVO ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 2
+	aria2c -x 3 $WEB/$VERSION/$ARCHIVO
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+#Modificamos la variable $PKG para usarla en sed
+PKG_SED=$(echo $PKG | sed 's/\//\\\//g')
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+tar xvf $ARCHIVO
+cd $TMP/${ARCHIVO%.tar}
+echo -e "$PKG\nY\nY\nY\nn\nn" | ./install.sh
+cd $TMP
+rm -Rf $PKG/man
+rm -Rf $PKG/share
+
+mv /etc/fpc.cfg $PKG/etc/fpc.cfg 
+mv /etc/fppkg.cfg $PKG/etc/fppkg.cfg 
+mv /etc/fppkg/default $PKG/etc/fppkg/default
+
+for files in "$(find $PKG -type f -name *.cfg)"; do
+	sed -i "s/$PKG_SED//g" $files
+done
+
+sed -i "s/$PKG_SED//g" $PKG/etc/fppkg/default  
+
+
+if [ ! -d $HOME/FPC ]; then
+mkdir $HOME/FPC
+fi
+
+#Desktop
+echo "[Desktop Entry]
+Name=Free Pascal
+Comment=Free Pascal
+Exec=fp
+Icon=fpc
+Terminal=true
+X-MultipleArgs=false
+Type=Application
+Categories=Development;
+Path=$HOME/FPC
+" > $PKG/usr/share/applications/fpc.desktop
+
+#Icono de FPC
+echo "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
+4ad4QndT1UkAAAAASUVORK5CYII=" | base64 -d >$PKG/usr/share/pixmaps/fpc.png
+sleep 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+#F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura i386
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
+
+

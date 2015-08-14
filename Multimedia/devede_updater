@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150729
+CATEGORIA="Editores de video"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=devede
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://www.rastersoft.com/programas/devede.html
+	VERSION=3.23.0
+	#VERSION=`curl -s $WEB | grep -m3 version |tail -1| cut -d ' ' -f2 | cut -d '<' -f-1 `
+	DOWNLOAD=http://www.rastersoft.com/descargas/$PRGNAM-$VERSION.tar.bz2
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 1
+
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.bz2
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Si es version 3.23 necesita patch
+if [ $VERSION = 3.23.0 ]; then
+echo 
+echo "$VERDE"Aplicando parche ..."$CIERRE"
+sleep 1
+echo "LS0tIGRldmVkZS9pbnN0YWxsLnNoCTIwMTEtMDUtMDUgMTk6Mzg6MDEuMDAwMDAwMDAwIC0wMzAw
+CisrKyBkZXZlZGVfcGF0Y2hlZC9pbnN0YWxsLnNoCTIwMTEtMDctMTEgMjA6MjM6MDkuMDAwMDAw
+MDAwIC0wMzAwCkBAIC02NCw5ICs2NCw2IEBACiAJaW5zdGFsbCAtbSA3NTUgLWQgIiR7REVTVERJ
+Un0kezJ9L3BpeG1hcHMiCiAJaW5zdGFsbCAtbSA2NDQgIiR7c2NyaXB0ZGlyfS9kZXZlZGUuc3Zn
+IiAiJHtERVNURElSfSR7Mn0vcGl4bWFwcy8iCiAKLQlpbnN0YWxsIC1tIDc1NSAtZCAiJHtERVNU
+RElSfSR7Mn0vcGl4bWFwcy9iYWNrZ3JvdW5kcyIKLQlpbnN0YWxsIC1tIDY0NCAiJHtzY3JpcHRk
+aXJ9L2RldmVkZS5zdmciICIke0RFU1RESVJ9JHsyfS9waXhtYXBzLyIKLQogCWluc3RhbGwgLW0g
+NzU1IC1kICIke0RFU1RESVJ9JHsyfS9hcHBsaWNhdGlvbnMiCiAJaW5zdGFsbCAtbSA2NDQgIiR7
+c2NyaXB0ZGlyfS9kZXZlZGUuZGVza3RvcCIJCQlcCiAJCQkJCQkiJHtERVNURElSfSR7Mn0vYXBw
+bGljYXRpb25zLyIK" | base64 -d > $TMP/devede.patch
+
+patch -p1 < $TMP/devede.patch
+fi
+
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+# Patch program to find the help file in our docdir
+sed -i "s|usr/share/doc/$PRGNAM|usr/doc/$PRGNAM-$VERSION|" devede.py
+
+./install.sh \
+  --prefix=/usr \
+  --pkgdocdir=/usr/doc/$PRGNAM-$VERSION \
+  --uninstall=no \
+  DESTDIR=$PKG
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

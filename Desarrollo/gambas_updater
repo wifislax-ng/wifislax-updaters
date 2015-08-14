@@ -1,0 +1,108 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://sourceforge.net/projects/gambas/files/
+	VERSION=`curl -s $WEB | grep latest/ | head -1 | cut -d "/" -f 8 | cut -d- -f 2 | cut -d "t" -f-1 | sed "s/.$//g" | sed "s/ //g"`
+	RAMA=`echo $VERSION | cut -d "." -f1`
+	PRGNAM=gambas
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	PRGNAM_FULL=gambas$RAMA
+	DESCARGA=http://downloads.sourceforge.net/project/gambas/$PRGNAM_FULL/$PRGNAM_FULL-$VERSION.tar.bz2
+	SHORT_PRGNAM=${PRGNAM%$(cut -d . -f 1 <<< $VERSION)}
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM_FULL-$VERSION.tar.bz2 ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM_FULL-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+# Descomprimimos el fichero descargado
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM_FULL-$VERSION
+tar xvf $PRGNAM_FULL-$VERSION.tar.bz2
+cd $PRGNAM_FULL-$VERSION
+chown -R root:root .
+  
+# Compilamos paquete
+echo ""
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 3
+
+./reconf-all
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --build=$ARCH-slackware-linux
+  
+make
+make -j1 install-strip DESTDIR=$PKG XDG_UTILS=""
+
+mkdir -p $PKG/usr/share/icons/hicolor/{scalable/apps,48x48/apps,64x64/mimetypes}
+cp -a app/desktop/$PRGNAM_FULL.svg $PKG/usr/share/icons/hicolor/scalable/apps
+cp -a app/desktop/$PRGNAM_FULL.png $PKG/usr/share/icons/hicolor/48x48/apps
+cp -a app/mime/application-x-${SHORT_PRGNAM}{script,serverpage}.png \
+  $PKG/usr/share/icons/hicolor/64x64/mimetypes
+cp -a main/mime/application-x-$PRGNAM_FULL.png \
+  $PKG/usr/share/icons/hicolor/64x64/mimetypes
+
+mkdir -p $PKG/usr/share/{applications,mime/packages}
+cp -a app/desktop/$PRGNAM_FULL.desktop $PKG/usr/share/applications
+cp -a app/mime/application-x-${SHORT_PRGNAM}{script,serverpage}.xml \
+  $PKG/usr/share/mime/packages
+cp -a main/mime/application-x-$PRGNAM_FULL.xml $PKG/usr/share/mime/packages
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

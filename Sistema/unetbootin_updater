@@ -1,0 +1,109 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=http://sourceforge.net/projects/unetbootin/files/UNetbootin/
+	VERSION=`curl -s $WEB | grep /latest | cut -d '/' -f 8 | cut -d ":" -f 1 | cut -d '-' -f 2`
+	PRGNAM=unetbootin
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-source-$VERSION.tar.gz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $WEB$VERSION/$PRGNAM-source-$VERSION.tar.gz
+	fi
+}
+
+# Descomprimimos el fichero descargado
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+tar xvf $PRGNAM-source-$VERSION.tar.gz
+chown -R root:root .
+find -L . \
+  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+lupdate unetbootin.pro
+lrelease unetbootin.pro
+qmake -config release "DEFINES += NOSTATIC" "RESOURCES -= unetbootin.qrc"
+make
+strip --strip-unneeded $PRGNAM
+
+mkdir -p $PKG/usr/bin
+cp -a $TMP/$PRGNAM $PKG/usr/bin/$PRGNAM
+
+mkdir -p $PKG/usr/share/applications
+cp -a $TMP/$PRGNAM.desktop  $PKG/usr/share/applications/$PRGNAM.desktop
+
+mkdir -p $PKG/usr/share/$PRGNAM
+for file in ${PRGNAM}*.qm; do
+ 	cp -a ${file} $PKG/usr/share/$PRGNAM/
+done
+for file in ${PRGNAM}*.png; do
+ 	size="${file/${PRGNAM}_}"
+ 	size="${size/.png}x${size/.png}"
+ 	mkdir -p $PKG/usr/share/icons/hicolor/${size}/apps
+ 	cp -a ${file} $PKG/usr/share/icons/hicolor/${size}/apps/$(echo $file | tr -d _$size)
+done
+
+mkdir -p $PKG/usr/share/icons/hicolor/scalable/apps/
+cp -a $TMP/unetbootin_icons.svg $PKG/usr/share/icons/hicolor/scalable/apps/$PRGNAM.svg
+
+find $PKG/usr/share/icons -type f -exec chmod 0644 {} \;
+
+mkdir -p $PKG/usr/share/pixmaps/
+cp -a $TMP/unetbootin_icons.svg $PKG/usr/share/pixmaps/$PRGNAM.svg
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

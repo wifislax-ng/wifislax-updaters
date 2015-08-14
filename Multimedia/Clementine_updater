@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150502
+CATEGORIA="Reproductores multimedia"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WEB=https://www.clementine-player.org/es/downloads
+	VERSION=`curl -s $WEB | grep Clementine | grep .tar.gz | cut -d "/" -f 7 | cut -d "." -f-3`
+	PRGNAM=Clementine
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DESCARGA=https://github.com/clementine-player/$PRGNAM/archive/$VERSION.tar.gz
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DESCARGA
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo ""
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+sleep 3
+rm -rf $PRGNAM-$VERSION
+tar xvf $PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+
+# Generamos y aplicamos parche
+if [ $VERSION = "1.2.3" ]; then
+cat > clementine.patch << "EOF"
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 1104542..65d765c 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -887,7 +887,6 @@ if(HAVE_DBUS)
+   # Hack to get it to generate interfaces without namespaces - required
+   # because otherwise org::freedesktop::UDisks and
+   # org::freedesktop::UDisks::Device conflict.
+-  list(APPEND QT_DBUSXML2CPP_EXECUTABLE -N)
+ 
+   # MPRIS DBUS interfaces
+   qt4_add_dbus_adaptor(SOURCES
+@@ -954,6 +953,8 @@ if(HAVE_DBUS)
+   list(APPEND HEADERS ${CMAKE_CURRENT_BINARY_DIR}/dbus/avahientrygroup.h)
+   list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/dbus/avahientrygroup.cpp)
+ 
++  set_source_files_properties( dbus/org.freedesktop.UDisks.xml dbus/org.freedesktop.UDisks.Device.xml PROPERTIES NO_NAMESPACE TRUE)
++
+   # DeviceKit DBUS interfaces
+   if(HAVE_DEVICEKIT)
+     qt4_add_dbus_interface(SOURCES
+
+EOF
+
+patch -p1 -i clementine.patch
+
+fi
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+ 
+  
+# Compilamos paquete
+echo ""
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 3
+
+mkdir build
+cd build
+  cmake \
+	-DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+	-DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DLIB_SUFFIX=${LIBDIRSUFFIX} \
+	-DMAN_INSTALL_DIR=/usr/man \
+	-DCMAKE_BUILD_TYPE=Release \
+	..
+  make all CFLAGS="-fPIC" PMFLAGS="-DNEWBUFFER" || exit 1
+  make install DESTDIR=$PKG
+cd ..
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

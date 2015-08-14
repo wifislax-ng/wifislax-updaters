@@ -1,0 +1,130 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150718
+CATEGORIA="Reproductores streaming"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=spotify
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://spotify.en.uptodown.com/ubuntu
+	DOWNLOAD=$(curl -s $WEB/download | grep dw\.en\.uptodown | grep -Po 'href="\K.*(?=" )')
+	ARCHIVO=$(echo "$DOWNLOAD"|rev | cut -d/ -f1 | rev)
+	VERSION=$(curl -s "$WEB" | grep softwareVersion | sed -e 's/\(<[^<][^<]*>\)//g')
+}
+
+# Creamos directorios extra
+F_extradirs(){
+mkdir -p $PKG/usr/share/applications
+}
+
+# Definimos arquitectura del sitema
+F_arquitectura(){
+	case "$(uname -m)" in
+	i?86) DEBARCH="i386" ; LIBDIRSUFFIX="" ; ARCH=i386 ;;
+	x86_64) DEBARCH="amd64" ; LIBDIRSUFFIX="64" ; ARCH=x86_64 ;;
+	*) echo "Package for $(uname -m) architecture is not available." ; exit 1 ;;
+esac
+
+set -eu
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $ARCHIVO ]; then
+	echo ""
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 3
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+deb2dir $TMP/$ARCHIVO $PKG
+
+# Symlinks to fix lib naming issue.
+ln -sf /usr/lib${LIBDIRSUFFIX}/libnspr4.so $PKG/opt/spotify/spotify-client/libnspr4.so.0d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libnss3.so $PKG/opt/spotify/spotify-client/libnss3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libnssutil3.so $PKG/opt/spotify/spotify-client/libnssutil3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libplc4.so $PKG/opt/spotify/spotify-client/libplc4.so.0d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libplds4.so $PKG/opt/spotify/spotify-client/libplds4.so.0d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libsmime3.so $PKG/opt/spotify/spotify-client/libsmime3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libssl3.so $PKG/opt/spotify/spotify-client/libssl3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libssl.so.1.0.0 $PKG/opt/spotify/spotify-client/libssl.so.0.9.8
+ln -sf /usr/lib${LIBDIRSUFFIX}/libcrypto.so.1.0.0 $PKG/opt/spotify/spotify-client/libcrypto.so.0.9.8
+
+## fixes some display issues
+ln -sf /usr/lib${LIBDIRSUFFIX}/libnspr4.so $PKG/opt/spotify/spotify-client/Data/libnspr4.so.0d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libnss3.so $PKG/opt/spotify/spotify-client/Data/libnss3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libnssutil3.so $PKG/opt/spotify/spotify-client/Data/libnssutil3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libplc4.so $PKG/opt/spotify/spotify-client/Data/libplc4.so.0d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libplds4.so $PKG/opt/spotify/spotify-client/Data/libplds4.so.0d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libsmime3.so $PKG/opt/spotify/spotify-client/Data/libsmime3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libssl3.so $PKG/opt/spotify/spotify-client/Data/libssl3.so.1d
+ln -sf /usr/lib${LIBDIRSUFFIX}/libssl.so.1.0.0 $PKG/opt/spotify/spotify-client/Data/libssl.so.0.9.8
+ln -sf /usr/lib${LIBDIRSUFFIX}/libcrypto.so.1.0.0 $PKG/opt/spotify/spotify-client/Data/libcrypto.so.0.9.8
+
+# Gneramos el fichero .desktop
+cat > spotify.desktop << "EOF"
+[Desktop Entry]
+Name=Spotify
+GenericName=Music Player
+Comment=Listen to music using Spotify
+Icon=/opt/spotify/spotify-client/Icons/spotify-linux-128.png
+Exec=spotify %U
+TryExec=spotify
+Terminal=false
+Type=Application
+Path=/opt/spotify/spotify-client/
+Categories=Qt;Audio;Player;AudioVideo;
+MimeType=x-scheme-handler/spotify;
+EOF
+
+mv spotify.desktop $PKG/usr/share/applications
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+# Creamos directorios extra
+F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+# Definimos arquitectura del sitema
+F_arquitectura
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del script
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
