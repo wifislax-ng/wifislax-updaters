@@ -2,7 +2,10 @@
 
 # Script by USUARIONUEVO @ www.seguridadwireless.net
 
-SCRIPT_VERSION=20150723
+# Eliminamos posibles ficheros viejos de modificaciones de scripts	
+rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
+
+SCRIPT_VERSION=20150815
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -17,6 +20,7 @@ ROSA=${ROSA:-"[1;35m"}
 # El PRGNAM2 se usa en la creacion del xzm ,NO BORRAR
 PRGNAM2=kernel
 PRGNAM=linux
+SCRIPTNAME=linux_custom
 echo -ne "\033]2;${PRGNAM}_updater\007"
 
 # Bienvenida
@@ -56,14 +60,14 @@ exit 0
 fi
 
 # Comprobar updates para el script
-SERVIDOR_WEB="http://www.downloadwireless.net/wifislax-updaters"
-DIRECTORIO=$(find /opt/wifislax-updaters -type f -name ${PRGNAM}*| rev | cut -d/ -f2- | rev)
-SERVIDOR_VERSION=$(timeout -s SIGTERM 3 curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
+SERVIDOR_WEB="https://raw.githubusercontent.com/wifislax-ng/wifislax-updaters/master"
+DIRECTORIO=$(find /opt/wifislax-updaters -type f -name ${SCRIPTNAME}*| rev | cut -d/ -f2- | rev | head -1)
+SERVIDOR_VERSION=$(timeout -s SIGTERM 3 curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${SCRIPTNAME}_updater | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
 
 
 echo ${CYAN}Version Script$CIERRE: $ROJO${SCRIPT_VERSION:6}$BLANCO/$AMARILLO${SCRIPT_VERSION:4:2}$BLANCO/$ROJO${SCRIPT_VERSION:0:4}$CIERRE
 
-if [ "$(ping downloadwireless.net -c1 2>/dev/null)" ]; then
+if [ "$(ping github.com -c1 2>/dev/null)" ]; then
 if [[ $SCRIPT_VERSION -lt $SERVIDOR_VERSION ]]; then
 echo
 echo "$ROSA"Comprobando si hay actualizaciones para el script..."$CIERRE."
@@ -71,8 +75,8 @@ echo ${ROJO}NUEVA VERSION$CIERRE
 echo 
 echo ${ROSA}Version Server$CIERRE: $ROJO${SERVIDOR_VERSION:6}$BLANCO/$AMARILLO${SERVIDOR_VERSION:4:2}$BLANCO/$ROJO${SERVIDOR_VERSION:0:4}$CIERRE
 echo
-echo ${CYAN}Actualizando ${PRGNAM}_updater
-curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater -o $DIRECTORIO/${PRGNAM}_updater
+echo ${CYAN}Actualizando ${SCRIPTNAME}_updater
+curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${SCRIPTNAME}_updater -o $DIRECTORIO/${SCRIPTNAME}_updater
 echo ${ROJO}LISTO$CIERRE
 sleep 2
 $0
