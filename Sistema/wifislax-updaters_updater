@@ -72,6 +72,7 @@ for carpeta in $carpetas; do
          
          #Comprobamos si ya existe ese script
          if [ -f /opt/$PRGNAM/$carpeta/$archivo ]; then
+        
             #Si se trata de funciones.sh, usamos variables distintas al habitual, si no,
             if [ ${archivo} == "funciones_updater" ]; then
                LOCAL_VERSION=$(cat /opt/$PRGNAM/$carpeta/$archivo | grep -m1 "FUNCIONES_VERSION=" | cut -d "=" -f2)
@@ -80,34 +81,45 @@ for carpeta in $carpetas; do
                LOCAL_VERSION=$(cat /opt/$PRGNAM/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
                WEB_VERSION=$(cat /tmp/$PRGNAM/$carpeta/$archivo | head -5 | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
             fi
+            
          echo -n "${VERDE}EXISTE$CIERRE"
-         #Ademas de mirar si existe, comprobamos si existe version mas nueva a la que tenemos nosotros
-         if [[ $LOCAL_VERSION -lt $WEB_VERSION ]]; then
-            CREAR_MODULO=SI
-            if [ ! -d $PKG/opt/$PRGNAM/$carpeta ]; then
-               mkdir -p $PKG/opt/$PRGNAM/$carpeta/
-            fi
-            cp /tmp/$PRGNAM/$carpeta/$archivo $PKG/opt/$PRGNAM/$carpeta/$archivo
-            echo " + ${AMARILLO}ACTUALIZADO $ROSA(${WEB_VERSION:6}/${WEB_VERSION:4:2}/${WEB_VERSION:0:4})$CIERRE"
-            chmod +x $PKG/opt/$PRGNAM/$carpeta/$archivo
-         else
-            echo -e " $BLANCO(${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4})$CIERRE"
-         fi
+	    #Ademas de mirar si existe, comprobamos si existe version mas nueva a la que tenemos nosotros
+	    if [[ $LOCAL_VERSION -lt $WEB_VERSION ]]; then
+		CREAR_MODULO=SI
+		if [ ! -d $PKG/opt/$PRGNAM/$carpeta ]; then
+		  mkdir -p $PKG/opt/$PRGNAM/$carpeta/
+		fi
+		cp /tmp/$PRGNAM/$carpeta/$archivo $PKG/opt/$PRGNAM/$carpeta/$archivo
+		echo " + ${AMARILLO}ACTUALIZADO $ROSA(${WEB_VERSION:6}/${WEB_VERSION:4:2}/${WEB_VERSION:0:4})$CIERRE"
+		chmod +x $PKG/opt/$PRGNAM/$carpeta/$archivo
+	    else
+		echo -e " $BLANCO(${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4})$CIERRE"
+	    fi
+	    
+	    
       #Si no existe ese escript en nuestro sistema, procedemos a descargarlo
-      else
-         CREAR_MODULO=SI
-         if [ ! -d $PKG/opt/$PRGNAM/$carpeta ]; then
-            mkdir -p $PKG/opt/$PRGNAM/$carpeta/
-         fi
-         cp /tmp/$PRGNAM/$carpeta/$archivo $PKG/opt/$PRGNAM/$carpeta/$archivo
-         LOCAL_VERSION=$(cat $PKG/opt/$PRGNAM/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
-         chmod +x $PKG/opt/$PRGNAM/$carpeta/$archivo
-         echo "${ROJO}DESCARGADO$CIERRE $BLANCO($ROSA${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4}$BLANCO)$CIERRE"
-         PRGNAM_CORTO=${archivo%_updater}
-         mkdir -p $PKG/usr/share/applications/wifislax/Actualizadores/$carpeta
+	else
+		CREAR_MODULO=SI
+		
+		if [ ! -d $PKG/opt/$PRGNAM/$carpeta ]; then
+			mkdir -p $PKG/opt/$PRGNAM/$carpeta/
+		fi
+		
+		cp /tmp/$PRGNAM/$carpeta/$archivo $PKG/opt/$PRGNAM/$carpeta/$archivo
+		LOCAL_VERSION=$(cat $PKG/opt/$PRGNAM/$carpeta/$archivo | grep -m1 "SCRIPT_VERSION=" | cut -d "=" -f2)
+		chmod +x $PKG/opt/$PRGNAM/$carpeta/$archivo
+		echo "${ROJO}DESCARGADO$CIERRE $BLANCO($ROSA${LOCAL_VERSION:6}/${LOCAL_VERSION:4:2}/${LOCAL_VERSION:0:4}$BLANCO)$CIERRE"
+		PRGNAM_CORTO=${archivo%_updater}
+		mkdir -p $PKG/usr/share/applications/wifislax/Actualizadores/$carpeta
+		
+		CATEGORIA="$(grep "CATEGORIA=" /tmp/$PRGNAM/$carpeta/$archivo| cut -d"=" -f2 | sed 's/"//g')"
+		if [ -z "$CATEGORIA" ]; then
+		  CATEGORIA=$carpeta
+		fi
+		
 #Creamos el desktop del menu
 echo "[Desktop Entry]
-Categories=$carpeta;
+Categories=$CATEGORIA;
 Exec=sh -c \"/opt/wifislax-updaters/$carpeta/$archivo;${SHELL:-bash}\"
 Icon=updaters
 MimeType=
