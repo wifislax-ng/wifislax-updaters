@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150705
+SCRIPT_VERSION=20150816
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -96,7 +96,8 @@ sed -i 's/-lflite"/-lflite -lasound"/' configure &&
     --enable-swscale \
     --enable-vdpau \
     --enable-version3 \
-    --enable-opengl  \
+    --enable-opengl \
+    --disable-inline-asm \
     --enable-x11grab
   
 make -j$NUCLEOS
