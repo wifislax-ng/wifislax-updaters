@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20150815
+FUNCIONES_VERSION=20150816
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -121,7 +121,7 @@ f_arquitectura() {
 
 # Detecta la version instalada en el sistema
 f_versionInstalada() {
-   if [ -f /var/log/packages/$PRGNAM-[0-9]* ]; then
+   if [ -f $(grep -r -l -o $PRGNAM- /var/log/packages/ | head -1) ]; then
       INSTALADA="$(ls /var/log/packages/$PRGNAM-[0-9]*-* 2>/dev/null|cut -d '/' -f5-|sed "s/^${PRGNAM}-//"|rev|cut -d'-' -f3-|rev|tail -1)"
       echo ""
       echo ""$AMARILLO"La version del sistema es..."$CYAN"$PRGNAM-$INSTALADA"$CIERRE""
@@ -138,7 +138,7 @@ f_versionInstalada() {
    
 # Si el paquete esta instalado y es el mismo se sube el numero de build
 if [ ! -z $INSTALADA ] && [ $INSTALADA = $VERSION ]; then
-BUILDLOCAL="$(ls /var/log/packages/$PRGNAM-[0-9]*-* 2>/dev/null|cut -d '/' -f5-|sed "s/^${PRGNAM}-//" | rev | cut -d- -f1 | grep -o [0-9])"
+BUILDLOCAL="$(ls /var/log/packages/$PRGNAM-[0-9]*-* 2>/dev/null|cut -d '/' -f5-|sed "s/^${PRGNAM}-//" | rev | cut -d- -f1 | grep -o [0-9] | head -1)"
 BUILD=`expr $BUILDLOCAL + 1`
 fi
 
@@ -156,7 +156,11 @@ f_eliminaVersion() {
    echo ""
    echo "$ROJO"Eliminando la version del sistema..."$CIERRE"
    sleep 2
-   removepkg /var/log/packages/$PRGNAM-[0-9]*
+
+   for x in `grep -r -l -o $PRGNAM- /var/log/packages/`; do
+   removepkg /var/log/packages/$x
+   done
+
 }
 
 # Crea el directorio temporal de trabajo
@@ -178,7 +182,7 @@ f_strip() {
 # Creamos xzm , instalamos y salimos
 f_tareasFinales() {
    # Si el sistema tiene una version anterior se eliminara
-   if [ -f /var/log/packages/$PRGNAM-[0-9]* ]; then
+   if [ -f $(grep -r -l -o $PRGNAM- /var/log/packages/ | head -1) ]; then
       f_eliminaVersion
    fi
    echo ""
