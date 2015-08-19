@@ -1,8 +1,0 @@
-15/08/2015 | 23:50 - USUARIONUEVO
-
-* Adaptados los updaters de kernel a github
-
-15/08/2015 | 22:00 - USUARIONUEVO
-
-* Bloqueo version en filezilla updater por error al compilar 3.13.0
-* Incluyo en librerias el updater live555_updater
