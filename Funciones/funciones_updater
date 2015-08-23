@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20150818
+FUNCIONES_VERSION=20150824
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -91,21 +91,20 @@ f_arquitectura() {
    ARCH=$1
    if [ -z "$ARCH" ]; then
      case "$( uname -m )" in
-      i?86) export ARCH=i486 ;;
-      arm*) export ARCH=arm ;;
-         *) export ARCH=$( uname -m ) ;;
+        i?86) export ARCH=i586 ;;
+        arm*) export ARCH=arm ;;
+        *) export ARCH=$( uname -m ) ;;
      esac
    fi
 
    if [ "$ARCH" = "i486" ]; then
-     SLKCFLAGS="-O2 -march=i486 -mtune=i686"
-     LIBDIRSUFFIX=""
-   elif [ "$ARCH" = "i686" ]; then
-     SLKCFLAGS="-O2 -march=i686 -mtune=i686"
-     LIBDIRSUFFIX=""
-   else
-     SLKCFLAGS="-O2"
-     LIBDIRSUFFIX=""
+   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+   elif [ "$ARCH" = "i586" ]; then
+   SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+   elif [ "$ARCH" = "s390" ]; then
+   SLKCFLAGS="-O2"
+   elif [ "$ARCH" = "x86_64" ]; then
+   SLKCFLAGS="-O2 -fPIC"
    fi
    
 # Variable especial para aegisub
