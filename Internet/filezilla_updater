@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150815
+SCRIPT_VERSION=20150825
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,8 +20,7 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	PRGNAM2=FileZilla
 	WEB=http://sourceforge.net/projects/filezilla/files/FileZilla_Client/
-	VERSION=3.12.0.2
-	#VERSION=`curl -s $WEB | grep -m 1 "<tr title="|cut -d '"' -f2| sed "s/ //g"`
+	VERSION=`curl -s $WEB | grep -m 1 "<tr title="|cut -d '"' -f2| sed "s/ //g"`
 	DESCARGA=${WEB}${VERSION}/${PRGNAM2}_${VERSION}_src.tar.bz2
 }
 
@@ -91,58 +90,6 @@ F_descomprime() {
 #Compilamos el paquete
 F_compilar() {
 
-# Generamos parche y aplicamos
-if [ $VERSION = "3.10.2" ]; then
-echo $VERDE
-echo "APlicando parche ..."
-echo $CIERRE
-sleep 1
-cat > fix-missing-include-fz-bug-10280.patch << "EOF"
---- FileZilla3/trunk/src/interface/Mainfrm.h	2015/03/02 20:28:30	6542
-+++ FileZilla3/trunk/src/interface/Mainfrm.h	2015/03/03 15:54:36	6543
-@@ -1,13 +1,18 @@
- #ifndef __MAINFRM_H__
- #define __MAINFRM_H__
- 
-+#include "statusbar.h"
-+#include "engine_context.h"
-+
-+#include "wx/timer.h"
-+
- #ifndef __WXMAC__
- #include <wx/taskbar.h>
- #endif
- 
--#include "statusbar.h"
--
--#include "engine_context.h"
-+#if FZ_MANUALUPDATECHECK
-+#include "updater.h"
-+#endif
- 
- class CAsyncRequestQueue;
- class CContextControl;
-@@ -25,13 +30,7 @@
- class CToolBar;
- class CWindowStateManager;
- 
--
--#if FZ_MANUALUPDATECHECK
--#include "updater.h"
--#endif
--class CWindowStateManager;
--
--class CMainFrame : public wxNavigationEnabled<wxFrame>
-+class CMainFrame final : public wxNavigationEnabled<wxFrame>
- #if FZ_MANUALUPDATECHECK
- 	, protected CUpdateHandler
- #endif
-
-EOF
-# Aplicamos parche
-patch -p2 < fix-missing-include-fz-bug-10280.patch
-fi
-
 	echo ""
 	echo "$VERDE"Configurando ..."$CIERRE"
 	sleep 3
@@ -162,6 +109,7 @@ fi
 	  --disable-autoupdatecheck \
 	  --enable-locales \
 	  --with-tinyxml=builtin \
+	  --with-pugixml=builtin \
 	  --build=$ARCH-slackware-linux
 
 	make -j$NUCLEOS LDFLAGS=-latomic || exit 1
