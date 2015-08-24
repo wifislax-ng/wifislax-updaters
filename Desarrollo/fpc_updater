@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150804
+SCRIPT_VERSION=20150824
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -55,7 +55,7 @@ echo "$VERDE"Descomprimiendo ..."$CIERRE"
 rm -rf $PRGNAM-$VERSION ${PRGNAM}build-$VERSION
 mkdir $PRGNAM-$VERSION ${PRGNAM}build-$VERSION
 cd $TMP/$PRGNAM-$VERSION
-tar xvf $TMP/$PRGNAM-$VERSION.$ARCH-linux.tar --strip-components=1
+tar xvf $TMP/$PRGNAM-$VERSION.i386-linux.tar --strip-components=1
 cd $TMP/${PRGNAM}build-$VERSION
 tar xvf $TMP/${PRGNAM}build-$VERSION.tar.gz
 
@@ -63,11 +63,11 @@ tar xvf $TMP/${PRGNAM}build-$VERSION.tar.gz
 (
   mkdir -p $TMP/$PRGNAM-$VERSION/binary
   cd $TMP/$PRGNAM-$VERSION/binary
-  tar xvf $TMP/$PRGNAM-$VERSION/binary.$ARCH-linux.tar
+  tar xvf $TMP/$PRGNAM-$VERSION/binary.i386-linux.tar
 
   cd  $TMP/$PRGNAM-$VERSION
-  tar xvf $TMP/$PRGNAM-$VERSION/binary/base.$ARCH-linux.tar.gz
-  tar xvf $TMP/$PRGNAM-$VERSION/binary/utils.$ARCH-linux.tar.gz
+  tar xvf $TMP/$PRGNAM-$VERSION/binary/base.i386-linux.tar.gz
+  tar xvf $TMP/$PRGNAM-$VERSION/binary/utils.i386-linux.tar.gz
 
   cd $TMP/$PRGNAM-$VERSION/bin
   if [ "$ARCH" = "x86_64" ]; then
