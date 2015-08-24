@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150802
+SCRIPT_VERSION=20150824
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,8 +19,9 @@ F_variables() {
 	PRGNAM=graphviz
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://graphviz.org/pub/graphviz/stable/SOURCES/
-	VERSION=`curl -s $WEB | grep graphviz-[0-9] | tail -1 | cut -d- -f3 | cut -d t -f1 | sed "s/.$//g"`
-	DOWNLOAD=${WEB}${PRGNAM}-${VERSION}.tar.gz
+	#VERSION=`curl -s $WEB | grep graphviz-[0-9] | tail -1 | cut -d- -f3 | cut -d t -f1 | sed "s/.$//g"`
+	VERSION=2.38.0
+	DOWNLOAD=http://pkgs.fedoraproject.org/repo/pkgs/graphviz/graphviz-2.38.0.tar.gz/5b6a829b2ac94efcd5fa3c223ed6d3ae/graphviz-2.38.0.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet
@@ -48,14 +49,34 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-sed -i 's|/php/modules|/php/extensions|' configure
-
 # Parcheamos
 if [ $VERSION = 2.38.0 ]; then
 echo 
 echo "$VERDE""Version detectada 2.38.0 aplicando parche...""$CIERRE"
 sleep 1
 cat > graphviz.patch << "EOF"
+diff -Naur old/lib/cgraph/scan.l new/lib/cgraph/scan.l
+--- old/lib/cgraph/scan.l	2014-04-13 10:40:25.000000000 -1000
++++ new/lib/cgraph/scan.l	2014-12-02 08:54:21.285050735 -1000
+@@ -149,7 +149,7 @@
+ 	agxbput(&xb,buf);
+ 	agxbput(&xb,fname);
+ 	agxbput(&xb, " splits into two tokens\n");
+-	agerr(AGWARN,agxbuse(&xb));
++	agerr(AGWARN, "%s", agxbuse(&xb));
+ 
+ 	agxbfree(&xb);
+ 	return 1;
+@@ -225,7 +225,7 @@
+ 	agxbput (&xb, buf);
+ 	agxbput (&xb, yytext);
+ 	agxbput (&xb,"'\n");
+-	agerr(AGERR,agxbuse(&xb));
++	agerr(AGERR, "%s", agxbuse(&xb));
+ 	agxbfree(&xb);
+ }
+ /* must be here to see flex's macro defns */
+ 
 diff -Naur graphviz-2.28.0.orig/tclpkg/gv/gv_php_init.c graphviz-2.28.0/tclpkg/gv/gv_php_init.c
 --- graphviz-2.28.0.orig/tclpkg/gv/gv_php_init.c	2011-01-25 17:30:51.000000000 +0100
 +++ graphviz-2.28.0/tclpkg/gv/gv_php_init.c	2012-05-30 04:10:40.657221055 +0200
@@ -72,21 +93,18 @@ diff -Naur graphviz-2.28.0.orig/tclpkg/gv/gv_php_init.c graphviz-2.28.0/tclpkg/g
 +    TSRMLS_FETCH();
      return PHPWRITE(s, len);
  }
- 
 
 EOF
 
-patch -p1 -i $TMP/$PRGNAM-$VERSION/graphviz.patch
+patch -p1 -i $TMP/$PRGNAM-$VERSION/graphviz.patch || exit 1
 fi
 
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
 
-# Arreglo javac
-if [ ! -f /usr/lib/java/bin/javac ]; then
-ln -s /usr/lib/jvm/bin/javac /usr/lib/java/bin/javac
-fi
+sed "s:ruby-1.9:ruby-2.2:g" -i configure
+sed -i 's|/php/modules|/php/extensions|' configure
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -97,6 +115,7 @@ LDFLAGS="-L/usr/lib${LIBDIRSUFFIX}" \
   --mandir=/usr/man \
   --disable-static \
   --enable-ocaml=no \
+  --enable-java=no \
   --build=$ARCH-slackware-linux
 
 echo 
