@@ -88,19 +88,19 @@ f_comprobarUpdates() {
 
 # Definimos arquitectura del sistema. Se le pasa la arquitectura como parametro o la calcula automaticamente si no se indica nada
 f_arquitectura() {
-   ARCH=$1
-   if [ -z "$ARCH" ]; then
+
      case "$( uname -m )" in
         i?86) export ARCH=i586 ;;
         arm*) export ARCH=arm ;;
         *) export ARCH=$( uname -m ) ;;
      esac
-   fi
 
    if [ "$ARCH" = "i586" ]; then
    SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+   LIBDIRSUFFIX=""
    else 
-   SLKCFLAGS=""
+   SLKCFLAGS="-O2"
+   LIBDIRSUFFIX=""
    fi
 
    set -e

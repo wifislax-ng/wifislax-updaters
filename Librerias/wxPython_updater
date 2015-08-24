@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150824
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -59,7 +59,6 @@ CXXFLAGS="$SLKCFLAGS" \
   --sysconfdir=/etc \
   --localstatedir=/var \
   --disable-static \
-  --with-odbc \
   --with-sdl \
   --with-opengl \
   --without-gnomeprint \
@@ -68,16 +67,10 @@ CXXFLAGS="$SLKCFLAGS" \
   --enable-display \
   --enable-mediactrl \
   --enable-sound \
-  --disable-gtktest \
-  --disable-sdltest \
-  --disable-debug \
-  --disable-help \
   --libdir=/usr/lib$LIBDIRSUFFIX \
   --build=$ARCH-slackware-linux
-  
-echo 1
-sleep 5
-make -j$NUCLEOS
+
+make || exit 1
 #Additional stuff from contrib
 make -C contrib/src/gizmos
 make -C contrib/src/ogl
@@ -87,6 +80,51 @@ make install DESTDIR=$PKG
 make -C contrib/src/gizmos install DESTDIR=$PKG
 make -C contrib/src/ogl install DESTDIR=$PKG
 make -C contrib/src/stc install DESTDIR=$PKG
+
+cd wxPython
+  python setup.py \
+    WXPORT=gtk2 \
+    UNICODE=1 \
+    EP_ADD_OPTS=1 \
+    EP_FULL_VER=0 \
+    NO_SCRIPTS=0 \
+    WX_CONFIG="$TMP/$PRGNAM-src-$VERSION/wx-config --no_rpath" \
+    build_ext --include-dirs=$TMP/$PRGNAM-src-$VERSION/lib/wx/include/gtk2-unicode-release-2.8 \
+              --library-dirs=$TMP/$PRGNAM-src-$VERSION/lib \
+              --rpath=/usr/lib$LIBDIRSUFFIX \
+    build
+
+  python setup.py \
+    WXPORT=gtk2 \
+    UNICODE=1 \
+    EP_ADD_OPTS=1 \
+    EP_FULL_VER=0 \
+    NO_SCRIPTS=0 \
+    WX_CONFIG="$TMP/$PRGNAM-src-$VERSION/wx-config --prefix=$PKG/usr/bin/ --no_rpath" \
+    SYS_WX_CONFIG="wx-config --enable-unicode" \
+    build_ext --include-dirs=$TMP/$PRGNAM-src-$VERSION/lib/wx/include/gtk2-unicode-release-2.8 \
+              --library-dirs=$TMP/$PRGNAM-src-$VERSION/lib \
+              --rpath=/usr/lib$LIBDIRSUFFIX \
+    install --root=$PKG
+    
+mkdir -p $PKG/usr/share/{applications,pixmaps} $PKG/usr/share/icons/hicolor/{16x16,32x32}/apps
+install -m 644 distrib/*.desktop $PKG/usr/share/applications/
+
+    install -m 644 wx/py/PyCrust_16.png $PKG/usr/share/icons/hicolor/16x16/apps/PyCrust.png
+    install -m 644 wx/py/PyCrust_32.png $PKG/usr/share/icons/hicolor/32x32/apps/PyCrust.png
+    ln -s /usr/share/icons/hicolor/32x32/apps/PyCrust.png $PKG/usr/share/pixmaps/PyCrust.png
+    install -m 644 wx/py/PySlices_16.png $PKG/usr/share/icons/hicolor/16x16/apps/PySlices.png
+    install -m 644 wx/py/PySlices_32.png $PKG/usr/share/icons/hicolor/32x32/apps/PySlices.png
+    ln -s /usr/share/icons/hicolor/32x32/apps/PySlices.png $PKG/usr/share/pixmaps/PySlices.png
+    install -m 644 wx/tools/XRCed/XRCed_16.png $PKG/usr/share/icons/hicolor/16x16/apps/XRCed.png
+    install -m 644 wx/tools/XRCed/XRCed_32.png $PKG/usr/share/icons/hicolor/32x32/apps/XRCed.png
+    ln -s /usr/share/icons/hicolor/32x32/apps/XRCed.png $PKG/usr/share/pixmaps/XRCed.png
+    
+    # don't ship editra - it releases independently and the included version is outdated
+    rm $PKG/usr/bin/editra
+    rm $PKG/usr/share/applications/Editra.desktop
+    rm -rf $PKG/usr/lib$LIBDIRSUFFIX/python2.7/site-packages/wx-2.8-gtk2-unicode/wx/tools/Editra
+cd -
 
 # Para no crear conflictos con las gtk3 eliminamos el wx-config apuntando a gtk2
 rm -rf $PKG/usr/bin/wx-config 2>/dev/null
