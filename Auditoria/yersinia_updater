@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20141101
+SCRIPT_VERSION=20150825
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,43 +21,6 @@ F_variables() {
 	PRGNAM=yersinia
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	DOWNLOAD=http://www.yersinia.net/download/$PRGNAM-$VERSION.tar.gz
-}
-
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes}
-}
-
-# Definimos arquitectura del sitema
-F_arquitectura(){
-if [ -z "$ARCH" ]; then
-  case "$( uname -m )" in
-    i?86) export ARCH=i486 ;;
-    arm*) export ARCH=arm ;;
-       *) export ARCH=$( uname -m ) ;;
-  esac
-fi
-
-case "$ARCH" in
-    i486)
-	SLKCFLAGS="-O2 -march=i486 -mtune=i686"; CHOST="i486"
-	SLKLDFLAGS=""; LIBDIRSUFFIX=""
-        ;;
-    i686)
-	SLKCFLAGS="-O2 -march=i686 -pipe -fomit-frame-pointer"; CHOST="i486"
-	SLKLDFLAGS=""; LIBDIRSUFFIX=""
-        ;;
-    x86_64)
-	SLKCFLAGS="-O2 -fPIC -pipe -fomit-frame-pointer"; CHOST="x86_64"
-	SLKLDFLAGS="-L/lib64 -L/usr/lib64"; LIBDIRSUFFIX="64"
-        ;;
-    *)
-	SLKCFLAGS="-O2"; CHOST=$ARCH
-	SLKLDFLAGS=""; LIBDIRSUFFIX=""
-	;;
-esac
-
-set -eu
 }
 
 # Si el paquete no existe se descargara de internet
@@ -99,14 +62,15 @@ CXXFLAGS="$SLKCFLAGS" \
   --mandir=/usr/man \
   --with-ncurses \
   --with-pcap-includes=/usr/include/pcap \
-  --host=$CHOST-slackware-linux \
-  --build=$CHOST-slackware-linux
+  --host=$ARCH-slackware-linux \
+  --build=$ARCH-slackware-linux
   
 make clean || exit 1
-make || exit 1
+make -j$NUCLEOS || exit 1
 make DESTDIR=$PKG install-strip || exit 1
 
 # Generamos una entrada desktop
+mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes}
 echo "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAAK6wAACusBgosNWgAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAQ/UlE
 QVRogcWa2a9k13Wfvz2cqU5Nt6rufJvsJilaJC1TtBO7aUB+MB0DSQQbMBAg8Jue8qR/JkqAxM4k
@@ -215,19 +179,19 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-# Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-F_arquitectura
-#Comprobamos version instalada paquete
+f_arquitectura
+#Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
 F_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
+#Hacemos strip sobre el paquete
+f_strip
 #Creamos xzm , instalamos y salimos
 f_tareasFinales
