@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20150826
+FUNCIONES_VERSION=20150827
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -207,6 +207,9 @@ else
    fi
    if [ $PRGNAM = "google-chrome" ]; then
    mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/007-Extra_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
+   fi
+   if [ $PRGNAM = firmwares ]; then
+   mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/010-Extra_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
    fi
 
    rm -Rf $TMP &>/dev/null
