@@ -19,7 +19,7 @@ F_variables() {
 	PRGNAM=openvas-libraries
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB="http://wald.intevation.org"
-	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM" | grep "tar\.gz" | grep -vi beta -m1)
+	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM" | grep "tar\.gz" -m1)
 	VERSION=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
 	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep -Po 'href="\K.*(?=")')"
 }
