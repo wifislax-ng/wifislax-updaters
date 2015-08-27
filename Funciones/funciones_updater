@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20150827
+FUNCIONES_VERSION=20150828
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -89,23 +89,29 @@ f_comprobarUpdates() {
 # Definimos arquitectura del sistema. Se le pasa la arquitectura como parametro o la calcula automaticamente si no se indica nada
 f_arquitectura() {
    ARCH=$1
-   if [ -z "$ARCH" ]; then
-     case "$( uname -m )" in
-        i?86) export ARCH=i586 ;;
-        arm*) export ARCH=arm ;;
-        *) export ARCH=$( uname -m ) ;;
-     esac
-   fi
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
 
-   if [ "$ARCH" = "i586" ]; then
-   SLKCFLAGS="-O2 -march=i586 -mtune=i686"
-   LIBDIRSUFFIX=""
-   else 
-   SLKCFLAGS="-O2"
-   LIBDIRSUFFIX=""
-   fi
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
 
-   set -e
+set -e
 }
 
 # Detecta la version instalada en el sistema
