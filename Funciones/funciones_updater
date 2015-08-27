@@ -63,7 +63,7 @@ f_comprobarConexion() {
 # Comprobacion de updates para el script
 f_comprobarUpdates() {
    SERVIDOR_WEB="https://raw.githubusercontent.com/wifislax-ng/wifislax-updaters/master"
-   DIRECTORIO=$(find /opt/wifislax-updaters -type f -name ${PRGNAM}*| rev | cut -d/ -f2- | rev)
+   DIRECTORIO=$(find /opt/wifislax-updaters -type f -name ${PRGNAM}_updater| rev | cut -d/ -f2- | rev)
    SERVIDOR_VERSION=$(timeout -s SIGTERM 10 curl -sk $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater | grep "SCRIPT_VERSION=" | head -1 |cut -d "=" -f2)
 
    echo ${CYAN}Version Script$CIERRE: $ROJO${SCRIPT_VERSION:6}$BLANCO/$AMARILLO${SCRIPT_VERSION:4:2}$BLANCO/$ROJO${SCRIPT_VERSION:0:4}$CIERRE
