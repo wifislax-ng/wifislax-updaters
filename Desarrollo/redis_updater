@@ -1,0 +1,189 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20150828
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=redis
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB="http://download.redis.io/"
+	VERSION=$(curl -sk ${WEB}releases/ | grep "tar\.gz" | grep -Po 'href="\K.*(?=</.>)' | cut -d\" -f1 | grep -E '[0-9]\.' | tail -1|rev | cut -d. -f3- | rev |sed "s/$PRGNAM//g" | cut -d- -f2)
+	DOWNLOAD="${WEB}releases/$PRGNAM-$VERSION.tar.gz"
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+	echo 
+	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+	sleep 1
+	aria2c -x 3 $DOWNLOAD
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Descomprimiendo ..."$CIERRE"
+rm -rf $PRGNAM-$VERSION
+tar -xvf $PRGNAM-$VERSION.tar.gz
+sleep 1
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Use our CFLAGS.
+sed -i "s|-O3||" deps/Makefile deps/hiredis/Makefile
+
+# No ./configure necessary.
+# http://lists.slackbuilds.org/pipermail/slackbuilds-users/2013-January/010042.html
+( unset ARCH ; CFLAGS="$SLKCFLAGS" make )
+make install PREFIX=$PKG/usr
+
+# Use sample config and set some sane defaults.
+install -D -m 0644 redis.conf $PKG/etc/redis/redis.conf.new
+sed -i \
+  -e 's|^daemonize no|daemonize yes|' \
+  -e 's|^dir \.|dir /var/lib/redis|' \
+  -e 's|^logfile ""|logfile /var/log/redis/redis.log|' \
+  -e 's|^# bind 127.0.0.1|bind 127.0.0.1|' \
+  $PKG/etc/redis/redis.conf.new
+install -D -m 0644 sentinel.conf $PKG/etc/redis/sentinel.conf.new
+
+# Create data directory.
+mkdir -p $PKG/var/lib/redis
+chmod 0700 $PKG/var/lib/redis
+
+# Create log directory.
+mkdir -p $PKG/var/log/redis
+
+# Install init script.
+mkdir -p $PKG/etc/rc.d
+echo "#!/bin/sh
+#
+# Redis startup script for Slackware Linux
+
+PORT=6379
+SERV=/usr/bin/redis-server
+CLI=/usr/bin/redis-cli
+PIDFILE=/var/run/redis.pid
+CONF=/etc/redis/redis.conf
+
+redis_start() {
+  if [ ! -r \$CONF ]; then
+    echo \"\$CONF does not appear to exist.  Abort.\"
+    exit 1
+  fi
+
+  if [ -s \$PIDFILE ]; then
+    echo \"Redis appears to be already running?\"
+    exit 1
+  fi
+
+  echo \"Starting Redis server...\"
+  \$SERV \$CONF
+}
+
+redis_stop() {
+  if [ ! -s \$PIDFILE ]; then
+    echo \"\$PIDFILE does not exist or is empty.\"
+    exit 1
+  fi
+
+  PID=\$(cat \$PIDFILE)
+  echo -n \"Stopping Redis server...\"
+  \$CLI -p \$PORT shutdown
+  while [ -d /proc/\$PID ]; do
+    sleep 1
+    echo -n \".\"
+  done
+  echo \" done\"
+}
+
+redis_restart() {
+  redis_stop
+  sleep 3
+  redis_start
+}
+
+case \"\$1\" in
+  start)
+    redis_start
+    ;;
+  stop)
+    redis_stop
+    ;;
+  restart)
+    redis_restart
+    ;;
+  *)
+    echo \"Usage: \$0 {start|stop|restart}\"
+    exit 1
+esac
+"> $PKG/etc/rc.d/rc.redis.new
+chmod +x $PKG/etc/rc.d/rc.redis.new
+
+# Install logrotate script.
+mkdir -p $PKG/etc/logrotate.d
+echo "/var/log/redis/redis.log {
+    daily
+    rotate 7
+    copytruncate
+    delaycompress
+    compress
+    notifempty
+    missingok
+}
+" > $PKG/etc/logrotate.d/redis.new
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Creamos directorios extra
+#F_extradirs
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Compronar dependencias
+#F_dependencias
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+F_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
