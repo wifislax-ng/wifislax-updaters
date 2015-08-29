@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150729
+SCRIPT_VERSION=20150829
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -26,56 +26,71 @@ F_variables() {
 }
 
 F_dependencias(){
-if [ -f /usr/bin/ffmsindex ]; then
-FFMS2_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-FFMS2_EXIST2=SI
-else
-FFMS2_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-FFMS2_EXIST2=NO
-fi
+	if [ -f /usr/bin/ffmsindex ]; then
+		FFMS2_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		FFMS2_EXIST2=SI
+	else
+		FFMS2_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		FFMS2_EXIST2=NO
+	fi
 
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-echo
-sleep 3
-echo "$CYAN"Dependencias de este paquete:""
-echo ""
-echo "$AMARILLO"ffms2"$CIERRE: $FFMS2_EXIST"
-if [ $FFMS2_EXIST2 = NO ]; then
-echo "$AMARILLO"
-echo "Resolviendo dependencia ffms2 ..."
-sleep 3
-if [ ! -f /opt/wifislax-updaters/Librerias/ffms2_updater ]; then
-echo $ROJO
-echo "No tienes el updater ffms2..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
-cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/ffms2_updater && cd $TMP
-fi
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"ffms2"$CIERRE: $FFMS2_EXIST"
+	
+	if [ $FFMS2_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia ffms2 ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/ffms2_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater ffms2..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/ffms2_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
 
-# Verificamos que salio bien ffms2_updater
-if [ ! -f /usr/bin/ffmsindex ]; then
-echo $ROJO
-echo "Algo salio mal al instalar ffms2..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
+	# Verificamos que salio bien ffms2_updater
+	if [ ! -f /usr/bin/ffmsindex ]; then
+		echo $ROJO
+		echo "Algo salio mal al instalar ffms2..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
 
-# Si todo salio bien
-echo ""
-echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-echo ""
-sleep 3
+	# Si todo salio bien
+	echo ""
+	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+	echo ""
+	sleep 3
 }
 
 # Si el paquete no existe se descargara de internet

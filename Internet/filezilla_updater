@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150825
+SCRIPT_VERSION=20150829
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -40,24 +40,38 @@ sleep 3
 	echo "$AMARILLO"wxGTK3"$CIERRE: $EXIST"
 	DEPENDENCIA=`ps -A | grep -o wxGTK3_updat`
 	if [ ! $DEPENDENCIA = "" ]; then
-	echo ""
-	echo ""$ROJO"Se ha detectado en funcionamiento el "$AMARILLO"wxPython_updater"$CIERRE"..."
-	echo ""
-	echo ""$ROJO"Cuando acabe dicho updater lanza de nuevo este"$CIERRE"..."
-	echo ""
-	exit 1
+		echo ""
+		echo ""$ROJO"Se ha detectado en funcionamiento el "$AMARILLO"wxPython_updater"$CIERRE"..."
+		echo ""
+		echo ""$ROJO"Cuando acabe dicho updater lanza de nuevo este"$CIERRE"..."
+		echo ""
+		exit 1
 	fi
 	if [ ! -f /usr/lib/wx/config/gtk2-unicode-3.0 ]; then
-	echo ""
-	echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
-	sleep 3
-	cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/wxGTK3_updater && cd $TMP
-else
-	echo ""
-	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-	echo ""
-sleep 3
-fi
+		echo ""
+		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
+		sleep 3
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/wxGTK3_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	else
+		echo ""
+		echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+		echo ""
+		sleep 3
+	fi
 }
 
 

@@ -47,7 +47,21 @@ F_dependencias(){
 		echo ""
 		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
 		sleep 3
-		cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/openvas-libraries_updater && cd $TMP
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/openvas-libraries_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
 	fi
 
 	echo ""

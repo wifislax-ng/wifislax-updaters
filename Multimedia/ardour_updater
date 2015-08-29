@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150802
+SCRIPT_VERSION=20150829
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -29,129 +29,175 @@ F_variables() {
 # Comprobar dependencias
 F_dependencias(){
 #1
-if [ -f /usr/bin/dot ] ;then
-GRAPHVIZ_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-GRAPHVIZ_EXIST2=SI
-else
-GRAPHVIZ_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-GRAPHVIZ_EXIST2=NO
-fi
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-echo
-sleep 3
-echo "$CYAN"Dependencias de este paquete:""
-echo ""
-echo "$AMARILLO"graphviz"$CIERRE: $GRAPHVIZ_EXIST"
-if [ $GRAPHVIZ_EXIST2 = NO ]; then
-echo "$AMARILLO"
-echo "Resolviendo dependencia graphviz ..."
-sleep 3
-if [ ! -f /opt/wifislax-updaters/Librerias/graphviz_updater ]; then
-echo $ROJO
-echo "No tienes el updater graphviz..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
-cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/graphviz_updater && cd $TMP
-fi
+	if [ -f /usr/bin/dot ] ;then
+		GRAPHVIZ_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		GRAPHVIZ_EXIST2=SI
+	else
+		GRAPHVIZ_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		GRAPHVIZ_EXIST2=NO
+	fi
+	
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"graphviz"$CIERRE: $GRAPHVIZ_EXIST"
+	
+	if [ $GRAPHVIZ_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia graphviz ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/graphviz_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater graphviz..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/graphviz_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
 
-# Verificamos que salio bien graphviz_updater
-if [ ! -f /usr/bin/dot ] ;then
-echo $ROJO
-echo "Algo salio mal al instalar graphviz..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
+	# Verificamos que salio bien graphviz_updater
+	if [ ! -f /usr/bin/dot ] ;then
+		echo $ROJO
+		echo "Algo salio mal al instalar graphviz..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
 
 #2
-if [ -f /usr/lib/pkgconfig/lrdf.pc ];then
-LIBLRDF_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-LIBLRDF_EXIST2=SI
-else
-LIBLRDF_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-LIBLRDF_EXIST2=NO
-fi
-echo "$AMARILLO"liblrdf"$CIERRE: $LIBLRDF_EXIST"
-if [ $LIBLRDF_EXIST2 = NO ]; then
-echo "$AMARILLO"
-echo "Resolviendo dependencia liblrdf ..."
-sleep 3
-if [ ! -f /opt/wifislax-updaters/Librerias/liblrdf_updater ]; then
-echo $ROJO
-echo "No tienes el updater liblrdf..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
-cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/liblrdf_updater && cd $TMP
-fi
+	if [ -f /usr/lib/pkgconfig/lrdf.pc ];then
+		LIBLRDF_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		LIBLRDF_EXIST2=SI
+	else
+		LIBLRDF_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		LIBLRDF_EXIST2=NO
+	fi
+	
+	echo "$AMARILLO"liblrdf"$CIERRE: $LIBLRDF_EXIST"
+	if [ $LIBLRDF_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia liblrdf ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/liblrdf_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater liblrdf..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/liblrdf_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
 
-# Verificamos que salio bien liblrdf_updater
-if [ ! -f /usr/lib/pkgconfig/lrdf.pc ];then
-echo $ROJO
-echo "Algo salio mal al instalar liblrdf..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
+	# Verificamos que salio bien liblrdf_updater
+	if [ ! -f /usr/lib/pkgconfig/lrdf.pc ];then
+		echo $ROJO
+		echo "Algo salio mal al instalar liblrdf..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
 
 #3
-if [ -f /usr/bin/aubiocut ];then
-AUBIO_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-AUBIO_EXIST2=SI
-else
-AUBIO_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-AUBIO_EXIST2=NO
-fi
-echo "$AMARILLO"aubio"$CIERRE: $AUBIO_EXIST"
-if [ $AUBIO_EXIST2 = NO ]; then
-echo "$AMARILLO"
-echo "Resolviendo dependencia aubio ..."
-sleep 3
-if [ ! -f /opt/wifislax-updaters/Librerias/aubio_updater ]; then
-echo $ROJO
-echo "No tienes el updater aubio..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
-cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/aubio_updater && cd $TMP
-fi
+	if [ -f /usr/bin/aubiocut ];then
+		AUBIO_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		AUBIO_EXIST2=SI
+	else
+		AUBIO_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		AUBIO_EXIST2=NO
+	fi
+	
+	echo "$AMARILLO"aubio"$CIERRE: $AUBIO_EXIST"
+	if [ $AUBIO_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia aubio ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/aubio_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater aubio..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/aubio_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
 
-# Verificamos que salio bien aubio_updater
-if [ ! -f /usr/bin/aubiocut ];then
-echo $ROJO
-echo "Algo salio mal al instalar aubio..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
+	# Verificamos que salio bien aubio_updater
+	if [ ! -f /usr/bin/aubiocut ];then
+		echo $ROJO
+		echo "Algo salio mal al instalar aubio..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
 }
 
 # Si el paquete no existe se descargara de internet

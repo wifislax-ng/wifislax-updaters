@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150725
+SCRIPT_VERSION=20150829
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -26,96 +26,126 @@ F_variables() {
 }
 
 F_dependencias(){
-if [ -f /usr/lib/pkgconfig/gee-0.8.pc ]; then
-LIBGEE_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-LIBGEE_EXIST2=SI
-else
-LIBGEE_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-LIBGEE_EXIST2=NO
-fi
-if [ -f /usr/bin/qqwing ]; then
-QQWING_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-QQWING_EXIST2=SI
-else
-QQWING_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-QQWING_EXIST2=NO
-fi
+	if [ -f /usr/lib/pkgconfig/gee-0.8.pc ]; then
+		LIBGEE_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		LIBGEE_EXIST2=SI
+	else
+		LIBGEE_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		LIBGEE_EXIST2=NO
+	fi
+	
+	if [ -f /usr/bin/qqwing ]; then
+		QQWING_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		QQWING_EXIST2=SI
+	else
+		QQWING_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		QQWING_EXIST2=NO
+	fi
 
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-echo
-sleep 3
-echo "$CYAN"Dependencias de este paquete:""
-echo ""
-echo "$AMARILLO"libgee"$CIERRE: $LIBGEE_EXIST"
-if [ $LIBGEE_EXIST2 = NO ]; then
-echo "$AMARILLO"
-echo "Resolviendo dependencia libgee ..."
-sleep 3
-if [ ! -f /opt/wifislax-updaters/Librerias/libgee_updater ]; then
-echo $ROJO
-echo "No tienes el updater libgee..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
-cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/libgee_updater && cd $TMP
-fi
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"libgee"$CIERRE: $LIBGEE_EXIST"
+	
+	if [ $LIBGEE_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia libgee ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/libgee_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater libgee..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/libgee_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
 
-# Verificamos que salio bien libgee_updater
-if [ ! -f /usr/lib/pkgconfig/gee-0.8.pc ]; then
-echo $ROJO
-echo "Algo salio mal al instalar libgee..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi 
+	# Verificamos que salio bien libgee_updater
+	if [ ! -f /usr/lib/pkgconfig/gee-0.8.pc ]; then
+		echo $ROJO
+		echo "Algo salio mal al instalar libgee..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi 
 
-echo "$AMARILLO"qqwing"$CIERRE: $QQWING_EXIST"
-if [ $QQWING_EXIST2 = NO ]; then
-echo "$AMARILLO"
-echo "Resolviendo dependencia qqwing ..."
-sleep 3
-if [ ! -f /opt/wifislax-updaters/Librerias/qqwing_updater ]; then
-echo $ROJO
-echo "No tienes el updater qqwing..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi
-cd /opt/wifislax-updaters/Librerias/ && xterm /opt/wifislax-updaters/Librerias/qqwing_updater && cd $TMP
-fi
+	echo "$AMARILLO"qqwing"$CIERRE: $QQWING_EXIST"
+	if [ $QQWING_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia qqwing ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/qqwing_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater qqwing..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/qqwing_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
 
-# Verificamos que salio bien qqwing_updater
-if [ ! -f /usr/bin/qqwing ]; then
-echo $ROJO
-echo "Algo salio mal al instalar qqwing..."
-sleep 1
-echo "No se puede continuar..."
-sleep 1
-echo "El script se cierra aqui."
-sleep 1
-echo $CIERRE
-exit 0
-fi 
+	# Verificamos que salio bien qqwing_updater
+	if [ ! -f /usr/bin/qqwing ]; then
+		echo $ROJO
+		echo "Algo salio mal al instalar qqwing..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi 
 
 
-# Si todo salio bien
-echo ""
-echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-echo ""
-sleep 3
+	# Si todo salio bien
+	echo ""
+	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+	echo ""
+	sleep 3
 }
 
 # Si el paquete no existe se descargara de internet
