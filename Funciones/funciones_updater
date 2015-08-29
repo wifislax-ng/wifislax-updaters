@@ -117,7 +117,7 @@ set -e
 # Detecta la version instalada en el sistema
 f_versionInstalada() {
   INSTALADA=""
-  POSIBLES_INSTALADAS=$(grep -r -l -o $PRGNAM- /var/log/packages/ | head -1)
+  POSIBLES_INSTALADAS=$(find /var/log/packages -iname "${PRGNAM}-[0-9]*" | head -1)
    if [ -f $POSIBLES_INSTALADAS ] && [ $POSIBLES_INSTALADAS ]; then
       INSTALADA="$(ls /var/log/packages/$PRGNAM-[0-9]*-* 2>/dev/null|cut -d '/' -f5-|sed "s/^${PRGNAM}-//"|rev|cut -d'-' -f3-|rev|tail -1)"
       echo ""
