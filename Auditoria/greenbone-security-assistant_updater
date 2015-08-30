@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150831
+SCRIPT_VERSION=20150830
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,23 +16,32 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=openvas-manager
+	PRGNAM=greenbone-security-assistant
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB="http://wald.intevation.org"
 	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM" |grep "beta"| grep "tar\.gz" -m1)
 	VERSION=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
 	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep -Po 'href="\K.*(?=")')"
+
 }
 
 # Comprobar dependencias
 F_dependencias(){
 	echo 
 	if [ -f /var/log/packages/openvas-libraries-* ]; then
-	  EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-	  DESCARGAR=0
+	  EXIST_openvas_libraries=`echo "$VERDE"Instalada"$CIERRE"`
+	  DESCARGAR_openvas_libraries=0
 	else
-	  EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-	  DESCARGAR=1
+	  EXIST_openvas_libraries=`echo "$ROJO"No Instalada"$CIERRE"`
+	  DESCARGAR_openvas_libraries=1
+	fi
+	
+	if [ -f /var/log/packages/libmicrohttpd-* ]; then
+	  EXIST_libmicrohttpd=`echo "$VERDE"Instalada"$CIERRE"`
+	  DESCARGAR_libmicrohttpd=0
+	else
+	  EXIST_libmicrohttpd=`echo "$ROJO"No Instalada"$CIERRE"`
+	  DESCARGAR_libmicrohttpd=1
 	fi
 	
 	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
@@ -40,10 +49,9 @@ F_dependencias(){
 	sleep 3
 	echo "$CYAN"Dependencias de este paquete:""
 	echo ""
-	echo "$AMARILLO"openvas-libraries"$CIERRE: $EXIST"
+	echo "$AMARILLO"openvas-libraries"$CIERRE: $EXIST_openvas_libraries"	
 	
-	
-	if [ $DESCARGAR = "1" ]; then
+	if [ $DESCARGAR_openvas_libraries = "1" ]; then
 		echo ""
 		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
 		sleep 3
@@ -52,7 +60,28 @@ F_dependencias(){
 		xterm -e sh -c '/opt/wifislax-updaters/Auditoria/openvas-libraries_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
 		
+		cd $TMP
+	fi
+
+	echo "$AMARILLO"libmicrohttpd"$CIERRE: $EXIST_libmicrohttpd"
+	if [ $DESCARGAR_libmicrohttpd = "1" ]; then
+		echo ""
+		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
+		sleep 3
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/libmicrohttpd_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then
 		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
 		  if [ -z $status ]; then
@@ -111,53 +140,53 @@ cd ..
 mkdir -p $PKG/etc/rc.d
 echo "#!/bin/sh
 #
-# /etc/rc.d/rc.openvasmd
+# /etc/rc.d/rc.gsad
 #
-# Start/stop/restart the OpenVAS Manager Daemon.
+# Start/stop/restart the Greenbone Security Assistant Daemon.
 #
-# To make OpenVAS Manager start automatically at boot, make this
-# file executable:  chmod 755 /etc/rc.d/rc.openvasmd
+# To make Greenbone SA start automatically at boot, make this
+# file executable:  chmod 755 /etc/rc.d/rc.gsad
 # and add to rc.local:
-# if [ -x /etc/rc.d/rc.openvasmd ]; then
-#   . /etc/rc.d/rc.openvasmd start
+# if [ -x /etc/rc.d/rc.gsad ]; then
+#   . /etc/rc.d/rc.gsad start
 # fi
 #
 
-OPENVASMD_PATH=/usr/sbin
-OPENVASMD_BIN=openvasmd
-OPENVASMD_OPTIONS=\"-a 127.0.0.1 --gnutls-priorities=SECURE128:-VERS-SSL3.0\"
-OPENVASMD_CMD=\"\$OPENVASMD_PATH/\$OPENVASMD_BIN \$OPENVASMD_OPTIONS\"
+GSAD_PATH=/usr/sbin
+GSAD_BIN=gsad
+GSAD_OPTIONS=\"-p 9392 --timeout=60 --gnutls-priorities=SECURE128:-VERS-SSL3.0\"
+GSAD_CMD=\"\$GSAD_PATH/\$GSAD_BIN \$GSAD_OPTIONS\"
 
-openvasmd_start() {
-  echo Starting OpenVAS Manager: \$OPENVASMD_CMD
-  \$OPENVASMD_CMD
+gsad_start() {
+  echo Starting Greenbone Security Assistant: \$GSAD_CMD
+  \$GSAD_CMD
 }
 
-openvasmd_stop() {
-  echo \"Stopping OpenVAS Manager\"
-  /bin/killall \$OPENVASMD_BIN
+gsad_stop() {
+  echo \"Stopping Greenbone Security Assistant\"
+  /bin/killall \$GSAD_BIN
 }
 
-openvasmd_restart() {
-  openvasmd_stop
-  openvasmd_start
+gsad_restart() {
+  gsad_stop
+  gsad_start
 }
 
 case \"\$1\" in
 'start')
-  openvasmd_start
+  gsad_start
   ;;
 'stop')
-  openvasmd_stop
+  gsad_stop
   ;;
 'restart')
-  openvasmd_restart
+  gsad_restart
   ;;
 *)
-  echo \"usage \$0 start|stop|restart|reload\"
+  echo \"usage \$0 start|stop|restart\"
 esac
-" > $PKG/etc/rc.d/rc.openvasmd
-chmod 0644 $PKG/etc/rc.d/rc.openvasmd
+" > $PKG/etc/rc.d/rc.gsad
+chmod 0644 $PKG/etc/rc.d/rc.gsad
 
 mv $PKG/usr/share/man $PKG/usr
 find $PKG/usr/man -type f -exec gzip -9 {} \;

@@ -164,9 +164,9 @@ case \"\$1\" in
 *)
   echo \"usage \$0 start|stop|restart|reload\"
 esac
-" > $PKG/etc/rc.d/rc.openvassd.new
+" > $PKG/etc/rc.d/rc.openvassd
 
-chmod 0644 $PKG/etc/rc.d/rc.openvassd.new
+chmod 0644 $PKG/etc/rc.d/rc.openvassd
 
 mv $PKG/usr/share/man $PKG/usr
 find $PKG/usr/man -type f -exec gzip -9 {} \;
