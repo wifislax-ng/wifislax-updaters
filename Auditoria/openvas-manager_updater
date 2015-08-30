@@ -49,7 +49,7 @@ F_dependencias(){
 		sleep 3
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Auditorias/openvas-libraries_updater; echo $? > '$statusfile 
+		xterm -e sh -c '/opt/wifislax-updaters/Auditoria/openvas-libraries_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		
