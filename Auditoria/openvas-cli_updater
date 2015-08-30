@@ -47,7 +47,7 @@ F_dependencias(){
 		echo ""
 		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
 		sleep 3
-		cd /opt/wifislax-updaters/Librerias/
+		cd /opt/wifislax-updaters/Auditoria/
 		statusfile=$(mktemp)
 		xterm -e sh -c '/opt/wifislax-updaters/Auditoria/openvas-libraries_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
