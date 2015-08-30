@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150828
+SCRIPT_VERSION=20150830
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -57,14 +57,16 @@ sed -i "s|-O3||" deps/Makefile deps/hiredis/Makefile
 make install PREFIX=$PKG/usr
 
 # Use sample config and set some sane defaults.
-install -D -m 0644 redis.conf $PKG/etc/redis/redis.conf.new
+install -D -m 0644 redis.conf $PKG/etc/redis/redis.conf
 sed -i \
   -e 's|^daemonize no|daemonize yes|' \
   -e 's|^dir \.|dir /var/lib/redis|' \
   -e 's|^logfile ""|logfile /var/log/redis/redis.log|' \
   -e 's|^# bind 127.0.0.1|bind 127.0.0.1|' \
-  $PKG/etc/redis/redis.conf.new
-install -D -m 0644 sentinel.conf $PKG/etc/redis/sentinel.conf.new
+  -e 's|^# unixsocket /tmp/redis.sock|unixsocket /tmp/redis.sock|' \
+  -e 's|^# unixsocketperm 700|unixsocketperm 700|' \
+  $PKG/etc/redis/redis.conf
+install -D -m 0644 sentinel.conf $PKG/etc/redis/sentinel.conf
 
 # Create data directory.
 mkdir -p $PKG/var/lib/redis
@@ -136,8 +138,7 @@ case \"\$1\" in
     echo \"Usage: \$0 {start|stop|restart}\"
     exit 1
 esac
-"> $PKG/etc/rc.d/rc.redis.new
-chmod +x $PKG/etc/rc.d/rc.redis.new
+"> $PKG/etc/rc.d/rc.redis
 
 # Install logrotate script.
 mkdir -p $PKG/etc/logrotate.d
@@ -150,7 +151,7 @@ echo "/var/log/redis/redis.log {
     notifempty
     missingok
 }
-" > $PKG/etc/logrotate.d/redis.new
+" > $PKG/etc/logrotate.d/redis
 }
 
 ###################################
