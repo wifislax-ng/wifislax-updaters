@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150830
+SCRIPT_VERSION=20150901
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,10 +19,10 @@ F_variables() {
 	PRGNAM=greenbone-security-assistant
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB="http://wald.intevation.org"
-	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM" |grep "beta"| grep "tar\.gz" -m1)
-	VERSION=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
-	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep -Po 'href="\K.*(?=")')"
-
+	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM")
+	ARCHIVO=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | grep "tar\.gz$" | sort -V | tail -1)
+	VERSION=$(echo "$ARCHIVO" | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
+	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep "$ARCHIVO"|grep -Po 'href="\K.*(?=")' |grep "tar\.gz$")"
 }
 
 # Comprobar dependencias
