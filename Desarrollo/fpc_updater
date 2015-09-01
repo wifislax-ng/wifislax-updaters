@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150824
+SCRIPT_VERSION=20150902
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -83,8 +83,8 @@ echo $PATH
 
 cd $TMP/${PRGNAM}build-$VERSION/${PRGNAM}build-$VERSION
 fpcmake -Tall
-make build NOGDB=1
-make -j1 NOGDB=1 PREFIX=$PKG/usr install
+make build NOGDB=1 -j$NUCLEOS || exit 1
+make -j$NUCLEOS NOGDB=1 PREFIX=$PKG/usr install
 
 # Fix library dir
 [ "$LIBDIRSUFFIX" = "64" ] && mv $PKG/usr/lib $PKG/usr/lib${LIBDIRSUFFIX}

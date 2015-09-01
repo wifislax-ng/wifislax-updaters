@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150829
+SCRIPT_VERSION=20150902
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -145,7 +145,7 @@ echo
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1  
   
-make -j$NUCLEOS
+make -j$NUCLEOS || exit 1
 make install DESTDIR=$PKG
 }
 

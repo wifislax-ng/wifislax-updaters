@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150902
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -68,7 +68,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --disable-precomp-headers \
   --build=$ARCH-slackware-linux
 
-make
+make -j$NUCLEOS || exit 1
 make install DESTDIR=$PKG
 
 ln -fs /usr/lib${LIBDIRSUFFIX}/wx/config/gtk2-unicode-3.0 \

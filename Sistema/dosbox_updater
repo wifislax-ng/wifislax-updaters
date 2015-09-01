@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150902
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -86,7 +86,7 @@ CXXFLAGS="$SLKCFLAGS" \
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1 
-make DESTDIR=$PKG
+make -j$NUCLEOS DESTDIR=$PKG || exit 1
 make install-strip DESTDIR=$PKG
 install -D -m 0644 src/dosbox.ico $PKG/usr/share/pixmaps/dosbox.ico
 

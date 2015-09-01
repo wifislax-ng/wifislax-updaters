@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150902
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -63,7 +63,7 @@ cd build
   # Fix underlinking by configuring the gtk module first, then sed:
   make gtk.configure
   sed -i '/^LDFLAGS/s/$/ -ltheoraenc -ltheoradec/' gtk/src/Makefile
-  make
+  make -j$NUCLEOS || exit 1
   make install DESTDIR=$PKG
 }
 

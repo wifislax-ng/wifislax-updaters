@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150830
+SCRIPT_VERSION=20150902
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -53,7 +53,7 @@ sed -i "s|-O3||" deps/Makefile deps/hiredis/Makefile
 
 # No ./configure necessary.
 # http://lists.slackbuilds.org/pipermail/slackbuilds-users/2013-January/010042.html
-( unset ARCH ; CFLAGS="$SLKCFLAGS" make )
+( unset ARCH ; CFLAGS="$SLKCFLAGS" make -j$NUCLEOS )
 make install PREFIX=$PKG/usr
 
 # Use sample config and set some sane defaults.

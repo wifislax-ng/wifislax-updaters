@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150902
 CATEGORIA=Grabacion
 
 ############################################################
@@ -95,7 +95,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --enable-nautilus=no \
   --enable-libburnia=yes
 
-make || exit 1
+make -j$NUCLEOS || exit 1
 make install DESTDIR=$PKG
 }
 

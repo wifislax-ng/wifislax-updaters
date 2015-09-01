@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150729
+SCRIPT_VERSION=20150902
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -67,7 +67,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --docdir=/usr/doc/$PRGNAM-$VERSION \
   --build=$ARCH-slackware-linux
 
-make || exit 1
+make -j$NUCLEOS || exit 1
 make install LIBDIR="\${PREFIX}/lib${LIBDIRSUFFIX}" DESTDIR=$PKG
 
 

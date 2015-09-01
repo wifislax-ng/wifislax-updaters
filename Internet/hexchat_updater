@@ -66,7 +66,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --disable-xml-catalog-update \
   --build=$ARCH-slackware-linux
 
-make -j$NUCLEOS
+make -j$NUCLEOS|| exit 1
 make install DESTDIR=$PKG
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
