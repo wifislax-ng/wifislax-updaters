@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Reproductores streaming"
 
 ############################################################
@@ -55,7 +55,7 @@ sed -i "/^PREFIX/s/=.*$/=\/usr/;
         s/^QMAKE_OPTS=/QMAKE_OPTS+=/" Makefile
 
 QMAKE_OPTS="QMAKE_CXXFLAGS=\"$SLKCFLAGS\"" \
-make -j$NUCLEOS || exit 1
+make  || exit 1
 make install DESTDIR=$PKG
   
 # Corregimos el nombre en el fichero desktop

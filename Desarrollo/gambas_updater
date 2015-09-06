@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -60,8 +60,8 @@ CXXFLAGS="$SLKCFLAGS" \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --build=$ARCH-slackware-linux
   
-make -j$NUCLEOS || exit 1
-make -j$NUCLEOS install-strip DESTDIR=$PKG XDG_UTILS=""
+make  || exit 1
+make  install-strip DESTDIR=$PKG XDG_UTILS=""
 
 mkdir -p $PKG/usr/share/icons/hicolor/{scalable/apps,48x48/apps,64x64/mimetypes}
 cp -a app/desktop/$PRGNAM_FULL.svg $PKG/usr/share/icons/hicolor/scalable/apps

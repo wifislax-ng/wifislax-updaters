@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -69,7 +69,7 @@ sleep 1
   sed -i 's|unicode|unicode-release|' Makefile
   sed -i 's|-lwx_gtk2u_webview-2.8||' Makefile
 
-make -j$NUCLEOS || exit 1
+make  || exit 1
 make install DESTDIR=$PKG
 }
 

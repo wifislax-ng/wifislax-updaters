@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -97,7 +97,7 @@ cd build
 	-DMAN_INSTALL_DIR=/usr/man \
 	-DCMAKE_BUILD_TYPE=Release \
 	..
-  make all CFLAGS="-fPIC" PMFLAGS="-DNEWBUFFER" -j$NUCLEOS || exit 1
+  make all CFLAGS="-fPIC" PMFLAGS="-DNEWBUFFER"  || exit 1
   make install DESTDIR=$PKG
 cd ..
 }

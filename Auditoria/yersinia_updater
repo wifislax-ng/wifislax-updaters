@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150825
+SCRIPT_VERSION=20150906
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -66,7 +66,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --build=$ARCH-slackware-linux
   
 make clean || exit 1
-make -j$NUCLEOS || exit 1
+make  || exit 1
 make DESTDIR=$PKG install-strip || exit 1
 
 # Generamos una entrada desktop

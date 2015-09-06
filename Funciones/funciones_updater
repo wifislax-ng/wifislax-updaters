@@ -18,7 +18,6 @@ PRGNAM=funciones
 VERSION=$FUNCIONES_VERSION
 WEB=http://www.downloadwireless.net
 DOWNLOAD=$WEB/wifislax-updaters/Funciones/${PRGNAM}_updater
-NUCLEOS=$(grep -c \^processor /proc/cpuinfo)
 BUILD=${BUILD:-1}
 TAG=${TAG:-sw}
 CWD=$(pwd)

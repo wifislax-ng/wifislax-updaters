@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -51,7 +51,7 @@ sed -i "s|libircclient/||" src/net/common/ircthread.cpp
 
 qmake pokerth.pro
 
-make -j$NUCLEOS || exit 1
+make  || exit 1
 make install DESTDIR=$PKG INSTALL_ROOT=$PKG
 
 mkdir -p $PKG/usr/bin

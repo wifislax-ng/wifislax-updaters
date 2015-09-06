@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -48,7 +48,7 @@ find -L . \
 lupdate unetbootin.pro
 lrelease unetbootin.pro
 qmake -config release "DEFINES += NOSTATIC" "RESOURCES -= unetbootin.qrc"
-make -j$NUCLEOS || exit 1
+make  || exit 1
 strip --strip-unneeded $PRGNAM
 
 mkdir -p $PKG/usr/bin

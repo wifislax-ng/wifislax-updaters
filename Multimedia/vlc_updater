@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -72,7 +72,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-kde-solid=no \
   --build=$ARCH-slackware-linux
 
-make -j$NUCLEOS || exit 1
+make  || exit 1
 make install DESTDIR=$PKG
 
 # Creamos la config basica

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150906
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -70,7 +70,7 @@ cd build
     -DMAN_INSTALLDIR=/usr/man \
     -DBUNDLED_LIBS=OFF \
     -DCMAKE_BUILD_TYPE=Release ..
-  make -j$NUCLEOS || exit 1
+  make  || exit 1
   make install DESTDIR=$PKG || exit 1
 cd ..
 

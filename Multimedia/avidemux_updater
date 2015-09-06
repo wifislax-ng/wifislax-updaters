@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -65,8 +65,8 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DFAKEROOT="$PKG" \
   ../avidemux_core
-make -j$NUCLEOS || exit 1
-make -j$NUCLEOS  install DESTDIR=$PKG
+make  || exit 1
+make   install DESTDIR=$PKG
 cd ..
 
 if [ "x$WITH_QT4" = "xYES" ]; then
@@ -78,8 +78,8 @@ if [ "x$WITH_QT4" = "xYES" ]; then
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DFAKEROOT="$PKG" \
     ../avidemux/qt4
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
   cd ..
 fi
 
@@ -92,8 +92,8 @@ if [ "x$WITH_GTK" = "xYES" ]; then
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DFAKEROOT="$PKG" \
     ../avidemux/gtk
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
   cd ..
 fi
 
@@ -106,8 +106,8 @@ if [ "x$WITH_CLI" = "xYES" ]; then
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DFAKEROOT="$PKG" \
     ../avidemux/cli
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
   cd ..
 fi
 
@@ -121,8 +121,8 @@ cd build_plugins_common
     -DPLUGIN_UI=COMMON \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
 cd ..
 
 if [ "x$WITH_QT4" = "xYES" ]; then
@@ -136,8 +136,8 @@ if [ "x$WITH_QT4" = "xYES" ]; then
     -DPLUGIN_UI=QT4 \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
   cd ..
 fi
 
@@ -152,8 +152,8 @@ if [ "x$WITH_GTK" = "xYES" ]; then
     -DPLUGIN_UI=GTK \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
   cd ..
 fi
 
@@ -168,8 +168,8 @@ if [ "x$WITH_CLI" = "xYES" ]; then
     -DPLUGIN_UI=CLI \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make -j$NUCLEOS || exit 1
-  make -j$NUCLEOS  install DESTDIR=$PKG
+  make  || exit 1
+  make   install DESTDIR=$PKG
   cd ..
 fi
 

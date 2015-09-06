@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -68,7 +68,7 @@ cd build
     -DENABLE_DSSI=1 \
     -DENABLE_LASH=1 \
     -DENABLE_OSC=1 ..
-  make -j$NUCLEOS || exit 1
+  make  || exit 1
   make install DESTDIR=$PKG
 cd ..
 

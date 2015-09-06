@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -51,7 +51,7 @@ find -L . \
 # Fix manpage location.
 sed -i -e 's|share/man|man|g' Makefile
 
-make -j$NUCLEOS || exit 1
+make  || exit 1
 PREFIX=/usr \
 LIBINSTALLDIR=/lib${LIBDIRSUFFIX} \
 make install DESTDIR=$PKG

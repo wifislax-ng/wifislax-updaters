@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150902
+SCRIPT_VERSION=20150906
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -141,7 +141,7 @@ WX_CONFIG=/usr/bin/wx-config-2.8 ./configure \
   --with-soundtouch \
   --with-libtwolame
 
-make -j$NUCLEOS || exit 1
+make  || exit 1
 make install DESTDIR=$PKG
 
 # Devolvemos el fichero renombrado anteriormente

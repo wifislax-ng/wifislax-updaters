@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150502
+SCRIPT_VERSION=20150906
 CATEGORIA="Reproductores streaming"
 
 ############################################################
@@ -53,7 +53,7 @@ find -L . \
 echo ""
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 3
-make -j$NUCLEOS install DESTDIR=$PKG
+make  install DESTDIR=$PKG
   
 ( cd $PKG/usr/bin ; ln -sf sp-sc sopcast )
 rm -rf $PKG/usr/share
