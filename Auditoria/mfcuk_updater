@@ -62,7 +62,6 @@ F_dependencias(){
 		
 		cd $TMP
 	fi
-	fi
 
 	echo ""
 	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
