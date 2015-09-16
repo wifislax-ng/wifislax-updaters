@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150916
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,9 +17,10 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	WEB=http://www.wireshark.org/download/src/
-	VERSION=`curl -s https://www.wireshark.org | grep -i stable | head -1 | cut -d " " -f 4 | cut -d "<" -f-1`
+	VERSION=`curl -s https://www.wireshark.org | grep -i stable | head -1 | cut -d " " -f8 | cut -d "<" -f-1 | sed "s/.$//g"`
 	PRGNAM=wireshark
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DOWNLOAD=$WEB/$PRGNAM-$VERSION.tar.bz2
 }
 
 # Creamos directorios extra
@@ -33,7 +34,7 @@ F_download(){
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 3
-	aria2c -x 3 $WEB/$PRGNAM-$VERSION.tar.bz2
+	aria2c -x 3 $DOWNLOAD
 	fi
 }
 
