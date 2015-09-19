@@ -5,8 +5,9 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150919
 
+# 20150919  Cambiado parametro arch a i586
 # 20150815  Ajustes para adaptarse a github
 # 20150723  Limpiezas en codigo
 # 20150704  Corregido bug en DOWNLOAD , se ponia 3.x en vez de la variable FAMILIA
@@ -110,7 +111,7 @@ fi
 # Definimos arquitectura del sitema anfitrion
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
-    i?86) ARCH=i486 ;;
+    i?86) ARCH=i586 ;;
     arm*) ARCH=arm ;;
        *) ARCH=$( uname -m ) ;;
   esac

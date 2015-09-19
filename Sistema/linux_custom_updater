@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150919
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -88,7 +88,7 @@ fi
 # Definimos arquitectura del sitema anfitrion
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
-    i?86) ARCH=i486 ;;
+    i?86) ARCH=i586 ;;
     arm*) ARCH=arm ;;
        *) ARCH=$( uname -m ) ;;
   esac
