@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150921
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,7 +21,7 @@ F_variables() {
 	WEB=https://launchpad.net/cairo-dock-plug-ins/
 	VERSION=`curl -s $WEB | grep "Latest version is" | sed "s/Latest version is //g" | sed "s/ //g"`
 	RAMA=$(echo $VERSION | cut -d "." -f-2)
-	DOWNLOAD=https://launchpad.net/cairo-dock-plug-ins/$RAMA/$VERSION/+download/$PRGNAM-$VERSION.tar.gz
+	DOWNLOAD=https://launchpad.net/cairo-dock-plug-ins/$RAMA/$VERSION/+download/cairo-dock-plug-ins-$VERSION.tar.gz
 }
 
 # Comprobar dependencias
@@ -60,7 +60,7 @@ fi
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+	if [ ! -f cairo-dock-plug-ins-$VERSION.tar.gz ]; then
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 3
@@ -74,7 +74,7 @@ echo
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
 rm -rf $PRGNAM-$VERSION
-tar -xvf $PRGNAM-$VERSION.tar.gz
+tar -xvf cairo-dock-plug-ins-$VERSION.tar.gz
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
