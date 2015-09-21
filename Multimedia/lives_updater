@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150921
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -17,11 +17,11 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://salsaman.home.xs4all.nl/lives/current/
-	VERSION=`curl -s $WEB | grep .bz2 | tail -1 | cut -d - -f2 | cut -d t -f-1 | sed "s/.$//g"`
+	WEB=http://lives-video.com/index.php?do=downloads
+	VERSION=`curl -s $WEB | grep -a .tar.bz2 | cut -d - -f3 | cut -d t -f-1 | sed "s/.$//g" `
 	PRGNAM=lives
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DESCARGA=http://www.xs4all.nl/~salsaman/lives/current/LiVES-$VERSION.tar.bz2
+	DOWNLOAD=http://lives-video.com/releases/LiVES-$VERSION.tar.bz2
 }
 
 # Si el paquete no existe se descargara de internet
@@ -30,7 +30,7 @@ F_download(){
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 2
-	aria2c -x 3 $DESCARGA
+	aria2c -x 3 $DOWNLOAD
 	fi
 }
 
