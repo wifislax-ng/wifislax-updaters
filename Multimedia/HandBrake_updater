@@ -52,6 +52,14 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
+SLKCFLAGS="$SLKCFLAGS -fno-aggressive-loop-optimizations"
+saved_CFLAGS="$CFLAGS"
+saved_CXXFLAGS="$CFLAGS"
+export CFLAGS="$SLKCFLAGS"
+export CXXFLAGS="$SLKCFLAGS"
+
+set -e
+  
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
@@ -65,6 +73,10 @@ cd build
   sed -i '/^LDFLAGS/s/$/ -ltheoraenc -ltheoradec/' gtk/src/Makefile
   make  || exit 1
   make install DESTDIR=$PKG
+  cd $TMP/$PRGNAM-$VERSION
+
+export CFLAGS="$saved_CFLAGS"
+export CXXFLAGS="$saved_CXXFLAGS"
 }
 
 ###################################
@@ -86,7 +98,7 @@ f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-f_arquitectura i486
+f_arquitectura i686
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
