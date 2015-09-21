@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150921
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -86,7 +86,7 @@ f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-f_arquitectura
+f_arquitectura i486
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
