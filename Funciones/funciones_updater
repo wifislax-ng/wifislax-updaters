@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20150829
+FUNCIONES_VERSION=20150921
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -144,10 +144,14 @@ fi
 f_eliminaVersion() {
    sleep 1
    if [ $PRGNAM = xampp ]; then
+   if [ -f /opt/lampp/lampp ]; then
    /opt/lampp/lampp stop
    fi
+   fi
    if [ $PRGNAM = metasploit ]; then
+   if [ -f /etc/rc.d/rc.metasploit ]; then
    /etc/rc.d/rc.metasploit stop
+   fi
    fi
    echo ""
    echo "$ROJO"Eliminando la version del sistema..."$CIERRE"
