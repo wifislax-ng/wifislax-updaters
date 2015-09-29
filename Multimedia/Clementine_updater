@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20150929
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -22,11 +22,24 @@ F_variables() {
 	PRGNAM=Clementine
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	DESCARGA=https://github.com/clementine-player/$PRGNAM/archive/$VERSION.tar.gz
+	if [ $VERSION = 1.2.3 ]; then
+	WEB=http://ponce.cc/slackware/sources/repo/
+	VERSION=20150512_70cc291
+	PRGNAM=clementine
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	DESCARGA=http://ponce.cc/slackware/sources/repo/$PRGNAM-$VERSION.tar.xz
+	fi
+	
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
+        if [ $VERSION = 1.2.3 ]; then
+        EXT=tar.gz 
+        else
+        EXT=tar.xz
+        fi
+	if [ ! -f $PRGNAM-$VERSION.$EXT ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 3
@@ -40,7 +53,7 @@ echo ""
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
 rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$VERSION.tar.gz
+tar xvf $PRGNAM-$VERSION.$EXT
 cd $PRGNAM-$VERSION
 
 # Generamos y aplicamos parche
