@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150929
+SCRIPT_VERSION=20150930
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -30,6 +30,123 @@ F_variables() {
 	DESCARGA=http://ponce.cc/slackware/sources/repo/$PRGNAM-$VERSION.tar.xz
 	fi
 	
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	if [ -f /usr/include/libspotify/api.h ]; then
+		SPOTIFY_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		SPOTIFY_EXIST2=SI
+	else
+		SPOTIFY_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		SPOTIFY_EXIST2=NO
+	fi
+	
+	if [ -f /usr/lib/libechonest.so ]; then
+		LIBECHONEST_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		LIBECHONEST_EXIST2=SI
+	else
+		LIBECHONEST_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		LIBECHONEST_EXIST2=NO
+	fi
+	
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"libspotify"$CIERRE: $SPOTIFY_EXIST"
+	
+		if [ $SPOTIFY_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia libspotify ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/libspotify_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater libspotify..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/libspotify_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
+
+	# Verificamos que salio bien libspotify_updater
+	if [ ! -f /usr/include/libspotify/api.h ]; then
+		echo $ROJO
+		echo "Algo salio mal al instalar libspotify..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
+	
+		if [ $LIBECHONEST_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia libechonest ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/Librerias/libechonest_updater ]; then
+			echo $ROJO
+			echo "No tienes el updater libechonest..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/libechonest_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
+
+	# Verificamos que salio bien libechonest_updater
+	if [ ! -f /usr/lib/libechonest.so ]; then
+		echo $ROJO
+		echo "Algo salio mal al instalar libechonest..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
+
 }
 
 # Si el paquete no existe se descargara de internet
@@ -133,6 +250,8 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
+#Compronar dependencias
+F_dependencias
 #Asignamos o detectamos arquitectura
 f_arquitectura
 #Comprobamos version instalada del script
