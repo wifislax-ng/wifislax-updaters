@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151004
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,9 +20,9 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB="http://wald.intevation.org"
 	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM")
-	ARCHIVO=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | grep "tar\.gz$" | sort -V | tail -1)
-	VERSION=$(echo "$ARCHIVO" | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
-	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep "$ARCHIVO"|grep -Po 'href="\K.*(?=")' |grep "tar\.gz$")"
+	SOURCES=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | grep "tar\.gz$" | sort -V | tail -1)
+	VERSION=$(echo "$SOURCES" | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
+	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep "$SOURCES"|grep -Po 'href="\K.*(?=")' |grep "tar\.gz$")"
 }
 
 # Comprobar dependencias
@@ -71,22 +71,12 @@ F_dependencias(){
 	sleep 3
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 rm -rf $PRGNAM-$VERSION
-tar -xvf $PRGNAM-$VERSION.tar.gz
+tar -xvf $SOURCES
 sleep 1
 cd $PRGNAM-$VERSION
 chown -R root:root .
@@ -128,8 +118,6 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-#Creamos directorios extra
-#F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
@@ -141,7 +129,7 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

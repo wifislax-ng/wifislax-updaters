@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151004
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,11 +16,13 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
+	PRGNAM=tcpdump
 	WEB=http://www.tcpdump.org/release/
 	VERSION=$(curl -s  "$WEB" | grep -i tcpdump |grep -Po '">\K.*(?=</a>)' | grep -Po 'href="\K.*(?=")' | grep -v "\.sig" | sort -h | tail -1 | rev | cut -d. -f3- | cut -d- -f1 | rev)
-	PRGNAM=tcpdump
-	DESCARGA=${WEB}/${PRGNAM}-${VERSION}.tar.gz
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	EXTENSION=tar.gz
+	SOURCES=${PRGNAM}-${VERSION}.$EXTENSION
+	DOWNLOAD=${WEB}/$SOURCES
 }
 
 # Creamos directoprios extra
@@ -28,27 +30,12 @@ F_extradirs(){
 mkdir -p $PKG/usr/share/applications/wifislax/Redes
 }
 
-# Comprobar dependencias
-#F_dependencias(){
-
-#}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DESCARGA
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo ""
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
-tar xvf $PRGNAM-$VERSION.tar.gz
+tar xvf $SOURCES
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
@@ -98,19 +85,15 @@ f_presentacion
 f_comprobarConexion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Compronar dependencias
-#F_dependencias
 #Asignamos o detectamos arquitectura
 f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
 f_strip
 #Creamos xzm , instalamos y salimos
 f_tareasFinales
-
-

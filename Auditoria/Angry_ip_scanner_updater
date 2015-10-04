@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151004
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,7 +20,9 @@ F_variables() {
 	VERSION=`curl -s $WEB | grep .jar | head -1 | cut -d y -f2 | cut -d / -f2`
 	PRGNAM=Angry_ip_scanner
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DESCARGA=http://sourceforge.net/projects/ipscan/files/ipscan3-binary/$VERSION/ipscan-linux-$VERSION.jar
+	EXTENSION=jar
+	SOURCES=ipscan-linux-$VERSION.$EXTENSION
+	DOWNLOAD=http://sourceforge.net/projects/ipscan/files/ipscan3-binary/$VERSION/$SOURCES
 }
 
 # Creamos directorios extra
@@ -28,22 +30,12 @@ F_extradirs(){
 mkdir -p $PKG/usr/share/{applications/wifislax/Redes,pixmaps} $PKG/usr/{bin,lib/ipscan/}
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f ipscan-linux-$VERSION.jar ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DESCARGA
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-mv -f ipscan-linux-$VERSION.jar $PKG/usr/lib/ipscan/
+mv -f $SOURCES $PKG/usr/lib/ipscan/
 
 echo "#!/bin/sh
-java -jar /usr/lib/ipscan/ipscan-linux-$VERSION.jar" > $PKG/usr/bin/ipscan
+java -jar /usr/lib/ipscan/$SOURCES" > $PKG/usr/bin/ipscan
 chmod 777 $PKG/usr/bin/ipscan
 
 # Creamos icono
@@ -170,7 +162,7 @@ f_arquitectura noarch
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

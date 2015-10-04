@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151004
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,17 +20,9 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://github.com/wiire/pixiewps/releases
 	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d "v" -f3 | cut -d "t" -f-1 |sed "s/.$//g"`
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=https://github.com/wiire/pixiewps/archive/v$VERSION.tar.gz
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -39,7 +31,7 @@ echo
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 1
 sleep 3
-tar xvf $PRGNAM-$VERSION.tar.gz
+tar xvf $SOURCES
 cd $PRGNAM-$VERSION/src
 chown -R root:root .
 find -L . \
@@ -82,7 +74,7 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
