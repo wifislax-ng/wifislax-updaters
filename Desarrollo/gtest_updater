@@ -21,23 +21,12 @@ F_variables() {
 	WEB="https://code.google.com/p/googletest/downloads/list?can=1&q=&colspec=Filename+Summary+Uploaded+ReleaseDate+Size+DownloadCount"
 	SOURCES=$(curl -sk $WEB |grep "files/$PRGNAM" | grep -Po 'href="\K.*(?=" )' -m1 | rev | cut -d/ -f1|rev)
 	VERSION=$(echo "$SOURCES" | rev | cut -d\. -f2- | rev | cut -d- -f2-)
+	EXTENSION=zip
 	DOWNLOAD="https://googletest.googlecode.com/files/$SOURCES"
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-rm -rf $PRGNAM-$VERSION
-unzip $SOURCES
-sleep 1
-cd $PRGNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -87,6 +76,8 @@ f_arquitectura
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

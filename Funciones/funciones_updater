@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20151010
+FUNCIONES_VERSION=20151011
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -208,9 +208,16 @@ f_compilar(){
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
 	sleep 3
 	rm -rf $PRGNAM-$VERSION
+	if [ $EXTENSION = zip ]; then
+	unzip $SOURCES
+	else
 	tar xvf $SOURCES
+	fi
 	if [ -d $PRGNAM-$VERSION ]; then
 	cd $PRGNAM-$VERSION
+	fi
+	if [ -d $PRGNAM ]; then
+	cd $PRGNAM
 	fi
 	fi
 	chown -R root:root .
