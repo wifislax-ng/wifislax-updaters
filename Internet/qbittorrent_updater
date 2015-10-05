@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,6 +20,9 @@ F_variables() {
 	VERSION=`curl -s $WEB | grep /latest | cut -d '/' -f 8 | cut -d ":" -f 1 | cut -d '-' -f 2`
 	PRGNAM=qbittorrent
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	EXTENSION=tar.gz 
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
 }
 
 # Comprobar dependencias
@@ -61,32 +64,6 @@ F_dependencias() {
 	      echo ""
 	      sleep 3
 	fi
-}
-
-# Si el paquete no existe se descargara de internet
-F_descargaPaquete() {
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 ${WEB}$PRGNAM-$VERSION.tar.gz
-	fi
-}
-
-#Descomprime el fichero descargado
-F_descomprime() {
-	echo ""
-	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
-	rm -rf $PRGNAM-$VERSION
-	tar xvf $PRGNAM-$VERSION.tar.gz
-	cd $PRGNAM-$VERSION
-	chown -R root:root .
-	find -L . \
-	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-	  -o -perm 511 \) -exec chmod 755 {} \; -o \
-	\( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-	-o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 }
 
 #Configurando
@@ -133,9 +110,9 @@ F_dependencias
 #Comprobamos version instalada del script
 f_versionInstalada
 #Descargamos el paquete si no existe
-F_descargaPaquete
-#Descomprimimos el paquete descargado 
-F_descomprime
+f_download
+#Prepara entorno
+f_compilar
 #Compilamos el paquete
 F_compilar
 #Hacemos strip sobre el paquete

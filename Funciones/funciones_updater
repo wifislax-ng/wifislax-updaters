@@ -208,10 +208,12 @@ f_compilar(){
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
 	sleep 3
 	rm -rf $PRGNAM-$VERSION
+	if [ ! -z $EXTENSION ]; then
 	if [ $EXTENSION = zip ]; then
 	unzip $SOURCES
 	else
 	tar xvf $SOURCES
+	fi
 	fi
 	if [ -d $PRGNAM-$VERSION ]; then
 	cd $PRGNAM-$VERSION
