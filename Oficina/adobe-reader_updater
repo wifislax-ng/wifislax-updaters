@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,25 +20,13 @@ F_variables() {
 	PRGNAM=adobe-reader
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	VERSION=9.5.5
-}
-
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f AdbeRdr${VERSION}-1_${ARCH}linux_enu.tar.bz2 ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $WEB
-fi
+	EXTENSION=tar.bz2
+	SOURCES=AdbeRdr$VERSION-1_i486linux_enu.$EXTENSION
+	DOWNLOAD=$WEB
 }
 
 # Descomprimimos el fichero descargado
 F_compilar(){
-echo ""
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
-tar xvf AdbeRdr${VERSION}-1_${ARCH}linux_enu.tar.bz2
 mkdir -p $PKG/opt $PKG/usr/bin
 VERSION=${VERSION}_enu
 cd $PKG/opt
@@ -120,7 +108,9 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Creamos xzm , instalamos y salimos
