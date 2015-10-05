@@ -218,7 +218,7 @@ f_compilar(){
 	tar xvf $SOURCES || tar xvf $SRCNAM-$VERSION.$EXTENSION || tar xvf $PRGNAM-src-$VERSION.$EXTENSION
 	fi
 	fi
-	cd $TMP/$PRGNAM-$VERSION || cd $TMP/$SRCNAM-$VERSION || cd $TMP/$PRGNAM || cd $TMP/$PRGNAM-$VERSION-$SRCNAM || cd $TMP/$SRCNAM
+	cd $TMP/$PRGNAM-$VERSION 2>/dev/null || cd $TMP/$SRCNAM-$VERSION 2>/dev/null || cd $TMP/$PRGNAM 2>/dev/null || cd $TMP/$PRGNAM-$VERSION-$SRCNAM 2>/dev/null || cd $TMP/$SRCNAM 2>/dev/null
 	fi
 	chown -R root:root .
 	find -L . \

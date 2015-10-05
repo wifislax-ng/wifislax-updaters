@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150930
+SCRIPT_VERSION=20151005
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -21,15 +21,18 @@ F_variables() {
 	VERSION=`curl -s $WEB | grep Clementine | grep .tar.gz | cut -d "/" -f 7 | cut -d "." -f-3`
 	PRGNAM=Clementine
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DESCARGA=https://github.com/clementine-player/$PRGNAM/archive/$VERSION.tar.gz
+	EXTENSION=tar.gz
+	SOURCES=$VERSION.$EXTENSION
+	DOWNLOAD=https://github.com/clementine-player/$PRGNAM/archive/$SOURCES
 	if [ $VERSION = 1.2.3 ]; then
 	WEB=http://ponce.cc/slackware/sources/repo/
 	VERSION=20150512_70cc291
 	PRGNAM=clementine
+	EXTENSION=tar.xz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DESCARGA=http://ponce.cc/slackware/sources/repo/$PRGNAM-$VERSION.tar.xz
+	DOWNLOAD=http://ponce.cc/slackware/sources/repo/$SOURCES
 	fi
-	
 }
 
 # Comprobar dependencias
@@ -149,30 +152,8 @@ F_dependencias(){
 
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-        if [ $VERSION = 1.2.3 ]; then
-        EXT=tar.gz 
-        else
-        EXT=tar.xz
-        fi
-	if [ ! -f $PRGNAM-$VERSION.$EXT ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DESCARGA
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo ""
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
-rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$VERSION.$EXT
-cd $PRGNAM-$VERSION
-
 # Generamos y aplicamos parche
 if [ $VERSION = "1.2.3" ]; then
 cat > clementine.patch << "EOF"
@@ -257,7 +238,9 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

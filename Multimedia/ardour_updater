@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -23,7 +23,9 @@ F_variables() {
 	WEB=http://www.liwjatan.at/files/src/ardour/
 	VERSION=`curl -s $WEB | grep .tar.bz2 | head -1 | cut -d- -f3 | cut -d t -f1 | sed "s/.$//g"`
 	RAMA=`echo $VERSION | cut -d . -f1`
-	DOWNLOAD=${WEB}${SRCNAM}-${VERSION}.tar.bz2
+	EXTENSION=tar.bz2
+	SOURCES=${SRCNAM}-${VERSION}.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
 }
 
 # Comprobar dependencias
@@ -200,32 +202,8 @@ F_dependencias(){
 	fi
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $SRCNAM-$VERSION.tar.bz2 ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $PRGNAM-$VERSION
-tar xvf $SRCNAM-$VERSION.tar.bz2
-cd $SRCNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
-
-
   python waf configure --prefix=/usr \
                         --configdir=/etc \
                         --with-backends="jack,alsa" \
@@ -275,7 +253,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -22,7 +22,9 @@ F_variables() {
 	WEB=http://ftp.aegisub.org/pub/archives/releases/source/
 	VERSION=`curl -s $WEB | grep .xz | tail -1 | cut -d- -f2 | cut -d t -f1 | sed "s/.$//g"`
 	RAMA=`echo $VERSION | cut -d . -f-2`
-	DOWNLOAD=http://ftp.aegisub.org/pub/archives/releases/source/$PRGNAM-$VERSION.tar.xz
+	EXTENSION=tar.xz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=http://ftp.aegisub.org/pub/archives/releases/source/$SOURCES
 }
 
 F_dependencias(){
@@ -93,31 +95,8 @@ F_dependencias(){
 	sleep 3
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.xz ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$VERSION.tar.xz
-cd $PRGNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
 sed 's/$(LIBS_BOOST) $(LIBS_ICU)/$(LIBS_BOOST) $(LIBS_ICU) -pthread/' -i tools/Makefile  
 
 LDFLAGS="$LDFLAGS -lz" \
@@ -139,7 +118,6 @@ rm -f $PKG/usr/bin/aegisub
  cd $PKG/usr/bin
  ln -s aegisub-$RAMA aegisub
 )
-
 }
 
 ###################################
@@ -167,7 +145,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparar entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

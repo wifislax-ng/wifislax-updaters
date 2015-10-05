@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -18,10 +18,14 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	WEB=http://sourceforge.net/projects/audacity/files/audacity/
-	VERSION=`curl -s $WEB | grep -m 1 "<tr title="|cut -d '"' -f2| sed "s/ //g"`
+	#VERSION=`curl -s $WEB | grep -m 1 "<tr title="|cut -d '"' -f2| sed "s/ //g"`
+	VERSION=2.1.0
 	PRGNAM=audacity
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DESCARGA=${WEB}$VERSION/$PRGNAM-minsrc-$VERSION.tar.xz
+	EXTENSION=tar.xz
+	SOURCES=$PRGNAM-src-$VERSION.$EXTENSION
+	SRCNAM=$PRGNAM-src-$VERSION
+	DOWNLOAD=http://ponce.cc/slackware/sources/repo/$SRCNAM.tar.xz
 }
 
 # Comprobar dependencias
@@ -74,38 +78,8 @@ sleep 3
 fi
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ $VERSION = 2.1.0 ]; then
-	DESCARGA=http://ponce.cc/slackware/sources/repo/$PRGNAM-src-$VERSION.tar.xz
-	SOURCE="src"
-	else
-	SOURCE="minsrc"
-	fi
-	if [ ! -f $PRGNAM-$SOURCE-$VERSION.tar.xz ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DESCARGA
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo ""
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
-rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$SOURCE-$VERSION.tar.xz
-cd $PRGNAM-$SOURCE-$VERSION
-
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
- -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
 # Fix vamp plugin search path on x86_64 - thanks to B. Watson
 sed -i "s,lib/vamp,lib$LIBDIRSUFFIX/vamp,g" \
        lib-src/libvamp/src/vamp-hostsdk/PluginHostAdapter.cpp
@@ -175,7 +149,9 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
