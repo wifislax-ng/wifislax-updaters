@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,16 +20,9 @@ F_variables() {
 	VERSION=`curl -s $WEB|grep /latest|cut -d "-" -f3|cut -d "t" -f1|sed "s/.$//g"`
 	PRGNAM=yad
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f ${PRGNAM}-${VERSION}.tar.xz ]; then
-	echo 
-	echo "$CYAN"Descargando sources de ${PRGNAM}-${VERSION}"$CIERRE"
-	sleep 1
-	aria2c -x 3 ${WEB}${PRGNAM}-${VERSION}.tar.xz
-	fi
+	EXTENSION=tar.xz
+	SOURCES=${PRGNAM}-${VERSION}.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -38,7 +31,7 @@ echo
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 1
 rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$VERSION.tar.xz
+tar xvf $SOURCES
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
@@ -47,8 +40,7 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
  -exec chmod 644 {} \;
 
- 
- 
+
 if [ $VERSION = 0.29.0 ]; then
 echo 
 echo "$VERDE"Detectada version 0.29.0 parcheando ..."$CIERRE"
@@ -127,7 +119,7 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

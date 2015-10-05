@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,16 +20,9 @@ F_variables() {
 	VERSION=`curl -s $WEB | grep LATEST-IS | cut -d "L" -f2 | cut -d "-" -f3 | sed 's/">//g'`
 	PRGNAM=geany
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 ${WEB}${PRGNAM}-${VERSION}.tar.bz2
-	fi
+	EXTENSION=tar.bz2 
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -38,7 +31,7 @@ echo
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
 rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$VERSION.tar.bz2
+tar xvf $SOURCES
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
@@ -89,7 +82,7 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

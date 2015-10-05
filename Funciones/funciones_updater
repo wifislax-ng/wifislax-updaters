@@ -194,6 +194,9 @@ echo ".oracle.com	TRUE	/	FALSE	1906724535	oraclelicense	accept-securebackup-cook
 GESTOR="aria2c -x 3 --load-cookies=cookie "
 fi
 if [ ! -f $SOURCES ]; then
+echo 
+echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+sleep 3
 $GESTOR $DOWNLOAD
 fi
 }

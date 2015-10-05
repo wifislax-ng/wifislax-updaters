@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,6 +21,9 @@ F_variables() {
 	PRGNAM=wxHexEditor
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	VERSION=$(echo $VERSION_REAL | cut -d% -f1 | cut -d "v" -f2)
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-v$VERSION-src.$EXTENSION
+	DOWNLOAD=$WEB/$VERSION_REAL/$SOURCES
 }
 
 # Comprobar dependencias
@@ -51,23 +54,13 @@ sleep 3
 fi
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-v$VERSION-src.tar.bz2 ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-v$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $WEB/$VERSION_REAL/$PRGNAM-v$VERSION-src.tar.bz2
-	fi
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
 rm -rf $PRGNAM
-tar xvf $PRGNAM-v$VERSION-src.tar.bz2
+tar xvf $SOURCES
 cd $PRGNAM
 chown -R root:root .
 find -L . \
@@ -118,7 +111,7 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

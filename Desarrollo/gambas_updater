@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -22,18 +22,10 @@ F_variables() {
 	PRGNAM=gambas
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	PRGNAM_FULL=gambas$RAMA
-	DESCARGA=http://downloads.sourceforge.net/project/gambas/$PRGNAM_FULL/$PRGNAM_FULL-$VERSION.tar.bz2
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM_FULL-$VERSION.$EXTENSION
+	DOWNLOAD=http://downloads.sourceforge.net/project/gambas/$PRGNAM_FULL/$SOURCES
 	SHORT_PRGNAM=${PRGNAM%$(cut -d . -f 1 <<< $VERSION)}
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM_FULL-$VERSION.tar.bz2 ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM_FULL-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DESCARGA
-	fi
 }
 
 # Descomprimimos el fichero descargado
@@ -42,7 +34,7 @@ echo ""
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
 rm -rf $PRGNAM_FULL-$VERSION
-tar xvf $PRGNAM_FULL-$VERSION.tar.bz2
+tar xvf $SOURCES
 cd $PRGNAM_FULL-$VERSION
 chown -R root:root .
   
@@ -101,7 +93,7 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Creamos xzm , instalamos y salimos
