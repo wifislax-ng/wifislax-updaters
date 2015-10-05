@@ -20,9 +20,9 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB="http://wald.intevation.org"
 	WEB_contenido=$(curl -sk $WEB/frs/?group_id=29 |grep "$PRGNAM")
-	ARCHIVO=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | grep "tar\.gz$" | sort -V | tail -1)
-	VERSION=$(echo "$ARCHIVO" | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
-	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep "$ARCHIVO"|grep -Po 'href="\K.*(?=")' |grep "tar\.gz$")"
+	SOURCES=$(echo "$WEB_contenido" | grep -Po '">\K.*(?=</.>)' | grep "tar\.gz$" | sort -V | tail -1)
+	VERSION=$(echo "$SOURCES" | rev | cut -d. -f3-|rev| sed "s/$PRGNAM//g" | cut -d- -f2)
+	DOWNLOAD="${WEB}$(echo "$WEB_contenido"|grep "$SOURCES"|grep -Po 'href="\K.*(?=")' |grep "tar\.gz$")"
 }
 
 # Comprobar dependencias
@@ -102,18 +102,6 @@ F_dependencias(){
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-rm -rf $PRGNAM-$VERSION
-tar -xvf $PRGNAM-$VERSION.tar.gz
-sleep 1
-cd $PRGNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 mkdir -p build
 cd build
@@ -212,6 +200,8 @@ f_arquitectura
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
