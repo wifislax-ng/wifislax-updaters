@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,9 +19,10 @@ F_variables() {
 	PRGNAM=acsccid
 	WEB="http://acsccid.sourceforge.net/"
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DOWNLOAD=$(curl -s http://acsccid.sourceforge.net/ | grep "acsccid-" | grep -Po 'href="\K.*(?=">)')
+	DOWNLOAD=$(curl -s $WEB | grep "acsccid-" | grep -Po 'href="\K.*(?=">)')
 	VERSION=$(echo "$DOWNLOAD" |rev | cut -d/ -f1 | cut -d. -f3- | cut -d- -f1 | rev )
-
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 }
 
 # Comprobar dependencias
@@ -78,23 +79,13 @@ F_dependencias(){
 	sleep 3
 }
 
-# Si el paquete no existe se descargara de internet
-F_descargaPaquete() {
-	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DOWNLOAD
-	fi
-}
-
-#Descomprime el fichero descargado
-F_descomprime() {
+#Configurando
+F_compilar() {
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
 	sleep 3
 	rm -rf $PRGNAM-$VERSION
-	tar xvf $PRGNAM-$VERSION.tar.bz2
+	tar xvf $SOURCES
 	cd $PRGNAM-$VERSION
 	chown -R root:root .
 	find -L . \
@@ -102,10 +93,7 @@ F_descomprime() {
 	  -o -perm 511 \) -exec chmod 755 {} \; -o \
 	\( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
 	-o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-}
-
-#Configurando
-F_compilar() {
+	
 echo ""
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 3
@@ -150,9 +138,7 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Descargamos el paquete si no existe
-F_descargaPaquete
-#Descomprimimos el paquete descargado 
-F_descomprime
+f_download
 #Compilamos el paquete
 F_compilar
 #Hacemos strip sobre el paquete
