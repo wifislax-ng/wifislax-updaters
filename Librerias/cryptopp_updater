@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,17 +21,9 @@ F_variables() {
 	WEB=http://sourceforge.net/projects/$PRGNAM/files/
 	VERSION=`curl -s $WEB | grep zip | cut -d "/" -f8 | sed "s/ //g"`
 	RAMA=`echo $VERSION | sed "s/[.]//g"`
-	DOWNLOAD=http://downloads.sourceforge.net/project/$PRGNAM/$PRGNAM/$VERSION/$PRGNAM$RAMA.zip
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM$RAMA.zip ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DOWNLOAD
-	fi
+	EXTENSION=zip
+	SOURCES=$PRGNAM$RAMA.$EXTENSION
+	DOWNLOAD=http://downloads.sourceforge.net/project/$PRGNAM/$PRGNAM/$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -79,7 +71,7 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

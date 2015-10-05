@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,37 +18,16 @@ f_variables(){
 F_variables() {
 	PRGNAM=apulse
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/i-rinat/apulse/archive
-	BRANCH=master
-	VERSION=20150705.git
-	DOWNLOAD=$WEB/$BRANCH.zip
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$BRANCH.zip ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$BRANCH"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
+	WEB=https://github.com/i-rinat/apulse/releases
+	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d v -f3 | cut -d t -f-1 | sed "s/.$//g"`
+	EXTENSION=zip
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=https://github.com/i-rinat/apulse/archive/v$VERSION.$EXTENSION
+	
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $PRGNAM-$BRANCH
-unzip $PRGNAM-$BRANCH.zip -d $TMP/
-cd $PRGNAM-$BRANCH
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
 mkdir -pv build
 cd build
 cmake \
@@ -86,7 +65,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

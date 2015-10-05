@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,30 +20,14 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	VERSION=1.3.1
 	SRCNAM=Django
-	DOWNLOAD=http://pypi.python.org/packages/source/D/Django/Django-1.3.1.tar.gz
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $SRCNAM-$VERSION.tar.gz ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DOWNLOAD
-	fi
+	EXTENSION=tar.gz
+	SOURCES=$SRCNAM-$VERSION.$EXTENSION
+	DOWNLOAD=http://pypi.python.org/packages/source/D/$SRCNAM/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-tar xvf $SRCNAM-$VERSION.tar.gz
 cd $SRCNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
-
 python setup.py install --prefix=/usr --root="$PKG"
 }
 
@@ -70,7 +54,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Creamos xzm , instalamos y salimos

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,35 +19,14 @@ F_variables() {
 	PRGNAM=gst-plugins-ugly
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	VERSION=0.10.19
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	WEB=http://gstreamer.freedesktop.org/src/$PRGNAM
-	DOWNLOAD=$WEB/$PRGNAM-$VERSION.tar.bz2
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $PRGNAM-$VERSION
-tar -xvf $PRGNAM-$VERSION.tar.bz2
-cd $PRGNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-  -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-    -exec chmod 644 {} \;
-
 # Aplicamos parches
 cat > cdio-cd-text-api.patch  << "EOF"
 From 649bd92cd2600719862ad5189899212409dd0a67 Mon Sep 17 00:00:00 2001
@@ -326,7 +305,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

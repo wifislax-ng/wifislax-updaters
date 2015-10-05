@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,34 +21,13 @@ F_variables() {
 	WEB=http://graphviz.org/pub/graphviz/stable/SOURCES/
 	#VERSION=`curl -s $WEB | grep graphviz-[0-9] | tail -1 | cut -d- -f3 | cut -d t -f1 | sed "s/.$//g"`
 	VERSION=2.38.0
-	DOWNLOAD=http://pkgs.fedoraproject.org/repo/pkgs/graphviz/graphviz-2.38.0.tar.gz/5b6a829b2ac94efcd5fa3c223ed6d3ae/graphviz-2.38.0.tar.gz
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.gz ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=http://pkgs.fedoraproject.org/repo/pkgs/$PRGNAM/$SOURCES/5b6a829b2ac94efcd5fa3c223ed6d3ae/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $PRGNAM-$VERSION
-tar xvf $PRGNAM-$VERSION.tar.gz
-cd $PRGNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
- -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
 # Parcheamos
 if [ $VERSION = 2.38.0 ]; then
 echo 
@@ -168,7 +147,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_compilar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
