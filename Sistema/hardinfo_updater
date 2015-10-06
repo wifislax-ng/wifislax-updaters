@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,37 +20,13 @@ F_variables(){
 	VERSION=`curl -s $WEB | grep /latest | cut -d "/" -f 7 | cut -d- -f2 | cut -d "." -f-3`
 	PRGNAM=hardinfo
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
-		echo ""
-		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-		sleep 3
-		aria2c -x 3 $WEB/$PRGNAM-$VERSION.tar.bz2
-	fi
-}
-
-# Descomprimimos el fichero descargado
-F_descomprimir(){
-	echo ""
-	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
-	tar xvf $PRGNAM-$VERSION.tar.bz2
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Compilamos
 F_compilar(){
-	cd $PRGNAM-$VERSION
-	chown -R root:root .
-	find -L . \
-	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-	-exec chmod 755 {} \; -o \
-	\( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-	-exec chmod 644 {} \;
-
-# Fix mandir
 	sed -i "s|share/man|man|" configure
 
 	CFLAGS="$SLKCFLAGS" \
@@ -67,13 +43,11 @@ F_compilar(){
 	make install DESTDIR=$PKG
 
 	rm -rf $PKG/usr/local
-}
-  
-# El desktop original , no me gusta , creamos uno nuevo
-F_extras(){
-	rm -rf $PKG/usr/share/applications/hardinfo.desktop
-	mkdir -p $PKG/usr/share/pixmaps
-	cp -rf $PKG/usr/share/hardinfo/pixmaps/logo.png $PKG/usr/share/pixmaps/hardinfo.png
+
+# Entrada desktop
+rm -rf $PKG/usr/share/applications/hardinfo.desktop
+mkdir -p $PKG/usr/share/pixmaps
+cp -rf $PKG/usr/share/hardinfo/pixmaps/logo.png $PKG/usr/share/pixmaps/hardinfo.png
 echo "[Desktop Entry]
 Name=Hardinfo
 Exec=hardinfo
@@ -107,13 +81,11 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
-#Descomprimir fichero descargado
-F_descomprimir
+f_download
+#Preparamos entorno
+f_compilar
 #Creamos la entrada al menu
 F_compilar
-#Generamos ficheros necesarios
-F_extras
 #Hacemos strip sobre el paquete
 f_strip
 #Creamos xzm , instalamos y salimos

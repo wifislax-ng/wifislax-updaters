@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,37 +17,12 @@ f_variables(){
 #Definicion de variables
 F_variables() {
 	PRGNAM=pcsc-lite
-	WEB="https://alioth.debian.org/frs/?group_id=30105"	
-	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB="https://alioth.debian.org/frs/?group_id=30105"
 	DOWNLOAD=https://alioth.debian.org$(curl -ks $WEB | grep pcsc-lite -m1 |grep -Po 'href="\K.*(?=">)')
+	echo -ne "\033]2;${PRGNAM}_updater\007"
 	VERSION=$(echo "$DOWNLOAD" |rev | cut -d/ -f1 | cut -d. -f3- | cut -d- -f1 | rev )
-
-}
-
-# Si el paquete no existe se descargara de internet
-F_descargaPaquete() {
-	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DOWNLOAD
-	fi
-}
-
-#Descomprime el fichero descargado
-F_descomprime() {
-	echo ""
-	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
-	rm -rf $PRGNAM-$VERSION
-	tar xvf $PRGNAM-$VERSION.tar.bz2
-	cd $PRGNAM-$VERSION
-	chown -R root:root .
-	find -L . \
-	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-	  -o -perm 511 \) -exec chmod 755 {} \; -o \
-	\( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-	-o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+	EXTENSION=tar.bz2 
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 }
 
 #Configurando
@@ -67,9 +42,6 @@ CXXFLAGS="$SLKCFLAGS" \
 
 make  || exit 1
 make install DESTDIR=$PKG
-
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 }
 
 
@@ -96,9 +68,9 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Descargamos el paquete si no existe
-F_descargaPaquete
-#Descomprimimos el paquete descargado 
-F_descomprime
+f_download
+#Preparamos entorno
+f_compilar
 #Compilamos el paquete
 F_compilar
 #Hacemos strip sobre el paquete

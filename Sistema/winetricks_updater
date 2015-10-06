@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20150906
+SCRIPT_VERSION=20151005
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -71,10 +71,8 @@ F_compilar(){
 mkdir -p $PKG/{usr/bin,usr/share/pixmaps,usr/share/applications}
 chmod 755 $PRGNAM
 mv -f $PRGNAM $PKG/usr/bin/$PRGNAM
-}
 
 # Creamos el fichero desktop
-F_desktop(){
 echo "[Desktop Entry]
 Categories=Settings
 Comment=Settings Tool for WINE
@@ -84,10 +82,9 @@ Icon=winetricks
 Name=winetricks
 Terminal=false
 Type=Application" > $PKG/usr/share/applications/$PRGNAM.desktop
-}
+
 
 # Creamos el icono
-F_icono(){
 echo "
 iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
 AAAOxAAADsQBlSsOGwAACVpJREFUaIHFmVuMW9UVhr9je2wylyaTIQlVOlxy0ZAMEaXchGhSEigN
@@ -165,9 +162,6 @@ F_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Creamos la entrada al menu
-F_desktop
-#Creamos icono
-F_icono
 #Hacemos strip sobre el paquete
 f_strip
 #Creamos xzm , instalamos y salimos
