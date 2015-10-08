@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151005
+SCRIPT_VERSION=20151008
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -25,14 +25,9 @@ F_variables() {
 	DOWNLOAD=$WEB/$SOURCES
 }
 
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes/}
-}
-
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-
+mkdir -p $PKG/usr/share/{pixmaps,applications/wifislax/Redes/}
 # Definimos el sistema
 cat > svnversion.h << "EOF"
 #define SVNVERSION "wifislax"
@@ -336,8 +331,6 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-# Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
@@ -349,7 +342,7 @@ f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
-f_compilar
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

@@ -2,8 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151008
-CATEGORIA="Reproductores streaming"
+SCRIPT_VERSION=20151007
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,57 +16,34 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=sopcast-player
-	WEB=https://code.google.com/p/$PRGNAM/downloads/list
-	SP_AUTH_VERSION=`curl -s $WEB | grep sp-auth | head -1 | cut -d "/" -f 5 | cut -d '"' -f-1 | cut -d- -f 3 | cut -d "t" -f1 | sed "s/.$//g" | sed "s/ //g"`
-	VERSION=`curl -s $WEB | sed "s/sp-auth-$SP_AUTH_VERSION.tar.gz//g" | grep .tar.gz | tail -1 | cut -d- -f 3 | cut -d "t" -f1 | sed "s/.$//g" | sed "s/ //g"`
+	PRGNAM=pip
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://pypi.python.org/pypi/pip
+	VERSION=`curl -s $WEB | grep .tar.gz | cut -d - -f3 | cut -d t -f-1 | sed "s/.$//g"`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://$PRGNAM.googlecode.com/files/$SOURCES
-}
-
-# Comprobar dependencias ( si hay mas de una se separan por un espacio )
-F_dependencias(){
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-echo ""
-DEPENDENCIAS="sopcast vlc"
-CONTINUAR=0
-
-echo "$CYAN"Dependencias de este paquete:""
-echo ""
-sleep 3
-
-for X in $DEPENDENCIAS; do
-	
-	if hash $X 2>/dev/null ; then
-		echo ""$AMARILLO"$X :$VERDE Instalada"$CIERRE""
-	else
-		echo ""$AMARILLO"$X :$ROJO  No instalada"$CIERRE""
-		CONTINUAR=1
-	fi
-done
-
-if [ $CONTINUAR -eq 1 ]; then
-	echo ""
-	echo ""$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE""
-	echo ""
-	sleep 3
-	exit 1
-else
-	echo ""
-	echo ""$VERDE"Bien ..podemos continuar"$CIERRE""
-	echo ""
-fi
+	DOWNLOAD=https://pypi.python.org/packages/source/p/$PRGNAM/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo ""
+echo 
 echo "$VERDE"Compilando ..."$CIERRE"
-sleep 3
-make  PREFIX=/usr || exit 1
-make install DESTDIR=$PKG
+sleep 1
+python setup.py install --root=$PKG
+
+# Add bash completion file
+echo '# bash completion for pip
+
+_pip_completion()
+{
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   PIP_AUTO_COMPLETE=1 $1 ) )
+}
+complete -o default -F _pip_completion pip' > pip.sh
+
+install -D -m 644 pip.sh $PKG/usr/share/bash-completion/completions/pip
 }
 
 ###################################
@@ -88,11 +64,9 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-# Comprobar dependencias ( si hay mas de una se separan por un espacio )
-F_dependencias
 #Asignamos o detectamos arquitectura
 f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
