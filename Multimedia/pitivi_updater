@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151013
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -23,7 +23,7 @@ F_variables() {
 	WEB=http://pitivi.ecchi.ca/bundles/releases/
 	EXTENSION=$ARCH.tar
 	SOURCES=`curl -s $WEB | grep $ARCH.tar | head -1 | cut -d '"' -f2`
-	VERSION=`echo $SOURCES | sed 's/pitivi-//g' | cut -d - -f-2`
+	VERSION=`echo $SOURCES | sed 's/pitivi-//g' | cut -d - -f-2 | sed 's/-/_/g'`
 	SUBVERSION=`echo $SOURCES | sed 's/pitivi-//g' | cut -d - -f-1`
 	DOWNLOAD=`echo "$WEB$SOURCES"`
 	SRCNAM=${PRGNAM}-$SUBVERSION-$ARCH
