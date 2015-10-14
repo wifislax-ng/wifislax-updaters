@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151014
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -48,7 +48,6 @@ CXXFLAGS="$SLKCFLAGS" \
   --localstatedir=/var \
   --enable-merge-ffmpeg \
   --disable-pulse \
-  --disable-vdpau \
   --with-kde-solid=no \
   --build=$ARCH-slackware-linux
 
