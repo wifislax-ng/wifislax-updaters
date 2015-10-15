@@ -1,0 +1,189 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151015
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=py3cairo
+	SRCNAM=pycairo
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://cairographics.org/releases
+	VERSION=1.10.0
+	EXTENSION=tar.bz2
+	SOURCES=$SRCNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	DEPEND=python3
+	RUTADEPEND=/usr/bin
+	UPDATER=${DEPEND}_updater
+	CATEGORIAUPDATER=Desarrollo
+	
+	if [ -f $RUTADEPEND/$DEPEND ] ;then
+		DEPEND_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		DEPEND_EXIST2=SI
+	else
+		DEPEND_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		DEPEND_EXIST2=NO
+	fi
+	
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"$DEPEND"$CIERRE: $DEPEND_EXIST"
+	
+	if [ $DEPEND_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia $DEPEND ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/$CATEGORIAUPDATER/$UPDATER ]; then
+			echo $ROJO
+			echo "No tienes el updater $DEPEND..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/Desarrollo/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Desarrollo/python3_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
+
+	# Verificamos que salio bien
+	if [ ! -f $RUTADEPEND/$DEPEND ] ;then
+		echo $ROJO
+		echo "Algo salio mal al instalar $DEPEND..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+# Parcheamos
+echo "U3VibWl0dGVkIGJ5OiAgICAgICAgICAgIFdheW5lIEJsYXN6Y3p5ayAod2JsYXN6Y3ogYXQgYmln
+cG9uZCBkb3QgbmV0IGRvdCBhdSkKRGF0ZTogICAgICAgICAgICAgICAgICAgIDIwMTQtMDMtMjcK
+SW5pdGlhbCBQYWNrYWdlIFZlcnNpb246IDEuMTAuMApVcHN0cmVhbSBTdGF0dXM6ICAgICAgICAg
+dW5rbm93bgpPcmlnaW46ICAgICAgICAgICAgICAgICAgR2VudG9vClVSTDogICAgICAgICAgICAg
+ICAgICAgICBodHRwczovL2J1Z3MuZ2VudG9vLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9NTA0MzQyCkRl
+c2NyaXB0aW9uOiAgICAgICAgICAgICBGaXggYnVpbGQgd2l0aCBQeXRob24tMy40CgotLS0gYS93
+YWYKKysrIGIvd2FmCkBAIC0xNTMsNiArMTUzLDkgQEAKIAlyZXR1cm4gZGlyCiAKIHdhZmRpciA9
+IGZpbmRfbGliKCkKK2lmIHN5cy5hcmd2WzE6XSA9PSBbJ3VucGFjayddOgorICAgIHByaW50KHdh
+ZmRpcikKKyAgICBleGl0KCkKIHN5cy5wYXRoLmluc2VydCgwLCB3YWZkaXIpCiBmcm9tIHdhZmxp
+Yi5Ub29scy5jX2NvbmZpZyBpbXBvcnQgTUFDUk9fVE9fREVTVE9TIAogTUFDUk9fVE9fREVTVE9T
+WydfX1BPV0VSUENfXyddID0gJ2RhcndpbicK" | base64 -d > $TMP/patch1.patch
+patch -p1 < $TMP/patch1.patch || exit 1
+wafdir=$(python3 ./waf unpack)
+pushd $wafdir
+# Mas parches
+echo "U3VibWl0dGVkIGJ5OiAgICAgICAgICAgIFdheW5lIEJsYXN6Y3p5ayAod2JsYXN6Y3ogYXQgYmln
+cG9uZCBkb3QgbmV0IGRvdCBhdSkKRGF0ZTogICAgICAgICAgICAgICAgICAgIDIwMTQtMDMtMjcK
+SW5pdGlhbCBQYWNrYWdlIFZlcnNpb246IDEuMTAuMApVcHN0cmVhbSBTdGF0dXM6ICAgICAgICAg
+dW5rbm93bgpPcmlnaW46ICAgICAgICAgICAgICAgICAgR2VudG9vClVSTDogICAgICAgICAgICAg
+ICAgICAgICBodHRwczovL2J1Z3MuZ2VudG9vLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9NTA0MzQyCkRl
+c2NyaXB0aW9uOiAgICAgICAgICAgICBGaXggYnVpbGQgd2l0aCBQeXRob24tMy40CgotLS0gYS93
+YWZsaWIvVG9vbHMvcHl0aG9uLnB5CisrKyBiL3dhZmxpYi9Ub29scy9weXRob24ucHkKQEAgLTE2
+OSw3ICsxNjksNyBAQAogCQljb25mLmZpbmRfcHJvZ3JhbSgncHl0aG9uLWNvbmZpZy0lcyclbnVt
+LHZhcj0nUFlUSE9OX0NPTkZJRycsbWFuZGF0b3J5PUZhbHNlKQogCWluY2x1ZGVzPVtdCiAJaWYg
+Y29uZi5lbnYuUFlUSE9OX0NPTkZJRzoKLQkJZm9yIGluY3N0ciBpbiBjb25mLmNtZF9hbmRfbG9n
+KGNvbmYuZW52LlBZVEhPTitbY29uZi5lbnYuUFlUSE9OX0NPTkZJRywnLS1pbmNsdWRlcyddKS5z
+dHJpcCgpLnNwbGl0KCk6CisJCWZvciBpbmNzdHIgaW4gY29uZi5jbWRfYW5kX2xvZyhbY29uZi5l
+bnYuUFlUSE9OX0NPTkZJRywnLS1pbmNsdWRlcyddKS5zdHJpcCgpLnNwbGl0KCk6CiAJCQlpZihp
+bmNzdHIuc3RhcnRzd2l0aCgnLUknKW9yIGluY3N0ci5zdGFydHN3aXRoKCcvSScpKToKIAkJCQlp
+bmNzdHI9aW5jc3RyWzI6XQogCQkJaWYgaW5jc3RyIG5vdCBpbiBpbmNsdWRlczoK" | base64 -d > $TMP/patch2.patch
+patch -p1 < $TMP/patch2.patch || exit 1
+popd
+unset wafdir
+
+# Configuramos
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+PYTHON="/usr/bin/python3" \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+python3 ./waf configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+python3 ./waf build
+DESTDIR=$PKG python3 ./waf install
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

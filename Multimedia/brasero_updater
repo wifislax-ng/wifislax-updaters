@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151015
 CATEGORIA=Grabacion
 
 ############################################################
@@ -95,12 +95,12 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-# Comprobar dependencias
-F_dependencias
 #Asignamos o detectamos arquitectura
 f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
