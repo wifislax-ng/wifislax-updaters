@@ -1,0 +1,137 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151015
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=devedeng
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/rastersoft/devedeng/releases
+	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d / -f5 | cut -d t -f1 | sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=https://github.com/rastersoft/devedeng/archive/$VERSION.$EXTENSION
+}
+
+# Comprobar dependencias
+F_dependencias(){
+	DEPEND=py3cairo
+	RUTADEPEND=/usr/include/pycairo
+	UPDATER=${DEPEND}_updater
+	CATEGORIAUPDATER=Librerias
+	
+	if [ -f $RUTADEPEND/$DEPEND.h ] ;then
+		DEPEND_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+		DEPEND_EXIST2=SI
+	else
+		DEPEND_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+		DEPEND_EXIST2=NO
+	fi
+	
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	echo
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"$DEPEND"$CIERRE: $DEPEND_EXIST"
+	
+	if [ $DEPEND_EXIST2 = NO ]; then
+		echo "$AMARILLO"
+		echo "Resolviendo dependencia $DEPEND ..."
+		sleep 3
+		if [ ! -f /opt/wifislax-updaters/$CATEGORIAUPDATER/$UPDATER ]; then
+			echo $ROJO
+			echo "No tienes el updater $DEPEND..."
+			sleep 1
+			echo "No se puede continuar..."
+			sleep 1
+			echo "El script se cierra aqui."
+			sleep 1
+			echo $CIERRE
+			exit 0
+		fi
+		cd /opt/wifislax-updaters/$CATEGORIAUPDATER/
+		statusfile=$(mktemp)
+		xterm -e sh -c '/opt/wifislax-updaters/Librerias/py3cairo_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	fi
+
+	# Verificamos que salio bien
+	if [ ! -f $RUTADEPEND/$DEPEND.h ] ;then
+		echo $ROJO
+		echo "Algo salio mal al instalar $DEPEND..."
+		sleep 1
+		echo "No se puede continuar..."
+		sleep 1
+		echo "El script se cierra aqui."
+		sleep 1
+		echo $CIERRE
+		exit 0
+	fi
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+python3 setup.py install --root=$PKG
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
