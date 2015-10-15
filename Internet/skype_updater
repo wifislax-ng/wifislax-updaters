@@ -44,7 +44,7 @@ F_dependencias() {
 		sleep 3
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Librerias/apulse_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/apulse_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then

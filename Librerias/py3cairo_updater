@@ -65,7 +65,7 @@ F_dependencias(){
 		fi
 		cd /opt/wifislax-updaters/Desarrollo/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Desarrollo/python3_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Desarrollo/python3_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then

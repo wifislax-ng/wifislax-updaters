@@ -63,7 +63,7 @@ F_dependencias(){
 		fi
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Librerias/graphviz_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/graphviz_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then
@@ -118,7 +118,7 @@ F_dependencias(){
 		fi
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Librerias/liblrdf_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/liblrdf_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then
@@ -173,7 +173,7 @@ F_dependencias(){
 		fi
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Librerias/aubio_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/aubio_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then

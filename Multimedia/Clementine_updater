@@ -77,7 +77,7 @@ F_dependencias(){
 		fi
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Librerias/libspotify_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/libspotify_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then
@@ -122,7 +122,7 @@ F_dependencias(){
 		fi
 		cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
-		xterm -e sh -c '/opt/wifislax-updaters/Librerias/libechonest_updater; echo $? > '$statusfile 
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/libechonest_updater; echo $? > '$statusfile 
 		status=$(cat $statusfile)
 		rm $statusfile
 		if [ -z $status ] || [ $status != "0" ]; then
