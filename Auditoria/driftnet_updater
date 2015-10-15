@@ -1,0 +1,119 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151015
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=driftnet
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/deiv/$PRGNAM/releases
+	VERSION=`curl -s $WEB | grep tar.gz | head -1 | cut -d / -f6 | cut -d t -f1 | sed 's/.$//g'`
+	SRCNAM=$PRGNAM-upstream-$VERSION
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-upstream-$VERSION.$EXTENSION
+	DOWNLOAD=https://github.com/deiv/driftnet/archive/upstream/$VERSION.$EXTENSION
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+autoreconf -fi
+sleep 1
+if [ $VERSION = 1.1.5 ]; then
+echo 'diff -Naur driftnet-upstream-1.1.5.orig/src/display/gif.c driftnet-upstream-1.1.5/src/display/gif.c
+--- driftnet-upstream-1.1.5.orig/src/display/gif.c	2014-10-28 11:28:46.084689763 -0400
++++ driftnet-upstream-1.1.5/src/display/gif.c	2014-10-28 11:32:07.601599279 -0400
+@@ -32,6 +32,13 @@
+     g = I->us = DGifOpenFileHandle(fileno(I->fp));
+ #endif
+ 
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++# define GIF_CLOSE_FILE(g)  DGifCloseFile(g, NULL);
++#else
++# define GIF_CLOSE_FILE(g)  DGifCloseFile(g);
++#endif
++
++
+     if (!I->us) {
+         I->err = IE_HDRFORMAT;
+         return 0;
+@@ -47,7 +54,11 @@
+  * Abort loading a GIF file after the header is done.
+  */
+ int gif_abort_load(img I) {
+-    DGifCloseFile((GifFileType*)I->us);
++#if (GIFLIB_MAJOR > 5) || ((GIFLIB_MAJOR == 5) && (GIFLIB_MINOR >= 1))
++    DGifCloseFile(((GifFileType*)I->us), NULL);
++#else
++    DGifCloseFile(((GifFileType*)I->us);
++#endif
+     return 1;
+ }
+ 
+@@ -125,7 +136,7 @@
+     ret = 1;
+ fail:
+ 
+-    DGifCloseFile(g);
++    GIF_CLOSE_FILE(g);
+ 
+     return ret;
+ }
+
+' > gif.patch
+patch -p1 -i gif.patch || exit 1
+fi
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+./configure --prefix=/usr
+make || exit 1
+make install DESTDIR=$PKG
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
