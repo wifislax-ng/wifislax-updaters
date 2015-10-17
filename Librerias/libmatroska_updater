@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151017
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -30,6 +30,15 @@ F_compilar(){
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
+
+# Si no existe fichero configure lo generamos
+if [ ! -f ./configure ];then
+libtoolize --force
+aclocal
+autoheader
+automake --force-missing --add-missing
+autoconf
+fi
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \

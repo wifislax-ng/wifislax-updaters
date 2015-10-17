@@ -16,24 +16,21 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=zenity
+	PRGNAM=yelp-xsl
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://ftp.acc.umu.se/pub/gnome/sources/$PRGNAM/
-	#RAMA=`curl -s $WEB | grep -o -E 'href="([^"#]+)"' | grep "/" | tail -1 | cut -d '"' -f2 | cut -d "/" -f-1`
-	#VERSION=`curl -s ${WEB}${RAMA}/ | grep .xz | tail -1 | cut -d "-" -f2 | cut -d "t" -f1 | sed "s/.$//g"`
-	RAMA=3.18
-	VERSION=3.18.0
+	RAMA=`curl -s $WEB | grep [0-9]/ | tail -1 | cut -d '>' -f3 | cut -d '/' -f-1`
+	VERSION=`curl -s $WEB$RAMA/ | grep .xz | tail -1 | cut -d - -f3 | cut -d t -f-1 | sed  's/.$//g'`
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=${WEB}${RAMA}/$SOURCES
+	DOWNLOAD=http://ftp.acc.umu.se/pub/gnome/sources/$PRGNAM/$RAMA/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
-echo "$VERDE"Configuramos ..."$CIERRE"
-sleep 1 
- 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
@@ -42,16 +39,14 @@ CXXFLAGS="$SLKCFLAGS" \
   --sysconfdir=/etc \
   --localstatedir=/var \
   --mandir=/usr/man \
-  --enable-debug=no \
-  --enable-libnotify \
+  --disable-doc\
   --build=$ARCH-slackware-linux
-  
-echo 
-echo "$VERDE"Compilamos ..."$CIERRE"
-sleep 1
 
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
 make  || exit 1
-make install-strip DESTDIR=$PKG
+make install DESTDIR=$PKG
 }
 
 ###################################

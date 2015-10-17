@@ -16,24 +16,64 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=zenity
+	PRGNAM=yelp-tools
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://ftp.acc.umu.se/pub/gnome/sources/$PRGNAM/
-	#RAMA=`curl -s $WEB | grep -o -E 'href="([^"#]+)"' | grep "/" | tail -1 | cut -d '"' -f2 | cut -d "/" -f-1`
-	#VERSION=`curl -s ${WEB}${RAMA}/ | grep .xz | tail -1 | cut -d "-" -f2 | cut -d "t" -f1 | sed "s/.$//g"`
-	RAMA=3.18
-	VERSION=3.18.0
+	RAMA=`curl -s $WEB | grep [0-9]/ | tail -1 | cut -d '>' -f3 | cut -d '/' -f-1`
+	VERSION=`curl -s $WEB$RAMA/ | grep .xz | tail -1 | cut -d - -f3 | cut -d t -f-1 | sed  's/.$//g'`
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=${WEB}${RAMA}/$SOURCES
+	DOWNLOAD=http://ftp.acc.umu.se/pub/gnome/sources/$PRGNAM/$RAMA/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias() {
+	DEPEND=yelp-xsl
+	FICHERO=/usr/lib/pkgconfig/$DEPEND.pc
+	if [ -f $FICHERO ]; then
+	      EXIST=`echo "$VERDE"Instalada"$CIERRE"`
+	else
+	      EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
+	fi
+	
+	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
+	sleep 3
+	echo "$CYAN"Dependencias de este paquete:""
+	echo ""
+	echo "$AMARILLO"$DEPEND"$CIERRE: $EXIST"
+	
+	if [ ! -f $FICHERO ]; then
+	      echo ""
+	      echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
+	      sleep 3
+	      cd /opt/wifislax-updaters/Librerias/
+		statusfile=$(mktemp)
+		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/yelp-xsl_updater; echo $? > '$statusfile 
+		status=$(cat $statusfile)
+		rm $statusfile
+		if [ -z $status ] || [ $status != "0" ]; then
+		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
+		  if [ -z $status ]; then
+		    exit 1
+		  else
+		    exit $status
+		  fi
+		fi
+		
+		cd $TMP
+	else
+	      echo ""
+	      echo "$VERDE"Bien ..podemos continuar"$CIERRE"
+	      echo ""
+	      sleep 3
+	fi
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
-echo "$VERDE"Configuramos ..."$CIERRE"
-sleep 1 
- 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
@@ -41,17 +81,13 @@ CXXFLAGS="$SLKCFLAGS" \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
   --localstatedir=/var \
-  --mandir=/usr/man \
-  --enable-debug=no \
-  --enable-libnotify \
   --build=$ARCH-slackware-linux
-  
-echo 
-echo "$VERDE"Compilamos ..."$CIERRE"
-sleep 1
 
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
 make  || exit 1
-make install-strip DESTDIR=$PKG
+make install DESTDIR=$PKG
 }
 
 ###################################
@@ -76,6 +112,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
+#Compronar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
