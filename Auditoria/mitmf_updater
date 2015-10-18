@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151019
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=mitmf
+	SRCNAM=MITMf
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/byt3bl33d3r/MITMf
+	VERSION=$(curl -s $WEB/releases|grep .gz|head -1|cut -d v -f3|cut -d t -f-1|sed 's/.$//g')_$(curl -s $WEB|grep commit/|head -1|rev|cut -d / -f1|cut -d '"' -f2|rev|cut -c-6)
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+mkdir -p $PKG/opt
+cd $PKG/opt
+git clone $WEB
+cd MITMf && git submodule init && git submodule update --recursive
+pip install --install-option="--prefix=$PKG/usr" -r $PKG/opt/$SRCNAM/requirements.txt
+rm -rf $PKG/opt/$SRCNAM/.git
+chmod +x $PKG/opt/$SRCNAM/mitmf.py
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
