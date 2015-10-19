@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151019
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,15 +27,69 @@ F_variables() {
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
+
+# Parcheamos
+echo "
+LS0tIHNyYy9NYWtlZmlsZS5hbS5vcmlnCTIwMTQtMDItMTQgMjM6NDU6NDUuMDAwMDAwMDAwICsx
+MDAwCisrKyBzcmMvTWFrZWZpbGUuYW0JMjAxNC0xMC0yNiAyMTo1OTozMy4yMjAyMzQzMTcgKzEw
+MDAKQEAgLTE5LDYgKzE5LDggQEAKICMgRm91bmRhdGlvbiwgSW5jLiwgNTkgVGVtcGxlIFBsYWNl
+LCBTdWl0ZSAzMzAsIEJvc3RvbiwgTUEgMDIxMTEtMTMwNwogIyBVU0EuCiAKKy5OT1RQQVJBTExF
+TDoKKwogIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICMgICAgICAgRXh0cmEg
+ZGlyZWN0b3JpZXMgICAgICAgICAjCiAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IwotLS0gTWFrZWZpbGUuYW0ub3JpZwkyMDE0LTAxLTI0IDA0OjU3OjU1LjAwMDAwMDAwMCArMTAw
+MAorKysgTWFrZWZpbGUuYW0JMjAxNC0xMC0yNiAyMTo1ODo0Ny4wOTA2MjIxODkgKzEwMDAKQEAg
+LTE1LDYgKzE1LDggQEAKICMgRm91bmRhdGlvbiwgSW5jLiwgNTkgVGVtcGxlIFBsYWNlLCBTdWl0
+ZSAzMzAsIEJvc3RvbiwgTUEgMDIxMTEtMTMwNwogIyBVU0EuCiAKKy5OT1RQQVJBTExFTDoKKwog
+QUNMT0NBTF9BTUZMQUdTID0gLUkgbTQKIAogRVhUUkFfRElTVCA9IFwK" | base64 -d > $TMP/020_no-parallel-make.diff
+
+echo "
+LS0tIHNoZWxsLWNvbXBsZXRpb24vYmFzaC9wdWxzZWF1ZGlvLm9yaWcJMjAxNS0wMi0xMyAwMDox
+MDozNS4wMDAwMDAwMDAgKzEwMDAKKysrIHNoZWxsLWNvbXBsZXRpb24vYmFzaC9wdWxzZWF1ZGlv
+CTIwMTUtMDktMTIgMTE6MDk6MzYuOTQ4MjIyOTI2ICsxMDAwCkBAIC0xLDM5ICsxLDQ1IEBACiAj
+IS9iaW4vYmFzaAogCiBfX2NhcmRzICgpIHsKKyAgICAocGFjdGwgbGlzdCBjYXJkcyBzaG9ydCAy
+PiAvZGV2L251bGwpIHxcCiAgICAgd2hpbGUgSUZTPSQnXHQnIHJlYWQgaWR4IG5hbWUgXzsgZG8K
+ICAgICAgICAgcHJpbnRmICIlcyAlc1xuIiAiJGlkeCIgIiRuYW1lIgotICAgIGRvbmUgPCA8KHBh
+Y3RsIGxpc3QgY2FyZHMgc2hvcnQgMj4gL2Rldi9udWxsKQorICAgIGRvbmUKIH0KIAogX19zaW5r
+cyAoKSB7CisgICAgKHBhY3RsIGxpc3Qgc2lua3Mgc2hvcnQgMj4gL2Rldi9udWxsKSB8XAogICAg
+IHdoaWxlIElGUz0kJ1x0JyByZWFkIF8gbmFtZSBfIF8gXzsgZG8KICAgICAgICAgcHJpbnRmICIl
+c1xuIiAiJG5hbWUiCi0gICAgZG9uZSA8IDwocGFjdGwgbGlzdCBzaW5rcyBzaG9ydCAyPiAvZGV2
+L251bGwpCisgICAgZG9uZQogfQogCiBfX3NpbmtzX2lkeCAoKSB7CisgICAgKHBhY3RsIGxpc3Qg
+c2lua3Mgc2hvcnQgMj4gL2Rldi9udWxsKSB8XAogICAgIHdoaWxlIElGUz0kJ1x0JyByZWFkIGlk
+eCBfIF8gXyBfOyBkbwogICAgICAgICBwcmludGYgIiVzXG4iICIkaWR4IgotICAgIGRvbmUgPCA8
+KHBhY3RsIGxpc3Qgc2lua3Mgc2hvcnQgMj4gL2Rldi9udWxsKQorICAgIGRvbmUKIH0KIAogX19z
+b3VyY2VzICgpIHsKKyAgICAocGFjdGwgbGlzdCBzb3VyY2VzIHNob3J0IDI+IC9kZXYvbnVsbCkg
+fFwKICAgICB3aGlsZSBJRlM9JCdcdCcgcmVhZCBfIG5hbWUgXyBfIF87IGRvCiAgICAgICAgIHBy
+aW50ZiAiJXNcbiIgIiRuYW1lIgotICAgIGRvbmUgPCA8KHBhY3RsIGxpc3Qgc291cmNlcyBzaG9y
+dCAyPiAvZGV2L251bGwpCisgICAgZG9uZQogfQogCiBfX3NpbmtfaW5wdXRzICgpIHsKKyAgICAo
+cGFjdGwgbGlzdCBzaW5rLWlucHV0cyBzaG9ydCAyPiAvZGV2L251bGwpIHxcCiAgICAgd2hpbGUg
+SUZTPSQnXHQnIHJlYWQgaWR4IF8gXyBfIF87IGRvCiAgICAgICAgIHByaW50ZiAiJXNcbiIgIiRp
+ZHgiCi0gICAgZG9uZSA8IDwocGFjdGwgbGlzdCBzaW5rLWlucHV0cyBzaG9ydCAyPiAvZGV2L251
+bGwpCisgICAgZG9uZQogfQogCiBfX3NvdXJjZV9vdXRwdXRzICgpIHsKKyAgICAocGFjdGwgbGlz
+dCBzb3VyY2Utb3V0cHV0cyBzaG9ydCAyPiAvZGV2L251bGwpIHxcCiAgICAgd2hpbGUgSUZTPSQn
+XHQnIHJlYWQgaWR4IF8gXyBfIF87IGRvCiAgICAgICAgIHByaW50ZiAiJXNcbiIgIiRpZHgiCi0g
+ICAgZG9uZSA8IDwocGFjdGwgbGlzdCBzb3VyY2Utb3V0cHV0cyBzaG9ydCAyPiAvZGV2L251bGwp
+CisgICAgZG9uZQogfQogCiBfX3BvcnRzICgpIHsKQEAgLTc3LDI4ICs4MywzMiBAQAogfQogCiBf
+X2FsbF9tb2R1bGVzICgpIHsKKyAgICAocHVsc2VhdWRpbyAtLWR1bXAtbW9kdWxlcyAyPiAvZGV2
+L251bGwpIHxcCiAgICAgd2hpbGUgcmVhZCBuYW1lOyBkbwogICAgICAgICBuYW1lPSR7bmFtZSUl
+ICp9CiAgICAgICAgIHByaW50ZiAiJXNcbiIgIiRuYW1lIgotICAgIGRvbmUgPCA8KHB1bHNlYXVk
+aW8gLS1kdW1wLW1vZHVsZXMgMj4gL2Rldi9udWxsKQorICAgIGRvbmUKIH0KIAogX19sb2FkZWRf
+bW9kdWxlcyAoKSB7CisgICAgKHBhY3RsIGxpc3QgbW9kdWxlcyBzaG9ydCAyPiAvZGV2L251bGwp
+IHxcCiAgICAgd2hpbGUgSUZTPSQnXHQnIHJlYWQgaWR4IG5hbWUgXzsgZG8KICAgICAgICAgcHJp
+bnRmICIlcyAlc1xuIiAiJGlkeCIgIiRuYW1lIgotICAgIGRvbmUgPCA8KHBhY3RsIGxpc3QgbW9k
+dWxlcyBzaG9ydCAyPiAvZGV2L251bGwpCisgICAgZG9uZQogfQogCiBfX3Jlc2FtcGxlX21ldGhv
+ZHMgKCkgeworICAgIChwdWxzZWF1ZGlvIC0tZHVtcC1yZXNhbXBsZS1tZXRob2RzIDI+IC9kZXYv
+bnVsbCkgfFwKICAgICB3aGlsZSByZWFkIG5hbWU7IGRvCiAgICAgICAgIHByaW50ZiAiJXNcbiIg
+IiRuYW1lIgotICAgIGRvbmUgPCA8KHB1bHNlYXVkaW8gLS1kdW1wLXJlc2FtcGxlLW1ldGhvZHMg
+Mj4gL2Rldi9udWxsKQorICAgIGRvbmUKIH0KIAogX3BhY2F0X2ZpbGVfZm9ybWF0cyAoKSB7Cisg
+ICAgKHBhY2F0IC0tbGlzdC1maWxlLWZvcm1hdHMgMj4gL2Rldi9udWxsKSB8XAogICAgIHdoaWxl
+IElGUz0kJ1x0JyByZWFkIG5hbWUgXzsgZG8KICAgICAgICAgcHJpbnRmICIlc1xuIiAiJG5hbWUi
+Ci0gICAgZG9uZSA8IDwocGFjYXQgLS1saXN0LWZpbGUtZm9ybWF0cyAyPiAvZGV2L251bGwpCisg
+ICAgZG9uZQogfQogCiBpbl9hcnJheSgpIHsK" | base64 -d > $TMP/030_posix-completion.diff
+
+patch -p0 < $TMP/020_no-parallel-make.diff || exit 1
+patch -p0 < $TMP/030_posix-completion.diff || exit 1
 sed -i -e '/@PA_BINARY@/ imkdir -p \$HOME/.config/pulse' src/daemon/start-pulseaudio-x11.in || exit 1
 echo "X-MATE-Autostart-Phase=Initialization" >>src/daemon/pulseaudio.desktop.in || exit 1
-
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
 
 if pkg-config --exists orc-0.4 ; then
   ORC=yes
@@ -43,31 +97,12 @@ else
   ORC=no
 fi
 
-# Parcheamos
-echo '--- src/Makefile.am.orig	2014-02-14 23:45:45.000000000 +1000
-+++ src/Makefile.am	2014-10-26 21:59:33.220234317 +1000
-@@ -19,6 +19,8 @@
- # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- # USA.
- 
-+.NOTPARALLEL:
-+
- ###################################
- #       Extra directories         #
- ###################################
---- Makefile.am.orig	2014-01-24 04:57:55.000000000 +1000
-+++ Makefile.am	2014-10-26 21:58:47.090622189 +1000
-@@ -15,6 +15,8 @@
- # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
- # USA.
- 
-+.NOTPARALLEL:
-+
- ACLOCAL_AMFLAGS = -I m4
- 
- EXTRA_DIST = \' > 020_no-parallel-make.diff
-
-patch -p0 < 020_no-parallel-make.diff || exit 1
+if pkg-config --exists bash-completion ; then
+  BASHCOMPLETIONDIR=$(pkg-config --variable=completionsdir bash-completion)
+else
+  echo "Setting completions directory manually."
+  BASHCOMPLETIONDIR=/usr/share/bash-completion/completions
+fi
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -84,32 +119,59 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-system-user=pulse \
   --with-system-group=pulse \
   --with-access-group=audio \
+  --with-bash-completion-dir=$BASHCOMPLETIONDIR \
   --build=$ARCH-slackware-linux
 
-make check || exit 1
-make  || exit 1
+make check || exit 1 
+make -j1 || exit 1
 make install-strip DESTDIR=$PKG
 
-# Creamos arranque automatico
-# Script
-echo "#!/bin/bash
+mkdir -p $PKG/etc/rc.d
+echo '#!/bin/sh
 
-pulseaudio --start
+start()
+{
+  if /usr/bin/sudo -u pulse /usr/bin/pulseaudio --check; then
+    echo "pulseaudio is running."
+  else
+    echo "Starting pulseaudio..."
+    /usr/bin/sudo -u pulse /usr/bin/pulseaudio --start --use-pid-file=yes
+  fi
+}
 
-"> $PKG/usr/bin/startpulse
-chmod 777 $PKG/usr/bin/startpulse
+stop()
+{
+  if /usr/bin/sudo -u pulse /usr/bin/pulseaudio --check; then
+    printf "Stopping pulseaudio..."
+    /usr/bin/sudo -u pulse /usr/bin/pulseaudio --kill
+    while /usr/bin/sudo -u pulse /usr/bin/pulseaudio --check; do
+      printf "."
+      sleep 1
+    done
+    echo "Done"
+  else
+    echo "pulseaudio is not running."
+  fi
+}
 
+status()
+{
+  if /usr/bin/sudo -u pulse /usr/bin/pulseaudio --check; then
+    echo "pulseaudio is running."
+  else
+    echo "pulseaudio is not running."
+  fi
+}
 
-echo "[Desktop Entry]
-Exec=startpulse
-MimeType=
-Name=startpulse
-Path=
-Icon=
-StartupNotify=true
-Terminal=false
-TerminalOptions=
-Type=Application" > $PKG/etc/xdg/autostart/pulseaudio.desktop
+case "$1" in
+'start')start;;
+'stop')stop;;
+'restart')stop;start;;
+'status')status;;
+*)echo "$0 start|stop|restart|status"
+esac' > $PKG/etc/rc.d/rc.pulseaudio
+
+chmod +x $PKG/etc/rc.d/rc.pulseaudio
 }
 
 ###################################
