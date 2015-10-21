@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151021
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=cowpatty
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://git.kali.org/gitweb/?p=packages/cowpatty.git
+	DOWNLOAD="git://git.kali.org/packages/cowpatty.git"
+	VERSION=`echo $(curl -s $WEB | grep tags/debian | head -n1 | cut -d "/" -f20 | cut -d '"' -f1 | sed 's/-/_/g')`
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+	echo 
+	echo "$VERDE"Descargando y configurando ..."$CIERRE"
+	sleep 1
+	mkdir -p $PKG/usr/{bin,doc}
+	git clone $DOWNLOAD
+
+	echo 
+	echo "$VERDE"Compilando ..."$CIERRE"
+	sleep 1
+	cd $PRGNAM
+	make || exit 1 
+	make install || exit 1
+	mv -f $PRGNAM $PKG/usr/bin && mv -f genpmk $PKG/usr/bin && cd .. && rm -Rf $PRGNAM
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

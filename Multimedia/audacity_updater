@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151022
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -38,23 +38,14 @@ F_dependencias(){
 	fi
 	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
 	echo
-sleep 3
+sleep 1
 	echo "$CYAN"Dependencias de este paquete:""
 	echo ""
 	echo "$AMARILLO"wxPython"$CIERRE: $EXIST"
-	DEPENDENCIA=`ps -A | grep -o wxPython_updat`
-	if [ ! $DEPENDENCIA = "" ]; then
-	echo ""
-	echo ""$ROJO"Se ha detectado en funcionamiento el "$AMARILLO"wxPython_updater"$CIERRE"..."
-	echo ""
-	echo ""$ROJO"Cuando acabe dicho updater lanza de nuevo este"$CIERRE"..."
-	echo ""
-	exit 1
-	fi
 	if [ ! -f /usr/bin/wx-config ]; then
 	echo ""
 	echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
-	sleep 3
+	sleep 1
 	cd /opt/wifislax-updaters/Librerias/
 		statusfile=$(mktemp)
 		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/wxPython_updater; echo $? > '$statusfile 
@@ -74,7 +65,7 @@ else
 	echo ""
 	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
 	echo ""
-sleep 3
+sleep 1
 fi
 }
 

@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151022
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=soundtouch
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://www.surina.net/soundtouch/sourcecode.html
+	VERSION=`curl -s $WEB|grep tar.gz|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=http://www.surina.net/soundtouch/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+./bootstrap
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib$LIBDIRSUFFIX \
+  --sysconfdir=/etc \
+  --enable-shared \
+  --disable-static \
+  --localstatedir=/var \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+make \
+  pkgdocdir="/usr/doc/$PRGNAM-$VERSION"
+
+make install \
+  pkgdocdir="/usr/doc/$PRGNAM-$VERSION" \
+  DESTDIR=$PKG
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
