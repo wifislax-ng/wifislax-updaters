@@ -16,7 +16,7 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=gst-plugins-ugly
+	PRGNAM=gst-plugins-bad
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://gstreamer.freedesktop.org/src/$PRGNAM/
 	VERSION=$(ls /var/log/packages|grep gst-plugins-base-[0-9]|cut -d- -f4)
@@ -37,13 +37,15 @@ CXXFLAGS="$SLKCFLAGS" \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
   --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
   --build=$ARCH-slackware-linux
 
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-make || exit 1
-make install DESTDIR=$PKG || exit 1
+make  || exit 1
+make install-strip DESTDIR=$PKG || exit 1
 }
 
 ###################################
