@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -30,46 +30,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-echo ""
-
-DEPENDENCIAS="svgview dvdauthor libquicktime_config"
-CONTINUAR=0
-
-echo "$CYAN"Dependencias de este paquete:""
-sleep 3
-
-for X in $DEPENDENCIAS; do
-	
-	if [ -f /usr/bin/$X ]; then
-		echo ""$AMARILLO"$X :$VERDE Instalada"$CIERRE""
-	else
-		echo ""$AMARILLO"$X :$ROJO  No instalada"$CIERRE""
-		CONTINUAR=1
-	fi
-done
-
-DEPENDENCIAS2="gtk2-unicode-3.0"
-for X in $DEPENDENCIAS2; do
-	
-	if [ -f /usr/lib/wx/config/$X ]; then
-		echo ""$AMARILLO"$X :$VERDE Instalada"$CIERRE""
-	else
-		echo ""$AMARILLO"$X :$ROJO  No instalada"$CIERRE""
-		CONTINUAR=1
-	fi
-done
-
-if [ $CONTINUAR -eq 1 ]; then
-	echo ""
-	echo ""$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE""
-	sleep 3
-	exit 1
-else
-	echo ""
-	echo ""$VERDE"Bien ..podemos continuar"$CIERRE""
-	echo ""
-fi
+DEPENDENCIAS="wxsvg dvdauthor libquicktime"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos

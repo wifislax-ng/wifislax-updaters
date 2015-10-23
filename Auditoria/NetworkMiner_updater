@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -26,46 +26,15 @@ F_variables() {
 	DOWNLOAD=$WEB/$PRGNAM-$VERSION/$SOURCES
 }
 
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/{opt,usr/share/applications/wifislax/Testing,usr/share/pixmaps}
-}
-
 # Comprobar dependencias
 F_dependencias(){
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-echo ""
-
 DEPENDENCIAS="wine"
-CONTINUAR=0
-
-echo "$CYAN"Dependencias de este paquete:""
-sleep 3
-
-for X in $DEPENDENCIAS; do
-	
-	if [ -f /usr/bin/$X ]; then
-		echo ""$AMARILLO"$X :$VERDE Instalada"$CIERRE""
-	else
-		echo ""$AMARILLO"$X :$ROJO  No instalada"$CIERRE""
-		CONTINUAR=1
-	fi
-done
-
-if [ $CONTINUAR -eq 1 ]; then
-	echo ""
-	echo ""$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE""
-	sleep 3
-	exit 1
-else
-	echo ""
-	echo ""$VERDE"Bien ..podemos continuar"$CIERRE""
-	echo ""
-fi
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
+mkdir -p $PKG/{opt,usr/share/applications/wifislax/Testing,usr/share/pixmaps}
 echo ""
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 3
@@ -150,8 +119,6 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-# Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script

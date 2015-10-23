@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -29,70 +29,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-	DEPEND=python3
-	RUTADEPEND=/usr/bin
-	UPDATER=${DEPEND}_updater
-	CATEGORIAUPDATER=Desarrollo
-	
-	if [ -f $RUTADEPEND/$DEPEND ] ;then
-		DEPEND_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-		DEPEND_EXIST2=SI
-	else
-		DEPEND_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-		DEPEND_EXIST2=NO
-	fi
-	
-	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-	echo
-	sleep 3
-	echo "$CYAN"Dependencias de este paquete:""
-	echo ""
-	echo "$AMARILLO"$DEPEND"$CIERRE: $DEPEND_EXIST"
-	
-	if [ $DEPEND_EXIST2 = NO ]; then
-		echo "$AMARILLO"
-		echo "Resolviendo dependencia $DEPEND ..."
-		sleep 3
-		if [ ! -f /opt/wifislax-updaters/$CATEGORIAUPDATER/$UPDATER ]; then
-			echo $ROJO
-			echo "No tienes el updater $DEPEND..."
-			sleep 1
-			echo "No se puede continuar..."
-			sleep 1
-			echo "El script se cierra aqui."
-			sleep 1
-			echo $CIERRE
-			exit 0
-		fi
-		cd /opt/wifislax-updaters/Desarrollo/
-		statusfile=$(mktemp)
-		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Desarrollo/python3_updater; echo $? > '$statusfile 
-		status=$(cat $statusfile)
-		rm $statusfile
-		if [ -z $status ] || [ $status != "0" ]; then
-		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
-		  if [ -z $status ]; then
-		    exit 1
-		  else
-		    exit $status
-		  fi
-		fi
-		
-		cd $TMP
-	fi
-
-	# Verificamos que salio bien
-	if [ ! -f $RUTADEPEND/$DEPEND ] ;then
-		echo $ROJO
-		echo "Algo salio mal al instalar $DEPEND..."
-		sleep 1
-		echo "No se puede continuar..."
-		sleep 1
-		echo "El script se cierra aqui."
-		sleep 1
-		echo $CIERRE
-		exit 0
-	fi
+DEPENDENCIAS="python3"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos

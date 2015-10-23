@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,56 +27,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-	echo 
-	if ls /usr/lib/libusb*so* >/dev/null; then
-	EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-	else
-	EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-	SALIR=1
-	fi
-	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-	echo
-	sleep 3
-	echo "$CYAN"Dependencias de este paquete:""
-	echo ""
-	echo "$AMARILLO"libusb"$CIERRE: $EXIST"
-	
-	if [ $SALIR ]; then
-	  exit
-	fi
-	
-	if hash pcscd 2>/dev/null; then
-	  EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-	else
-	  EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-	fi
-	echo "$AMARILLO"pcsc-lite"$CIERRE: $EXIST"
-	
-	if ! hash pcscd 2>/dev/null; then
-		echo ""
-		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
-		sleep 3
-		cd /opt/wifislax-updaters/Sistema/
-		statusfile=$(mktemp)
-		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Sistema/pcsc-lite_updater; echo $? > '$statusfile 
-		status=$(cat $statusfile)
-		rm $statusfile
-		if [ -z $status ] || [ $status != "0" ]; then
-		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
-		  if [ -z $status ]; then
-		    exit 1
-		  else
-		    exit $status
-		  fi
-		fi
-		
-		cd $TMP
-	fi
-
-	echo ""
-	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-	echo ""
-	sleep 3
+DEPENDENCIAS="pcscd"
+f_dependencias
 }
 
 #Configurando

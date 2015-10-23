@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,28 +27,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-if hash geany 2>/dev/null ; then
-EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-else
-EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-fi
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-sleep 3
-echo "$CYAN"Dependencias de este paquete:""
-echo ""
-echo "$AMARILLO"geany"$CIERRE: $EXIST"
-if ! hash geany 2>/dev/null ; then
-echo ""
-echo "$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE"
-echo ""
-sleep 3
-exit 1
-else
-echo ""
-echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-echo ""
-sleep 3
-fi
+DEPENDENCIAS="geany"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -37,119 +37,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-	if [ -f /usr/include/libspotify/api.h ]; then
-		SPOTIFY_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-		SPOTIFY_EXIST2=SI
-	else
-		SPOTIFY_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-		SPOTIFY_EXIST2=NO
-	fi
-	
-	if [ -f /usr/lib/libechonest.so ]; then
-		LIBECHONEST_EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-		LIBECHONEST_EXIST2=SI
-	else
-		LIBECHONEST_EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-		LIBECHONEST_EXIST2=NO
-	fi
-	
-	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-	echo
-	sleep 3
-	echo "$CYAN"Dependencias de este paquete:""
-	echo ""
-	echo "$AMARILLO"libspotify"$CIERRE: $SPOTIFY_EXIST"
-	
-		if [ $SPOTIFY_EXIST2 = NO ]; then
-		echo "$AMARILLO"
-		echo "Resolviendo dependencia libspotify ..."
-		sleep 3
-		if [ ! -f /opt/wifislax-updaters/Librerias/libspotify_updater ]; then
-			echo $ROJO
-			echo "No tienes el updater libspotify..."
-			sleep 1
-			echo "No se puede continuar..."
-			sleep 1
-			echo "El script se cierra aqui."
-			sleep 1
-			echo $CIERRE
-			exit 0
-		fi
-		cd /opt/wifislax-updaters/Librerias/
-		statusfile=$(mktemp)
-		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/libspotify_updater; echo $? > '$statusfile 
-		status=$(cat $statusfile)
-		rm $statusfile
-		if [ -z $status ] || [ $status != "0" ]; then
-		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
-		  if [ -z $status ]; then
-		    exit 1
-		  else
-		    exit $status
-		  fi
-		fi
-		
-		cd $TMP
-	fi
-
-	# Verificamos que salio bien libspotify_updater
-	if [ ! -f /usr/include/libspotify/api.h ]; then
-		echo $ROJO
-		echo "Algo salio mal al instalar libspotify..."
-		sleep 1
-		echo "No se puede continuar..."
-		sleep 1
-		echo "El script se cierra aqui."
-		sleep 1
-		echo $CIERRE
-		exit 0
-	fi
-	
-		if [ $LIBECHONEST_EXIST2 = NO ]; then
-		echo "$AMARILLO"
-		echo "Resolviendo dependencia libechonest ..."
-		sleep 3
-		if [ ! -f /opt/wifislax-updaters/Librerias/libechonest_updater ]; then
-			echo $ROJO
-			echo "No tienes el updater libechonest..."
-			sleep 1
-			echo "No se puede continuar..."
-			sleep 1
-			echo "El script se cierra aqui."
-			sleep 1
-			echo $CIERRE
-			exit 0
-		fi
-		cd /opt/wifislax-updaters/Librerias/
-		statusfile=$(mktemp)
-		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/libechonest_updater; echo $? > '$statusfile 
-		status=$(cat $statusfile)
-		rm $statusfile
-		if [ -z $status ] || [ $status != "0" ]; then
-		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
-		  if [ -z $status ]; then
-		    exit 1
-		  else
-		    exit $status
-		  fi
-		fi
-		
-		cd $TMP
-	fi
-
-	# Verificamos que salio bien libechonest_updater
-	if [ ! -f /usr/lib/libechonest.so ]; then
-		echo $ROJO
-		echo "Algo salio mal al instalar libechonest..."
-		sleep 1
-		echo "No se puede continuar..."
-		sleep 1
-		echo "El script se cierra aqui."
-		sleep 1
-		echo $CIERRE
-		exit 0
-	fi
-
+DEPENDENCIAS="libspotify libechonest"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -180,19 +69,9 @@ index 1104542..65d765c 100644
      qt4_add_dbus_interface(SOURCES
 
 EOF
-
 patch -p1 -i clementine.patch
-
 fi
 
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
- -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
- 
-  
 # Compilamos paquete
 echo ""
 echo "$VERDE"Compilando ..."$CIERRE"

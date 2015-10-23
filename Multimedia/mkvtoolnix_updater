@@ -16,52 +16,44 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=lazarus
+	PRGNAM=mkvtoolnix
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=ftp://freepascal.dfmk.hu/pub/lazarus/releases/Lazarus%20Zip%20_%20GZip/
-	VERSION=`curl -s $WEB | grep -v RC | grep Lazarus | tail -1 |rev|cut -d ' ' -f1|rev`
-	EXTENSION=tar.gz
-	SOURCES=$PRGNAM-$VERSION-0.$EXTENSION
-	DOWNLOAD=http://downloads.sourceforge.net/$PRGNAM/$SOURCES
+	WEB=https://www.bunkus.org/videotools/$PRGNAM/sources/
+	VERSION=`curl -s $WEB|grep .tar.xz|tail -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.xz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=${WEB}${SOURCES}
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="fpc"
+DEPENDENCIAS="qt5"
 f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-LCL=${LCL:-gtk2}
-if [ "$LCL" = "qt" ]; then
-  OPT="-dUSE_QT_45"
-fi
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --build=$ARCH-slackware-linux \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --mandir=/usr/man \
+  --localstatedir=/var \
+  --with-boost \
+  --without-curl
 
-# Compilation doesn't need ./configure
-make clean
-make  all \
-  PREFIX=/usr \
-  LCL_PLATFORM=${LCL} \
-  OPT=${OPT} || exit 1
-make install \
-  INSTALL_PREFIX=$PKG/usr \
-  INSTALL_MAN_DIR=$PKG/usr/man
-
-# fix links at /usr/bin
-( cd $PKG/usr/bin
-  ln -sf ../share/lazarus/lazarus
-  ln -sf ../share/lazarus/lazbuild
-  ln -sf ../share/lazarus/startlazarus
-)
-
-# Install desktop file, icon, and mime entry
-mkdir -p $PKG/usr/share/{applications,pixmaps,mime/packages}
-cat install/lazarus.desktop > $PKG/usr/share/applications/lazarus.desktop
-cat images/ide_icon48x48.png > $PKG/usr/share/pixmaps/lazarus.png
-cat install/lazarus-mime.xml > $PKG/usr/share/mime/packages/lazarus-mime.xml
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+./drake pkgdatadir=/usr/doc/$PRGNAM-$VERSION || exit 1
+./drake pkgdatadir=/usr/doc/$PRGNAM-$VERSION install DESTDIR=$PKG || exit 1
 }
-
 
 ###################################
 ## BLOQUE PRINCIPAL DE EJECUCION ##
@@ -89,7 +81,7 @@ f_versionInstalada
 F_dependencias
 #Si no existe el fichero se descargara
 f_download
-#Preparando entorno
+#Preparamos entorno
 f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar

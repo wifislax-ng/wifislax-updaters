@@ -5,9 +5,9 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151024
 
-# 20151008  Cambiado parametro arch a i586
+# 20151024  Cambiado parametro arch a i586
 # 20150815  Ajustes para adaptarse a github
 # 20150723  Limpiezas en codigo
 # 20150704  Corregido bug en DOWNLOAD , se ponia 3.x en vez de la variable FAMILIA

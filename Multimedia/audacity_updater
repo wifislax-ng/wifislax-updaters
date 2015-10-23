@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151022
+SCRIPT_VERSION=20151024
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -30,43 +30,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-	echo 
-	if [ -f /usr/bin/wx-config ]; then
-	EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-	else
-	EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-	fi
-	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-	echo
-sleep 1
-	echo "$CYAN"Dependencias de este paquete:""
-	echo ""
-	echo "$AMARILLO"wxPython"$CIERRE: $EXIST"
-	if [ ! -f /usr/bin/wx-config ]; then
-	echo ""
-	echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
-	sleep 1
-	cd /opt/wifislax-updaters/Librerias/
-		statusfile=$(mktemp)
-		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Librerias/wxPython_updater; echo $? > '$statusfile 
-		status=$(cat $statusfile)
-		rm $statusfile
-		if [ -z $status ] || [ $status != "0" ]; then
-		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
-		  if [ -z $status ]; then
-		    exit 1
-		  else
-		    exit $status
-		  fi
-		fi
-		
-		cd $TMP
-else
-	echo ""
-	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-	echo ""
-sleep 1
-fi
+DEPENDENCIAS="wxPython"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos

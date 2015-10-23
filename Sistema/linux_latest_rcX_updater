@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20151008
+SCRIPT_VERSION=20151024
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -120,7 +120,7 @@ BUILD=1
 WEB=https://www.kernel.org/
 
 # Buscamos cual es la ultima rc en kernel org
-LASTRC=`curl -s $WEB | grep rc[0-9].tar.xz | cut -d / -f 7 | cut -d t -f1 | sed 's/linux-//g' | sed 's/.$//g'`
+LASTRC=`curl -s $WEB | grep rc[0-9] | tail -1 | cut -d v -f3 | cut -d '"' -f-1`
 
 # Web completa para descargar el source code
 FAMILIA=`echo $LASTRC | cut -d. -f1`

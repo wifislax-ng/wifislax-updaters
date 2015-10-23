@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 CATEGORIA=Grabacion
 
 ############################################################
@@ -29,28 +29,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-if [ -f /usr/lib/libgstbadbase-1.0.la ]; then
-EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-else
-EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-fi
-echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-sleep 3
-echo "$CYAN"Dependencias de este paquete:""
-echo ""
-echo "$AMARILLO"gst1-plugins-bad"$CIERRE: $EXIST"
-if [ ! -f /usr/lib/libgstbadbase-1.0.la ]; then
-echo ""
-echo "$ROJO"No se cumplen los requisitos no se puede continuar"$CIERRE"
-echo ""
-sleep 3
-exit 1
-else
-echo ""
-echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-echo ""
-sleep 3
-fi
+DEPENDENCIAS="gst-plugins-bad"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos

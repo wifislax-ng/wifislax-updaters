@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151015
+SCRIPT_VERSION=20151024
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -28,49 +28,8 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-	echo 
-	if [ -f /var/log/packages/openvas-libraries-* ]; then
-	  EXIST=`echo "$VERDE"Instalada"$CIERRE"`
-	  DESCARGAR=0
-	else
-	  EXIST=`echo "$ROJO"No Instalada"$CIERRE"`
-	  DESCARGAR=1
-	fi
-	
-	echo "$ROSA"Comprobando dependencias ..."$CIERRE"
-	echo
-	sleep 3
-	echo "$CYAN"Dependencias de este paquete:""
-	echo ""
-	echo "$AMARILLO"openvas-libraries"$CIERRE: $EXIST"
-	
-	
-	if [ $DESCARGAR = "1" ]; then
-		echo ""
-		echo ""$ROJO"No se cumplen los requisitos"$CIERRE"... "$VERDE"resolviendo"$CIERRE"..."
-		sleep 3
-		cd /opt/wifislax-updaters/Auditoria/
-		statusfile=$(mktemp)
-		xterm -e sh -c 'yes y | /opt/wifislax-updaters/Auditoria/openvas-libraries_updater; echo $? > '$statusfile 
-		status=$(cat $statusfile)
-		rm $statusfile
-		
-		if [ -z $status ] || [ $status != "0" ]; then
-		  echo "$ROJO"ERROR. No se ha podido crear el paquete"$CIERRE"
-		  if [ -z $status ]; then
-		    exit 1
-		  else
-		    exit $status
-		  fi
-		fi
-		
-		cd $TMP
-	fi
-
-	echo ""
-	echo "$VERDE"Bien ..podemos continuar"$CIERRE"
-	echo ""
-	sleep 3
+DEPENDENCIAS="openvas-libraries"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
