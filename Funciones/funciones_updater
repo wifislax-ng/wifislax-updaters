@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20151025
+FUNCIONES_VERSION=20151026
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -55,7 +55,7 @@ f_comprobarConexion() {
       echo "No tengo internet ... el script se cerrara."
       echo ""
       sleep 1
-      exit 0
+      exit 1
    fi
 }
 
@@ -151,22 +151,22 @@ f_dependencias(){
 echo "$ROSA"Comprobando dependencias ..."$CIERRE"
 echo ""
 for D in $DEPENDENCIAS; do
-BUSCAR=`ls /var/log/packages|grep -o ${D}-[0-9]|head -1`
+BUSCAR=`ls /var/log/packages|rev|cut -d'-' -f4-|rev|grep -x "$D"`
 if [ -z "$BUSCAR" ]; then
 echo "${BLANCO}Dependencia ${AMARILLO}${D} ${ROJO}NO INSTALADA${BLANCO} ...resolviendo${CIERRE}."
 UPDATER=`find /opt/wifislax-updaters/* -name ${D}_updater`
 if [ -z "$UPDATER" ]; then
 echo "${BLANCO}No hay updater para ${AMARILLO}${D}${BLANCO},no se puede continuar${CIERRE}."
 echo ""
-exit 0
+exit 1
 else
 xterm -e sh -c "yes y | $UPDATER"
-VERIFICAR=`ls /var/log/packages|grep -o ${D}-[0-9]|head -1`
+VERIFICAR=`ls /var/log/packages|rev|cut -d'-' -f4-|rev|grep -x "$D"`
 if [ -z "$VERIFICAR" ]; then
 echo ""
 echo "${ROJO}No se puedo resolver la dependencia ${AMARILLO}${D}${CIERRE}."
 echo ""
-exit 0
+exit 1
 else
 echo "${BLANCO}Dependencia ${AMARILLO}${D} ${CYAN}RESUELTA${CIERRE}."
 fi
@@ -234,7 +234,7 @@ fi
 if [ ! -f $SOURCES ]; then
 echo 
 echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-sleep 3
+sleep 1
 $GESTOR $DOWNLOAD
 fi
 }
@@ -244,7 +244,7 @@ f_preparar(){
 	if [ ! -z $SOURCES ]; then
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
+	sleep 1
 	rm -rf $PRGNAM-$VERSION
 	if [ ! -z $EXTENSION ]; then
 	if [ $EXTENSION = zip ]; then
