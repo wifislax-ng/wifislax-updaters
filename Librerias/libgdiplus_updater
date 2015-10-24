@@ -1,0 +1,180 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151024
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=libgdiplus
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://origin-download.mono-project.com/sources/libgdiplus/
+	VERSION=`curl -s $WEB|grep tar.gz|tail -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+# Parcheamos
+echo "LS0tIGxpYmdkaXBsdXMtMy4xMi9zcmMvZ2lmY29kZWMuYy5vcmlnCTIwMTUtMDEtMDUgMTE6Mjc6
+MDYuMDAwMDAwMDAwICswMTAwCisrKyBsaWJnZGlwbHVzLTMuMTIvc3JjL2dpZmNvZGVjLmMJMjAx
+NS0wMS0yNSAxNzoyNTo1OC45OTE3NjI1MzggKzAxMDAKQEAgLTM5LDExICszOSw2IEBAIEdVSUQg
+Z2RpcF9naWZfaW1hZ2VfZm9ybWF0X2d1aWQgPSB7MHhiOTYKIAogI2luY2x1ZGUgImdpZmNvZGVj
+LmgiCiAKLSNpZmRlZiBFZ2lmT3BlbgotLyogZ2lmbGliIGRlY2xhcmVzIHRoaXMgaW5jb3JyZWN0
+bHkgYXMgRWdpZk9wZW4gKi8KLWV4dGVybiBHaWZGaWxlVHlwZSAqRUdpZk9wZW4odm9pZCAqdXNl
+ckRhdGEsIE91dHB1dEZ1bmMgd3JpdGVGdW5jKTsKLSNlbmRpZgotCiAvKiBEYXRhIHN0cnVjdHVy
+ZSB1c2VkIGZvciBjYWxsYmFjayAqLwogdHlwZWRlZiBzdHJ1Y3QKIHsKQEAgLTEwNyw3ICsxMDIs
+NyBAQCBnZGlwX2dpZl9pbnB1dGZ1bmMgKEdpZkZpbGVUeXBlICpnaWYsIEdpCiAqLwogCiBzdGF0
+aWMgaW50Ci1BZGRFeHRlbnNpb25CbG9ja01vbm8oU2F2ZWRJbWFnZSAqTmV3LCBpbnQgTGVuLCBC
+WVRFIEV4dERhdGFbXSkKK0FkZEV4dGVuc2lvbkJsb2NrTW9ubyhTYXZlZEltYWdlICpOZXcsIGlu
+dCBGdW5jdGlvbiwgaW50IExlbiwgQllURSBFeHREYXRhW10pCiB7CiAJRXh0ZW5zaW9uQmxvY2sJ
+KmVwOwogCkBAIC0xMjMsMTUgKzExOCwxNSBAQCBBZGRFeHRlbnNpb25CbG9ja01vbm8oU2F2ZWRJ
+bWFnZSAqTmV3LCBpCiAKIAllcCA9ICZOZXctPkV4dGVuc2lvbkJsb2Nrc1tOZXctPkV4dGVuc2lv
+bkJsb2NrQ291bnQrK107CiAKKwllcC0+RnVuY3Rpb24gPSBGdW5jdGlvbjsKIAllcC0+Qnl0ZUNv
+dW50PUxlbjsKLQllcC0+Qnl0ZXMgPSAoY2hhciAqKUdkaXBBbGxvYyhlcC0+Qnl0ZUNvdW50KTsK
+KwllcC0+Qnl0ZXMgPSAoR2lmQnl0ZVR5cGUgKilHZGlwQWxsb2MoZXAtPkJ5dGVDb3VudCk7CiAJ
+aWYgKGVwLT5CeXRlcyA9PSBOVUxMKSB7CiAJCXJldHVybiAoR0lGX0VSUk9SKTsKIAl9CiAKIAlp
+ZiAoRXh0RGF0YSkgewogCQltZW1jcHkoZXAtPkJ5dGVzLCBFeHREYXRhLCBMZW4pOwotCQllcC0+
+RnVuY3Rpb24gPSBOZXctPkZ1bmN0aW9uOwogCX0KIAogCXJldHVybiAoR0lGX09LKTsKQEAgLTE2
+OCw2ICsxNjMsNyBAQCBzdGF0aWMgaW50CiBER2lmU2x1cnBNb25vKEdpZkZpbGVUeXBlICogR2lm
+RmlsZSwgU2F2ZWRJbWFnZSAqVHJhaWxpbmdFeHRlbnNpb25zKQogewogCWludAkJSW1hZ2VTaXpl
+OworCWludAkJRnVuY3Rpb247CiAJR2lmUmVjb3JkVHlwZQlSZWNvcmRUeXBlOwogCVNhdmVkSW1h
+Z2UJKnNwOwogCUdpZkJ5dGVUeXBlCSpFeHREYXRhOwpAQCAtMjM0LDIwICsyMzAsMTkgQEAgREdp
+ZlNsdXJwTW9ubyhHaWZGaWxlVHlwZSAqIEdpZkZpbGUsIFNhdgogCQkJfQogCiAJCQljYXNlIEVY
+VEVOU0lPTl9SRUNPUkRfVFlQRTogewotCQkJCWlmIChER2lmR2V0RXh0ZW5zaW9uKEdpZkZpbGUs
+ICZ0ZW1wX3NhdmUuRnVuY3Rpb24sICZFeHREYXRhKSA9PSBHSUZfRVJST1IpIHsKKwkJCQlpZiAo
+REdpZkdldEV4dGVuc2lvbihHaWZGaWxlLCAmRnVuY3Rpb24sICZFeHREYXRhKSA9PSBHSUZfRVJS
+T1IpIHsKIAkJCQkJcmV0dXJuIChHSUZfRVJST1IpOwogCQkJCX0KIAogCQkJCXdoaWxlIChFeHRE
+YXRhICE9IE5VTEwpIHsKIAkJCQkJLyogQ3JlYXRlIGFuIGV4dGVuc2lvbiBibG9jayB3aXRoIG91
+ciBkYXRhICovCi0JCQkJCWlmIChBZGRFeHRlbnNpb25CbG9ja01vbm8oJnRlbXBfc2F2ZSwgRXh0
+RGF0YVswXSwgJkV4dERhdGFbMV0pID09IEdJRl9FUlJPUikgeworCQkJCQlpZiAoQWRkRXh0ZW5z
+aW9uQmxvY2tNb25vKCZ0ZW1wX3NhdmUsIEZ1bmN0aW9uLCBFeHREYXRhWzBdLCAmRXh0RGF0YVsx
+XSkgPT0gR0lGX0VSUk9SKSB7CiAJCQkJCQlyZXR1cm4gKEdJRl9FUlJPUik7CiAJCQkJCX0KIAog
+CQkJCQlpZiAoREdpZkdldEV4dGVuc2lvbk5leHQoR2lmRmlsZSwgJkV4dERhdGEpID09IEdJRl9F
+UlJPUikgewogCQkJCQkJcmV0dXJuIChHSUZfRVJST1IpOwogCQkJCQl9Ci0JCQkJCXRlbXBfc2F2
+ZS5GdW5jdGlvbiA9IDA7CiAJCQkJfQogCQkJCWJyZWFrOwogCQkJfQpAQCAtMzA2LDkgKzMwMSw5
+IEBAIGdkaXBfbG9hZF9naWZfaW1hZ2UgKHZvaWQgKnN0cmVhbSwgR3BJbWEKIAlsb29wX2NvdW50
+ZXIgPSBGQUxTRTsKIAogCWlmIChmcm9tX2ZpbGUpIHsKLQkJZ2lmID0gREdpZk9wZW4oc3RyZWFt
+LCAmZ2RpcF9naWZfZmlsZWlucHV0ZnVuYyk7CisJCWdpZiA9IERHaWZPcGVuKHN0cmVhbSwgJmdk
+aXBfZ2lmX2ZpbGVpbnB1dGZ1bmMsIE5VTEwpOwogCX0gZWxzZSB7Ci0JCWdpZiA9IERHaWZPcGVu
+IChzdHJlYW0sICZnZGlwX2dpZl9pbnB1dGZ1bmMpOworCQlnaWYgPSBER2lmT3BlbiAoc3RyZWFt
+LCAmZ2RpcF9naWZfaW5wdXRmdW5jLCBOVUxMKTsKIAl9CiAJCiAJaWYgKGdpZiA9PSBOVUxMKSB7
+CkBAIC01ODMsNyArNTc4LDExIEBAIGdkaXBfbG9hZF9naWZfaW1hZ2UgKHZvaWQgKnN0cmVhbSwg
+R3BJbWEKIAl9CiAKIAlGcmVlRXh0ZW5zaW9uTW9ubygmZ2xvYmFsX2V4dGVuc2lvbnMpOworI2lm
+IChHSUZMSUJfTUFKT1IgPiA1KSB8fCAoKEdJRkxJQl9NQUpPUiA9PSA1KSAmJiAoR0lGTElCX01J
+Tk9SID49IDEpKQorCURHaWZDbG9zZUZpbGUgKGdpZiwgTlVMTCk7CisjZWxzZQogCURHaWZDbG9z
+ZUZpbGUgKGdpZik7CisjZW5kaWYKIAogCSppbWFnZSA9IHJlc3VsdDsKIAlyZXR1cm4gT2s7CkBA
+IC01OTksNyArNTk4LDExIEBAIGVycm9yOgogCiAJaWYgKGdpZiAhPSBOVUxMKSB7CiAJCUZyZWVF
+eHRlbnNpb25Nb25vICgmZ2xvYmFsX2V4dGVuc2lvbnMpOworI2lmIChHSUZMSUJfTUFKT1IgPiA1
+KSB8fCAoKEdJRkxJQl9NQUpPUiA9PSA1KSAmJiAoR0lGTElCX01JTk9SID49IDEpKQorCQlER2lm
+Q2xvc2VGaWxlIChnaWYsIE5VTEwpOworI2Vsc2UKIAkJREdpZkNsb3NlRmlsZSAoZ2lmKTsKKyNl
+bmRpZgogCX0KIAogCSppbWFnZSA9IE5VTEw7CkBAIC02NjMsOSArNjY2LDkgQEAgZ2RpcF9zYXZl
+X2dpZl9pbWFnZSAodm9pZCAqc3RyZWFtLCBHcEltYQogCX0KIAogCWlmIChmcm9tX2ZpbGUpIHsK
+LQkJZnAgPSBFR2lmT3BlbkZpbGVOYW1lIChzdHJlYW0sIDApOworCQlmcCA9IEVHaWZPcGVuRmls
+ZU5hbWUgKHN0cmVhbSwgMCwgTlVMTCk7CiAJfSBlbHNlIHsKLQkJZnAgPSBFR2lmT3BlbiAoc3Ry
+ZWFtLCBnZGlwX2dpZl9vdXRwdXRmdW5jKTsKKwkJZnAgPSBFR2lmT3BlbiAoc3RyZWFtLCBnZGlw
+X2dpZl9vdXRwdXRmdW5jLCBOVUxMKTsKIAl9CiAJCQogCWlmICghZnApIHsKQEAgLTcwNCw3ICs3
+MDcsNyBAQCBnZGlwX3NhdmVfZ2lmX2ltYWdlICh2b2lkICpzdHJlYW0sIEdwSW1hCiAJCQkJCWdv
+dG8gZXJyb3I7IAogCQkJCX0KIAotCQkJCWNtYXAgPSBNYWtlTWFwT2JqZWN0KGNtYXBfc2l6ZSwg
+MCk7CisJCQkJY21hcCA9IEdpZk1ha2VNYXBPYmplY3QoY21hcF9zaXplLCAwKTsKIAogCQkJCXBp
+eGJ1ZiA9IEdkaXBBbGxvYyhwaXhidWZfc2l6ZSk7CiAJCQkJaWYgKHBpeGJ1ZiA9PSBOVUxMKSB7
+CkBAIC03OTUsNyArNzk4LDcgQEAgZ2RpcF9zYXZlX2dpZl9pbWFnZSAodm9pZCAqc3RyZWFtLCBH
+cEltYQogCQkJCXBpeGJ1ZiA9IHBpeGJ1Zl9vcmc7CiAJCQl9IGVsc2UgewogCQkJCWNtYXBfc2l6
+ZSA9IDI1NjsKLQkJCQljbWFwICA9IE1ha2VNYXBPYmplY3QgKGNtYXBfc2l6ZSwgMCk7CisJCQkJ
+Y21hcCAgPSBHaWZNYWtlTWFwT2JqZWN0IChjbWFwX3NpemUsIDApOwogCiAJCQkJcmVkID0gR2Rp
+cEFsbG9jKHBpeGJ1Zl9zaXplKTsKIAkJCQlncmVlbiA9IEdkaXBBbGxvYyhwaXhidWZfc2l6ZSk7
+CkBAIC04MjYsMTMgKzgyOSwxMyBAQCBnZGlwX3NhdmVfZ2lmX2ltYWdlICh2b2lkICpzdHJlYW0s
+IEdwSW1hCiAJCQkJCQl2ICs9IDQ7CiAJCQkJCX0KIAkJCQl9Ci0JCQkJaWYgKFF1YW50aXplQnVm
+ZmVyKGJpdG1hcF9kYXRhLT53aWR0aCwgYml0bWFwX2RhdGEtPmhlaWdodCwgJmNtYXBfc2l6ZSwg
+CisJCQkJaWYgKEdpZlF1YW50aXplQnVmZmVyKGJpdG1hcF9kYXRhLT53aWR0aCwgYml0bWFwX2Rh
+dGEtPmhlaWdodCwgJmNtYXBfc2l6ZSwgCiAJCQkJCQlyZWQsICBncmVlbiwgYmx1ZSwgcGl4YnVm
+LCBjbWFwLT5Db2xvcnMpID09IEdJRl9FUlJPUikgewogCQkJCQlnb3RvIGVycm9yOwogCQkJCX0K
+IAkJCX0KIAotCQkJY21hcC0+Qml0c1BlclBpeGVsID0gQml0U2l6ZSAoY21hcF9zaXplKTsKKwkJ
+CWNtYXAtPkJpdHNQZXJQaXhlbCA9IEdpZkJpdFNpemUgKGNtYXBfc2l6ZSk7CiAJCQljbWFwLT5D
+b2xvckNvdW50ID0gMSA8PCBjbWFwLT5CaXRzUGVyUGl4ZWw7CiAKIAkJCWlmICgoZnJhbWUgPT0g
+MCkgJiYgKGsgPT0gMCkpIHsKQEAgLTg1MCw4ICs4NTMsMTAgQEAgZ2RpcF9zYXZlX2dpZl9pbWFn
+ZSAodm9pZCAqc3RyZWFtLCBHcEltYQogCQkJCQkJQnVmZmVyWzBdID0gMTsKIAkJCQkJCUJ1ZmZl
+clsxXSA9IHB0clswXTsKIAkJCQkJCUJ1ZmZlclsyXSA9IHB0clsxXTsKLQkJCQkJCUVHaWZQdXRF
+eHRlbnNpb25GaXJzdChmcCwgQVBQTElDQVRJT05fRVhUX0ZVTkNfQ09ERSwgMTEsICJORVRTQ0FQ
+RTIuMCIpOwotCQkJCQkJRUdpZlB1dEV4dGVuc2lvbkxhc3QoZnAsIEFQUExJQ0FUSU9OX0VYVF9G
+VU5DX0NPREUsIDMsIEJ1ZmZlcik7CisJCQkJCQlFR2lmUHV0RXh0ZW5zaW9uTGVhZGVyKGZwLCBB
+UFBMSUNBVElPTl9FWFRfRlVOQ19DT0RFKTsKKwkJCQkJCUVHaWZQdXRFeHRlbnNpb25CbG9jayhm
+cCwgMTEsICJORVRTQ0FQRTIuMCIpOworCQkJCQkJRUdpZlB1dEV4dGVuc2lvbkJsb2NrKGZwLCAz
+LCBCdWZmZXIpOworCQkJCQkJRUdpZlB1dEV4dGVuc2lvblRyYWlsZXIoZnApOwogCQkJCQl9CiAJ
+CQkJfQogCkBAIC05MDMsNyArOTA4LDcgQEAgZ2RpcF9zYXZlX2dpZl9pbWFnZSAodm9pZCAqc3Ry
+ZWFtLCBHcEltYQogCQkJCXBpeGJ1ZiArPSBiaXRtYXBfZGF0YS0+d2lkdGg7CiAJCQl9CiAKLQkJ
+CUZyZWVNYXBPYmplY3QgKGNtYXApOworCQkJR2lmRnJlZU1hcE9iamVjdCAoY21hcCk7CiAJCQlp
+ZiAocmVkICE9IE5VTEwpIHsKIAkJCQlHZGlwRnJlZSAocmVkKTsKIAkJCX0KQEAgLTkyNSwxMyAr
+OTMwLDE3IEBAIGdkaXBfc2F2ZV9naWZfaW1hZ2UgKHZvaWQgKnN0cmVhbSwgR3BJbWEKIAkJfQog
+CX0KIAorI2lmIChHSUZMSUJfTUFKT1IgPiA1KSB8fCAoKEdJRkxJQl9NQUpPUiA9PSA1KSAmJiAo
+R0lGTElCX01JTk9SID49IDEpKQorCUVHaWZDbG9zZUZpbGUgKGZwLCBOVUxMKTsKKyNlbHNlCiAJ
+RUdpZkNsb3NlRmlsZSAoZnApOwkKKyNlbmRpZgogCQogCXJldHVybiBPazsKIAogZXJyb3I6CiAJ
+aWYgKGNtYXAgIT0gTlVMTCkgewotCQlGcmVlTWFwT2JqZWN0IChjbWFwKTsKKwkJR2lmRnJlZU1h
+cE9iamVjdCAoY21hcCk7CiAJfQogCiAJaWYgKHJlZCAhPSBOVUxMKSB7Cg==" | base64 -d > $TMP/libgdiplus-giflib.patch
+patch -p1 < $TMP/libgdiplus-giflib.patch
+sed -i -e 's/-L\${libjpeg_prefix}\/lib -ljpeg/-ljpeg/' configure
+
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --with-cairo=system \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+make || exit 1
+make install-strip DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
