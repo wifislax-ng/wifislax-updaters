@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151025
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,34 +18,16 @@ f_variables(){
 F_variables() {
 	PRGNAM=firefox
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://download.cdn.mozilla.net/pub/mozilla.org/firefox/releases/latest/linux-i686/es-ES/
-	VERSION=`curl -s $WEB | grep .tar.bz2 | head -n1 | cut -d- -f2- | cut -d '"' -f1 | cut -d "t" -f1 | sed "s/.$//g"`
-	DOWNLOAD=$WEB/$PRGNAM-$VERSION.tar.bz2
-}
-
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/usr/{lib,bin,share/pixmaps,share/applications}
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $PRGNAM-$VERSION.tar.bz2 ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DOWNLOAD
-	fi
+	WEB=http://download-origin.cdn.mozilla.net/pub/firefox/releases/latest/linux-i686/es-ES/
+	VERSION=`curl -s $WEB|grep .tar.bz2|tail -1|rev|cut -d- -f1|rev|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB${SOURCES}
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo ""
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
-rm -rf $PRGNAM-$VERSION
-tar xjvf $PRGNAM-$VERSION.tar.bz2
-cd $PRGNAM
+mkdir -p $PKG/usr/{lib,bin,share/pixmaps,share/applications}
 cp -r $TMP/$PRGNAM $PKG/usr/lib
 cd $PKG
 
@@ -94,8 +76,6 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-#Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
@@ -105,7 +85,9 @@ f_arquitectura i686
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
