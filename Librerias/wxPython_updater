@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151025
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -53,14 +53,14 @@ CXXFLAGS="$SLKCFLAGS" \
 
 make  || exit 1
 #Additional stuff from contrib
-make -C contrib/src/gizmos
-make -C contrib/src/ogl
-make -C contrib/src/stc
+make -C contrib/src/gizmos || exit 1
+make -C contrib/src/ogl || exit 1
+make -C contrib/src/stc || exit 1
 
-make install DESTDIR=$PKG
-make -C contrib/src/gizmos install DESTDIR=$PKG
-make -C contrib/src/ogl install DESTDIR=$PKG
-make -C contrib/src/stc install DESTDIR=$PKG
+make install DESTDIR=$PKG  || exit 1
+make -C contrib/src/gizmos install DESTDIR=$PKG  || exit 1
+make -C contrib/src/ogl install DESTDIR=$PKG  || exit 1
+make -C contrib/src/stc install DESTDIR=$PKG  || exit 1
 
 cd wxPython
   python setup.py \
@@ -113,6 +113,8 @@ rm -rf $PKG/usr/bin/wx-config 2>/dev/null
 # Relink
 ln -fs /usr/lib/wx/config/gtk2-unicode-release-2.8 \
        $PKG/usr/bin/wx-config-2.8
+       
+rm -rf $PKG/usr/share/applications/{PySlices.desktop,PySlicesShell.desktop}
 }
 
 ###################################
