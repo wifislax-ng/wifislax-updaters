@@ -1,0 +1,160 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151029
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	WIFISLAX=$(cat /etc/wifislax-version | cut -d ' ' -f2)
+	if [ $WIFISLAX = 4.11.1 ]; then
+	PRGNAM=Maskprocessor
+	else
+	PRGNAM=maskprocessor
+	fi
+	SRCNAM=maskprocessor
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/jsteube/$SRCNAM
+	VERSION=`echo $(curl -s $WEB/releases|grep "tar.gz"|cut -d "/" -f5|cut -d "t" -f1|sed 's/.$//g'|sed 's/^.//g')`
+	EXTENSION=tar.gz
+	SOURCES=$SRCNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/archive/v$VERSION.$EXTENSION
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Instalando ..."$CIERRE"
+sleep 1
+cd $TMP/$SRCNAM-$VERSION/src/
+sed -i 's/all: mp64.bin/all: mp32.bin/' $TMP/$SRCNAM-$VERSION/src/Makefile
+make || exit 1
+install -Dm755 "mp32.bin" $PKG/usr/bin/$SRCNAM || exit 1
+
+# Si el paquete no esta dividido , se juntara todo en un xzm
+if [ ! -f /var/log/packages/${SRCNAM}_starter-1.0-noarch-1sw ]; then
+PKG2=/tmp/${SRCNAM}_starter-1.0-noarch-1sw
+mkdir -p $PKG2
+# Icono
+mkdir -p $PKG2/usr/share/pixmaps/
+echo "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
+o188AAAAAElFTkSuQmCC" | base64 -d > $PKG2/usr/share/pixmaps/$SRCNAM.png
+
+# Entrada desktop
+mkdir -p $PKG2/usr/share/applications/wifislax/Diccionarios/
+echo '[Desktop Entry]
+Categories=Diccionarios;
+Exec=sh -c "maskprocessor --help;${SHELL:-bash}"
+GenericName[es]=Generador de diccionarios
+GenericName=Wordlist Generator
+Icon=maskprocessor
+MimeType=
+Name[es]=Maskprocessor
+Name=Maskprocessor
+Path=/opt/maskprocessor/
+StartupNotify=true
+Terminal=true
+TerminalOptions=
+Type=Application' > $PKG2/usr/share/applications/wifislax/Diccionarios/$SRCNAM.desktop
+
+dir2xzm $PKG2 $PKG2.xzm &>/dev/null
+xzm2dir $PKG2.xzm / &>/dev/null
+mv -f $PKG2.xzm /root/Desktop
+rm -rf $PKG2
+fi
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
