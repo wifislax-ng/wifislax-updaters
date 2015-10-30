@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151030
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -29,6 +29,9 @@ F_variables() {
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 # Aplicamos parches
+sed -e 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/' -i configure.ac
+
+# 1
 cat > libmodplug-include.patch << "EOF"
 diff -Naur gst-plugins-bad-0.10.23.orig/ext/modplug/gstmodplug.cc gst-plugins-bad-0.10.23/ext/modplug/gstmodplug.cc
 --- gst-plugins-bad-0.10.23.orig/ext/modplug/gstmodplug.cc	2012-01-18 12:32:55.000000000 +0000
@@ -44,8 +47,94 @@ diff -Naur gst-plugins-bad-0.10.23.orig/ext/modplug/gstmodplug.cc gst-plugins-ba
  #include "gstmodplug.h"
 
 EOF
-
 patch -p1 < libmodplug-include.patch || exit 1
+
+# 2
+cat > drop-vpx-compat-defs.patch << "EOF"
+--- gst-plugins-bad.orig/ext/vp8/gstvp8utils.h	2015-04-21 03:31:33.134952881 +0300
++++ gst-plugins-bad/ext/vp8/gstvp8utils.h	2015-04-21 03:32:45.553520671 +0300
+@@ -25,23 +25,6 @@
+ 
+ G_BEGIN_DECLS
+ 
+-/* Some compatibility defines for older libvpx versions */
+-#ifndef VPX_IMG_FMT_I420
+-#define VPX_IMG_FMT_I420 IMG_FMT_I420
+-#endif
+-
+-#ifndef VPX_PLANE_Y
+-#define VPX_PLANE_Y PLANE_Y
+-#endif
+-
+-#ifndef VPX_PLANE_U
+-#define VPX_PLANE_U PLANE_U
+-#endif
+-
+-#ifndef VPX_PLANE_V
+-#define VPX_PLANE_V PLANE_V
+-#endif
+-
+ const char * gst_vpx_error_name (vpx_codec_err_t status);
+ 
+ G_END_DECLS
+
+EOF
+patch -p1 < drop-vpx-compat-defs.patch || exit 1
+
+# 3
+cat > disable-assrender-test.patch << "EOF"
+--- a/tests/check/elements/assrender.c
++++ b/tests/check/elements/assrender.c
+@@ -289,8 +289,6 @@ assrender_suite (void)
+   tcase_set_timeout (tc_chain, 120);
+ 
+   suite_add_tcase (s, tc_chain);
+-  tcase_add_test (tc_chain, test_assrender_basic_xRGB);
+-  tcase_add_test (tc_chain, test_assrender_basic_I420);
+ 
+   return s;
+ }
+
+EOF
+patch -p1 < disable-assrender-test.patch || exit 1
+
+# 4
+cat > disable-camerabin-test.patch << "EOF"
+--- gst-plugins-bad/tests/check/Makefile.am.orig	2013-12-10 22:01:50.504567189 +0000
++++ gst-plugins-bad/tests/check/Makefile.am	2013-12-10 22:02:17.081058500 +0000
+@@ -181,7 +181,6 @@
+ 	elements/autovideoconvert \
+ 	elements/asfmux \
+ 	elements/baseaudiovisualizer \
+-	elements/camerabin \
+         elements/camerabin2 \
+ 	elements/dataurisrc \
+ 	elements/legacyresample \
+
+EOF
+patch -p1 < disable-camerabin-test.patch || exit 1
+
+# 5
+cat > faad2-version-check.patch << "EOF"
+--- a/configure.ac
++++ b/configure.ac
+@@ -2008,9 +2008,9 @@ AG_GST_CHECK_FEATURE(FAAD, [AAC decoder plug-in], faad, [
+       AC_MSG_CHECKING([Checking FAAD2 version in $faad_hdr])
+       for minor in 10 9 8 7 6 5 0; do
+         if test x$faad2_minor_version = "x"; then
+-          AC_EGREP_CPP([GST_CHECK_FAAD_VERSION \"2\.$minor\"], [
++          AC_EGREP_CPP([\"2\.$minor\"$], [
+               #include <$faad_hdr>
+-              GST_CHECK_FAAD_VERSION FAAD2_VERSION
++              FAAD2_VERSION
+             ], [
+               faad2_minor_version=$minor
+             ])
+-- 
+cgit v0.10.2
+
+EOF
+patch -p1 < faad2-version-check.patch || exit 1
 
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
@@ -59,6 +148,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --localstatedir=/var \
   --disable-static \
   --disable-musepack \
+  --disable-gtk-doc \
   --disable-opus \
   --build=$ARCH-slackware-linux
 
