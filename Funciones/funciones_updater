@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20151026
+FUNCIONES_VERSION=20151031
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -46,7 +46,6 @@ clear
 	sleep 0.1 | echo "$VERDE"   "          www.seguridadwireless.net  "
 	sleep 0.1 | echo "$BLANCO"  "       ******************************"
 	sleep 0.1 | echo "$CERRAR"
-sleep 1
 }
 
 # Comprobar conexion by geminis_demon
@@ -54,7 +53,6 @@ f_comprobarConexion() {
    if [ ! "$(ping google.com -c1 2>/dev/null)" ]; then
       echo "No tengo internet ... el script se cerrara."
       echo ""
-      sleep 1
       exit 1
    fi
 }
@@ -78,7 +76,6 @@ f_comprobarUpdates() {
          echo ${CYAN}Actualizando ${PRGNAM}_updater
          curl -sk $SERVIDOR_WEB/${DIRECTORIO##*/}/${PRGNAM}_updater -o $DIRECTORIO/${PRGNAM}_updater
          echo ${ROJO}LISTO$CIERRE
-         sleep 1
          $0
          exit
       fi
@@ -124,7 +121,6 @@ f_versionInstalada() {
    fi
    echo ""
    echo ""$AMARILLO"La version del sistema es..."$CYAN"$VERSIONLOCAL"$CIERRE""
-   sleep 1
    echo ""
    echo "__________________________________________"
    echo ""
@@ -145,6 +141,9 @@ if [ "$INSTALADA" = $VERSION ]; then
 BUILDLOCAL="$(ls /var/log/packages/$PRGNAM-$INSTALADA-*|rev|cut -d'-' -f1|grep -o "[0-9]*"|rev)"
 BUILD=`expr $BUILDLOCAL + 1`
 fi
+
+# Variables para calcular tiempo de inicio
+COMIENZO=$(date +%s)
 }
 
 f_dependencias(){
@@ -179,7 +178,6 @@ done
 
 # Elimina una version anterior
 f_eliminaVersion() {
-   sleep 1
    if [ $PRGNAM = xampp ]; then
    if [ -f /opt/lampp/lampp ]; then
    /opt/lampp/lampp stop
@@ -193,9 +191,7 @@ f_eliminaVersion() {
 
    echo ""
    echo "$ROJO"Eliminando la version del sistema..."$CIERRE"
-   sleep 2
    removepkg $(ls /var/log/packages|rev|cut -d'-' -f3-|sed 's/-/ /'|rev|grep "^$PRGNAM "|cut -d' ' -f1)
-
 }
 
 # Crea el directorio temporal de trabajo
@@ -216,27 +212,22 @@ f_strip() {
 
 # Descargar sources
 f_download(){
-if [ "$(aria2c --version 2>/dev/null)" ]; then
-GESTOR="aria2c -x 3 "
-else
-GESTOR="wget -c "
-fi
+GESTOR="wget -N -L -c -q --show-progress "
 if [ $PRGNAM = hydra ]; then
-GESTOR="wget -c --no-check-certificate "
+GESTOR="$GESTOR --no-check-certificate "
 fi
 if [ $PRGNAM = jdk ]; then
 echo ".oracle.com	TRUE	/	FALSE	1906724535	oraclelicense	accept-securebackup-cookie">cookie
-GESTOR="aria2c -x 3 --load-cookies=cookie "
-fi
-if [ $PRGNAM = libspotify ]; then
-GESTOR="wget -c "
+GESTOR="$GESTOR --load-cookies=cookie "
 fi
 if [ ! -f $SOURCES ]; then
 echo 
 echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-sleep 1
+echo "${ROSA}"
 $GESTOR $DOWNLOAD
+echo "${CIERRE}"
 fi
+sleep 1
 }
 
 #Preparamos entorno
@@ -271,30 +262,29 @@ f_tareasFinales() {
    fi
    echo ""
    echo "$VERDE"Instalando y creando modulo xzm ..."$CIERRE"
-   # Liberamos memoria
-   sync && echo 3 > /proc/sys/vm/drop_caches
-# Guardamos los modulos en carpetas por categoria
+   sleep 1
+   # Guardamos los modulos en carpetas por categoria
    cd ..
    CATEGORIA=`echo $CWD | cut -d "/" -f4`
    if [ ! -d $HOME/Desktop/$CATEGORIA ]; then
    mkdir -p $HOME/Desktop/$CATEGORIA
    fi
 
-#Para sigram nos basamos en el log. Para el resto siempre es igual
-if [ $PRGNAM = sigram ]; then
+   #Para sigram nos basamos en el log. Para el resto siempre es igual
+   if [ $PRGNAM = sigram ]; then
 	cleandir $PKG &>/dev/null
 	log2xzm $TMP/sigram.log $HOME/Desktop/$CATEGORIA/$PRGNAM-${VERSION}-$ARCH-$BUILD$TAG.xzm
 	xzm2dir $HOME/Desktop/$CATEGORIA/$PRGNAM-${VERSION}-$ARCH-$BUILD$TAG.xzm /
-else
+   else
 	cleandir $PKG &>/dev/null
 	dir2xzm $PKG $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
 	xzm2dir $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm /
    fi
-# Iniciar algun servicio si existe
+   # Iniciar algun servicio si existe
    if [ -f $PKG/etc/rc.d/rc.teamviewerd ]; then
    /etc/rc.d/rc.teamviewerd start &>/dev/null
    fi
-# Variables especiales para renombrar algunos modulos
+   # Variables especiales para renombrar algunos modulos
    if [ $PRGNAM = jre ]; then
    mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/008-Extra_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
    fi
@@ -307,10 +297,9 @@ else
 
    rm -Rf $TMP &>/dev/null
    clear
-   echo ""
-   echo ""$VERDE"Creado modulo del paquete "$AMARILLO"$PRGNAM-$VERSION"$CIERRE""
-   echo ""
-   echo "$VERDE"Las tareas han finalizado"$CIERRE"
+   
+   # Actualizar sistema mimetypes schemas etc
+   echo ""$VERDE"Actualizando sistema$BLANCO...$CIERRE"
    
    if [ $PRGNAM = metasploit ]; then
        /etc/rc.d/rc.metasploit start &> /dev/null
@@ -318,43 +307,32 @@ else
    if [ $PRGNAM = pulseaudio ]; then
        pulseaudio --start >/dev/null 2>&1
    fi
-   if [ -x /usr/bin/update-desktop-database ]; then
-       /usr/bin/update-desktop-database -q /usr/share/applications >/dev/null 2>&1
-   fi
-   
-   if [ -x /usr/bin/update-mime-database ]; then
-       /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
-   fi
-   
-   if [ -e usr/share/icons/hicolor/icon-theme.cache ]; then
-   if [ -x /usr/bin/gtk-update-icon-cache ]; then
-       /usr/bin/gtk-update-icon-cache /usr/share/icons/hicolor >/dev/null 2>&1
-   fi
-   fi
-   
-   if [ -x /usr/bin/glib-compile-schemas ]; then
-       /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas >/dev/null 2>&1
-   fi
-   
-   # Update the X font indexes:
-   if [ -x /usr/bin/mkfontdir ]; then
-   ( cd /usr/share/fonts/TTF
-    mkfontscale . >/dev/null 2>&1
-    mkfontdir . >/dev/null 2>&1
-   )
-   fi
 
-   if [ -x /usr/bin/fc-cache ]; then
-   /usr/bin/fc-cache -f >/dev/null 2>&1
-   fi
+   # Comandos de sistema
+   /usr/bin/update-desktop-database -q /usr/share/applications &>/dev/null &
+   /usr/bin/update-mime-database /usr/share/mime &>/dev/null &
+   /usr/bin/gtk-update-icon-cache /usr/share/icons/hicolor &>/dev/null &
+   /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas &>/dev/null &
+   /usr/bin/fc-cache -f &>/dev/null &
    
-   sleep 1
+   # Liberamos memoria
+   sync && echo 3 > /proc/sys/vm/drop_caches
+   
+   # Informe final
+   clear
+   echo ""$VERDE"Creado modulo del paquete "$AMARILLO"$PRGNAM-$VERSION"$CIERRE""
+   echo ""
+   
+   # Variables para calcular tiempo de acabado
+   AHORA=$(($(date +%s)-3600));
+   TIEMPO="$(date --date=@$(($AHORA-$COMIENZO)) +%X)"
+   
+   # Informe de acabado
+   echo "${AMARILLO}Tiempo empleado${BLANCO}: $TIEMPO"
    echo ""
    echo "$VERDE"Bye Bye"$CIERRE"
    echo ""
-   sleep 1
-# Liberamos memoria
-   sync && echo 3 > /proc/sys/vm/drop_caches
-# Salimos del script
+   
+   # Salimos del script
    exit 0
 }
