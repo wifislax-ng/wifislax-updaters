@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151101
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,27 +18,17 @@ f_variables(){
 F_variables() {
 	PRGNAM=pixiewps
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/wiire/pixiewps/releases
+	WEB=https://github.com/wiire/${PRGNAM}/releases
 	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d "v" -f3 | cut -d "t" -f-1 |sed "s/.$//g"`
 	EXTENSION=tar.gz
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://github.com/wiire/pixiewps/archive/v$VERSION.tar.gz
+	SOURCES=v$VERSION.$EXTENSION
+	DOWNLOAD=https://github.com/wiire/${PRGNAM}/archive/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-sleep 3
-tar xvf $SOURCES
-cd $PRGNAM-$VERSION/src
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
- -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+cd $TMP/${PRGNAM}-$VERSION/src
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
