@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20151031
+FUNCIONES_VERSION=20151101
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -150,17 +150,17 @@ f_dependencias(){
 echo "$ROSA"Comprobando dependencias ..."$CIERRE"
 echo ""
 for D in $DEPENDENCIAS; do
-BUSCAR=`ls /var/log/packages|rev|cut -d'-' -f4-|rev|grep -x "$D"`
+BUSCAR=`echo "$(ls /var/log/packages|rev|cut -d '-' -f4-|rev|grep -x $D)"`
 if [ -z "$BUSCAR" ]; then
 echo "${BLANCO}Dependencia ${AMARILLO}${D} ${ROJO}NO INSTALADA${BLANCO} ...resolviendo${CIERRE}."
-UPDATER=`find /opt/wifislax-updaters/* -name ${D}_updater`
+UPDATER=`echo "$(find /opt/wifislax-updaters/* -name ${D}_updater)"`
 if [ -z "$UPDATER" ]; then
 echo "${BLANCO}No hay updater para ${AMARILLO}${D}${BLANCO},no se puede continuar${CIERRE}."
 echo ""
 exit 1
 else
 xterm -e sh -c "yes y | $UPDATER"
-VERIFICAR=`ls /var/log/packages|rev|cut -d'-' -f4-|rev|grep -x "$D"`
+VERIFICAR=`echo "$(ls /var/log/packages|rev|cut -d '-' -f4-|rev|grep -x $D)"`
 if [ -z "$VERIFICAR" ]; then
 echo ""
 echo "${ROJO}No se puedo resolver la dependencia ${AMARILLO}${D}${CIERRE}."
