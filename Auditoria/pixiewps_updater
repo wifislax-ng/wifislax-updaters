@@ -65,6 +65,8 @@ f_arquitectura
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

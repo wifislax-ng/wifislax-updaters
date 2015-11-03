@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151101
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -23,7 +23,7 @@ F_variables() {
 	VERSION=`curl -s $WEB | grep Current | cut -d: -f2 | cut -d '<' -f-1 | sed "s/ //g"`
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://handbrake.fr/rotation.php?file=$SOURCES
+	DOWNLOAD=http://download.handbrake.fr/releases/$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos

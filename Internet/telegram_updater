@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151101
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,39 +17,18 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	PRGNAM=telegram
-	SRCNAM=tsetup32
-        SRCDIR=Telegram
+	SRCNAM=Telegram
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://desktop.telegram.org/
 	VERSION=$(curl -s $WEB | grep stable |grep href | head -1 | sed -e 's/\(<[^<][^<]*>\)//g' | sed 's/^ *//g' | cut -d" " -f2)
-	DOWNLOAD=https://updates.tdesktop.com/tlinux32/$SRCNAM.$VERSION.tar.xz
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f $SRCNAM.$VERSION.tar.xz ]; then
-	echo 
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 1
-	aria2c -x 3 $DOWNLOAD
-	fi
+	EXTENSION=tar.xz
+	SOURCES=tsetup32.$VERSION.$EXTENSION
+	DOWNLOAD=https://updates.tdesktop.com/tlinux32/$SOURCES
+	         
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $SRCDIR
-tar xvf $SRCNAM.$VERSION.tar.xz
-cd $SRCDIR
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
 mkdir -p $PKG/opt/$PRGNAM
 cp -a * $PKG/opt/$PRGNAM
 
@@ -312,7 +291,9 @@ f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

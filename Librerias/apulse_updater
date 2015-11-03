@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151101
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,8 +21,8 @@ F_variables() {
 	WEB=https://github.com/i-rinat/apulse/releases
 	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d v -f3 | cut -d t -f-1 | sed "s/.$//g"`
 	EXTENSION=zip
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://github.com/i-rinat/apulse/archive/v$VERSION.$EXTENSION
+	SOURCES=v$VERSION.$EXTENSION
+	DOWNLOAD=https://github.com/i-rinat/apulse/archive/$SOURCES
 	
 }
 

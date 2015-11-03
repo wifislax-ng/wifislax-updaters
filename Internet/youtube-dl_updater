@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151101
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -23,7 +23,6 @@ F_variables() {
 	EXTENSION=tar.gz
 	SOURCES=$VERSION.$EXTENSION
 	DOWNLOAD=https://github.com/rg3/youtube-dl/archive/$SOURCES
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 }
 
 # Descomprimimos el fichero descargado y compilamos
