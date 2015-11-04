@@ -1,0 +1,147 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151104
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=serviio
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=serviio.org
+	VERSION=$(curl -s $WEB/download|grep linux|grep tar|head -n1|cut -d "-" -f3)
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION-linux.$EXTENSION
+	DOWNLOAD=http://download.$WEB/releases/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+  DEPENDENCIAS="ffmpeg jre"
+  f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+  echo 
+  echo "$VERDE"Instalando ..."$CIERRE"
+  sleep 1
+  #Parcheamos los archivos que ejecutan servidor y consola de serviio
+  sed -i 's/export SERVIIO_HOME/SERVIIO_HOME=\/usr\/share\/serviio/g' bin/$PRGNAM.sh
+  sed -i 's/export SERVIIO_CONSOLE_HOME/SERVIIO_CONSOLE_HOME=\/usr\/share\/serviio/g' bin/$PRGNAM-console.sh
+  #Instalamos serviio
+  mkdir -p $PKG/usr/{bin,share/serviio/{config,lib,library,plugins}}
+  mkdir -p $PKG/var/log/$PRGNAM
+  rm -f *.txt
+  cp -Rfp * $PKG/usr/share/serviio
+  ln -fs /usr/share/serviio/bin/$PRGNAM.sh $PKG/usr/bin/$PRGNAM
+  ln -fs /usr/share/serviio/bin/$PRGNAM-console.sh $PKG/usr/bin/$PRGNAM-console
+  ln -fs /usr/share/serviio/log/* $PKG/var/log/$PRGNAM/
+  # Añadimos hostname a /etc/hosts
+  hostname=$(hostname)
+  mkdir $PKG/etc
+  if [ -z $(grep -lw "$hostname$" /etc/hosts) ]; then 
+    sed -i "s/ wifislax/ wifislax\n127.0.0.1		$hostname/" /etc/hosts
+  fi
+  cp -f /etc/hosts $PKG/etc/hosts
+  #Entrada al menu e icono
+  mkdir -p $PKG/usr/share/pixmaps
+echo "
+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
+AAAASUVORK5CYII=" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+mkdir -p $PKG/usr/share/applications
+echo '[Desktop Entry]
+Categories=Audio;AudioVideo;
+Exec=serviio & serviio-console
+GenericName[es]=Servidor Multimedia DLNA
+GenericName=Media Streaming Server
+Icon=serviio
+MimeType=
+Name[es]=Serviio
+Name=Serviio
+Path=/usr/share/serviio
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application' > $PKG/usr/share/applications/$PRGNAM.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
