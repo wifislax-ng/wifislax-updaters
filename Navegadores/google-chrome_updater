@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151107
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,13 +19,15 @@ F_variables() {
 	PRGNAM=google-chrome
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-	VERSION="$(curl -s $WEB|grep -om1 "google-chrome-stable_[0-9]*.*"|awk -F'_' '{print $2}')"
-	DOWNLOAD=http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${VERSION}_i386.deb
+	VERSION="$(curl -s $WEB|grep -om1 "google-chrome-stable_[0-9]*.*"|awk -F'_' '{print $2}'|cut -d- -f-1)"
+	RAMA="$(curl -s $WEB|grep -om1 "google-chrome-stable_[0-9]*.*"|awk -F'_' '{print $2}'|cut -d- -f2)"
+	SOURCES=google-chrome-stable_${VERSION}-${RAMA}_i386.deb
+	DOWNLOAD=http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/$SOURCES
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f google-chrome-stable_${VERSION}_i386.deb ]; then
+	if [ ! -f $SOURCES ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 3
@@ -40,7 +42,7 @@ echo "Etrayendo contenido del fichero .deb"
 echo "$CIERRE"
 sleep 3
 mkdir -p "$TMP/deb"
-deb2dir $TMP/google-chrome-stable_${VERSION}_i386.deb "$TMP/deb"
+deb2dir $TMP/$SOURCES "$TMP/deb"
 rm -rf "$TMP/deb"/{etc,usr/share/man/,usr/share/doc,/usr/share/menu,/usr/share/gnome-control-center}
 find ""$TMP/deb"/opt/google/chrome/locales" -iname "*.pak" \
 	-not -iname "es.pak" \
