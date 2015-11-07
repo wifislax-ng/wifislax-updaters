@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151106
+SCRIPT_VERSION=20151107
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -182,9 +182,14 @@ IiAvPgogIDwvZz4KPC9zdmc+Cg==
 " | base64 -d >/$PKG/usr/share/pixmaps/$PRGNAM.svg
 
 # Generamos desktop
+if [ -f $PKG/usr/bin/wireshark-gtk ]; then
+EJECUTABLE=wireshark-gtk
+else
+EJECUTABLE=wireshark
+fi
 echo "[Desktop Entry]
 Categories=Redes;
-Exec=wireshark
+Exec=$EJECUTABLE
 Name=Wireshark Network Analyzer
 Icon=wireshark
 StartupNotify=true
