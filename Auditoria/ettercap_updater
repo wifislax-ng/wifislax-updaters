@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151101
+SCRIPT_VERSION=20151106
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -35,7 +35,7 @@ F_compilar(){
 # Configuramos paquete
 echo ""
 echo "$VERDE"Configurando ..."$CIERRE"
-sleep 3
+sleep 1
 mkdir -p build
 cd build
   cmake \
@@ -45,6 +45,10 @@ cd build
     -DMAN_INSTALLDIR=/usr/man \
     -DBUNDLED_LIBS=OFF \
     -DCMAKE_BUILD_TYPE=Release ..
+    
+echo ""
+echo "$VERDE"Compilamos ..."$CIERRE"
+sleep 1
   make  || exit 1
   make install DESTDIR=$PKG || exit 1
 cd ..
@@ -61,7 +65,6 @@ Icon=ettercap-gtk
 Terminal=false
 Type=Application
 Categories=Redes" > $PKG/usr/share/applications/wifislax/Redes/$PRGNAM.desktop
-
 }
 
 ###################################
