@@ -3,7 +3,6 @@
 # Script by www.seguridadwireless.net
 
 SCRIPT_VERSION=20151107
-CATEGORIA="Editores de video"
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,27 +16,46 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=devedeng
+	PRGNAM=py3gobject3
+	SRCNAM=pygobject
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/rastersoft/devedeng/releases
-	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d / -f5 | cut -d t -f1 | sed 's/.$//g'`
-	EXTENSION=tar.gz
-	SOURCES=$VERSION.$EXTENSION
-	DOWNLOAD=https://github.com/rastersoft/devedeng/archive/$SOURCES
+	WEB=http://ftp.gnome.org/pub/gnome/sources/$SRCNAM/
+	RAMA=`curl -s $WEB|grep [0-9]/|tail -1|cut -d '>' -f3|cut -d / -f-1`
+	VERSION=`curl -s ${WEB}${RAMA}/|grep .xz|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.xz
+	SOURCES=$SRCNAM-$VERSION.$EXTENSION
+	DOWNLOAD=http://ftp.gnome.org/pub/gnome/sources/$SRCNAM/$RAMA/$SOURCES
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="python3 py3cairo py3gobject3"
+DEPENDENCIAS="python3"
 f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+PYTHON=python3
+
+./autogen.sh
+
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --build=$ARCH-slackware-linux
+
+echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-python3 setup.py install --root=$PKG
+make || exit 1
+make install DESTDIR=$PKG || exit 1
 }
 
 ###################################
@@ -59,7 +77,7 @@ f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-f_arquitectura noarch
+f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Compronar dependencias
