@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151109
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=arp-scan
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/royhills/arp-scan
+	VERSION=$(curl -s $WEB/blob/master/NEWS|grep "arp-scan [0-9]\.[0-9]"|cut -d " " -f15|cut -d "<" -f1|cut -d ":" -f1|head -n1)
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="libpcap libwww-perl" 
+f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+rm -fdr $PRGNAM
+git clone $WEB
+cd $PRGNAM
+autoreconf --install
+./configure --prefix=/usr --mandir=/usr/share/man
+make || exit 1
+make DESTDIR="$PKG" install || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
