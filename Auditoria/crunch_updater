@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151110
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,23 +16,19 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://sourceforge.net/projects/crunch-wordlist/files/crunch-wordlist/
-	SOURCES=$(curl -s $WEB | grep -E *\.tgz |awk '{print $1}'| sed -e 's/\(<[^<][^<]*>\)//g' | grep crunch- | head -1)
-	VERSION=$(echo $SOURCES | sed 's/.tgz//g' | cut -d- -f2)
 	PRGNAM=crunch
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://sourceforge.net/projects/crunch-wordlist/files/crunch-wordlist/
+	VERSION=$(curl -s $WEB|grep -E *\.tgz|awk '{print $1}'|sed -e 's/\(<[^<][^<]*>\)//g'|grep crunch-| head -1|sed 's/.tgz//g'|cut -d- -f2)
+	EXTENSION=tgz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=$WEB/$SOURCES
 }
 
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/usr/{bin,share/crunch}
-}
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-tar -xvf $SOURCES
-cd crunch-$VERSION
+mkdir -p $PKG/usr/{bin,share/crunch}
 make  || exit 1
 mv -f crunch $PKG/usr/bin
 mv -f charset.lst $PKG/usr/share/crunch
@@ -53,8 +49,6 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-# Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
@@ -65,6 +59,8 @@ f_arquitectura
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
