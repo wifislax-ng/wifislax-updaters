@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151031
+SCRIPT_VERSION=20151112
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -48,30 +48,19 @@ F_compila() {
 	echo $CYAN
 	echo "Compilamos las sources de$VERDE $PRGNAM-$VERSION"
 	sleep 1
-	make  experimental=true prefix=/usr sqlite=true libnl=true
+	make  experimental=true prefix=/usr sqlite=true libnl=true pcre=true 
 	sleep 1
-}
-
-# Instalamos para que funcione el oui update
-F_makeInstall() {
-	make  experimental=true prefix=/usr install
-}
-
+	make  experimental=true prefix=/usr sqlite=true libnl=true pcre=true install
 # Actualizamos la oui.list
-F_actualizaOUI() {
 	echo $VERDE
 	echo "Actualizando aircrack oui.list ...."
 	echo $AMARILLO
 	airodump-ng-oui-update
 	sleep 1
-}
-
 # Instalamos
-F_instala() {
-	make  experimental=true prefix=/usr sqlite=true libnl=true DESTDIR=$PKG install &>/dev/null
+	make  experimental=true prefix=/usr sqlite=true libnl=true pcre=true DESTDIR=$PKG install &>/dev/null
 	mkdir -p $PKG/etc/aircrack-ng/ &>/dev/null
-	cp /etc/aircrack-ng/airodump-ng-oui.txt $PKG/etc/aircrack-ng/airodump-ng-oui.txt &>/dev/null
-	
+	cp /etc/aircrack-ng/airodump-ng-oui.txt $PKG/etc/aircrack-ng/airodump-ng-oui.txt &>/dev/null	
 # Por unos cambios en el svn me procuro una version de airmon-ng clasica
 	if [ ! -f $PKG/usr/sbin/airmon-zc ]; then
 	mv -f $PKG/usr/sbin/airmon-ng $PKG/usr/sbin/airmon-zc
@@ -717,12 +706,6 @@ f_versionInstalada
 F_verificar
 #Compilamos
 F_compila
-#Instalamos para que funcione oui update
-F_makeInstall
-#Actualizamos oui.list
-F_actualizaOUI
-#Instalamos
-F_instala
 #Hacemos strip sobre el paquete
 f_strip
 #Creamos xzm , instalamos y salimos
