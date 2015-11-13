@@ -1,0 +1,94 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151114
+CATEGORIA="Reproductores multimedia"
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=kodi
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/xbmc/xbmc
+	VERSION=$(curl -s $WEB/releases/latest|cut -d "/" -f8|cut -d '"' -f1|cut -d- -f-1)
+	RAMA=$(curl -s $WEB/releases/latest|cut -d "/" -f8|cut -d '"' -f1|cut -d- -f2)
+	SRCNAM=xbmc-$VERSION-$RAMA
+	EXTENSION=tar.gz
+	SOURCES=$VERSION-$RAMA.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="libass libmpeg2 tinyxml jre yajl libbluray libmicrohttpd" 
+f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+MAKEFLAGS=-j1 ./bootstrap
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+  ./configure --prefix=/usr --exec-prefix=/usr \
+    --disable-debug \
+    --enable-optimizations \
+    --enable-libbluray \
+    --enable-shared \
+    --with-lirc-device=/run/lirc/lircd \
+    ac_cv_type__Bool=yes
+    
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+make || exit 1
+make install DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151113
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=tuxcut
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://bitbucket.org/a_atalla/tuxcut/downloads/
+	VERSION=`curl -s $WEB|grep tuxcut|grep .deb|cut -d_ -f3|head -1|sed 's/ //g'`
+	EXTENSION=deb
+	SOURCES=${PRGNAM}_${VERSION}_all.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Transformando .deb a xzm ..."$CIERRE"
+sleep 1
+deb2dir $TMP/$SOURCES $PKG
+rm -rf /opt/TuxCut/{README,LICENSE}
+rm -rf /$PKG/usr/share/applications/*.desktop
+echo '[Desktop Entry]
+Name=tuxcut
+Exec=tuxcut
+Icon=tuxcut
+Type=Application
+Terminal=false
+StartupNotify=true
+Encoding=UTF-8
+Categories=Redes;' > /$PKG/usr/share/applications/$PRGNAM.desktop
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura noarch
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
