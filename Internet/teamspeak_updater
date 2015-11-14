@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151110
+SCRIPT_VERSION=20151114
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -31,7 +31,17 @@ echo
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
 chmod +x $SOURCES-$VERSION.$EXTENSION
-./$SOURCES-$VERSION.$EXTENSION --noexec --target $PKG/opt/TeamSpeak3
+mkdir -p $PKG/opt/teamspeak3
+cd $PKG/opt/teamspeak3
+sh $TMP/$SOURCES-$VERSION.$EXTENSION --tar -xf
+#Lanzador
+mkdir -p $PKG/usr/bin
+echo '#!/bin/bash
+
+cd "/opt/teamspeak3"
+./ts3client_runscript.sh $@
+exit $?' > $PKG/usr/bin/ts3client_runscript.sh
+chmod +x $PKG/usr/bin/ts3client_runscript.sh
 #Entrada al menu e icono
 mkdir -p $PKG/usr/share/pixmaps
 echo "
