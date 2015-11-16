@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151107
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -30,7 +30,7 @@ F_download(){
 	if [ ! -f $SOURCES ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 $DOWNLOAD
 	fi
 }
@@ -40,7 +40,7 @@ F_compilar(){
 echo "$VERDE"
 echo "Etrayendo contenido del fichero .deb"
 echo "$CIERRE"
-sleep 3
+sleep 1
 mkdir -p "$TMP/deb"
 deb2dir $TMP/$SOURCES "$TMP/deb"
 rm -rf "$TMP/deb"/{etc,usr/share/man/,usr/share/doc,/usr/share/menu,/usr/share/gnome-control-center}
