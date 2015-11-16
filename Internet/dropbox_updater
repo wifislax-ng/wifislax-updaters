@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151027
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,11 +16,13 @@ f_variables(){
 ############################################################
 #Definicion de variables
 F_variables() {
-	WEB=https://linux.dropbox.com/packages/fedora/
-	SOURCES=$(curl -s https://linux.dropbox.com/packages/fedora/ | grep dropbox| sed -e 's/\(<[^<][^<]*>\)//g' | awk '{print $1}' | sort -r | grep i386 -m1)
-	VERSION=$(echo $SOURCES | cut -d "-" -f3,4 | cut -d "." -f1,2,3)
 	PRGNAM=dropbox
+	SRCNAM=nautilus-dropbox
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://linux.dropbox.com/packages/fedora/
+	VERSION=`curl -s $WEB|grep .rpm|grep i386|tail -1|cut -d- -f3|sed 's/ //g'`
+	RAMA=`curl -s $WEB|grep .rpm|grep i386|tail -1|cut -d- -f4|cut -d . -f-1`
+	SOURCES=$SRCNAM-$VERSION-$RAMA.fedora.i386.rpm
 	DOWNLOAD=$WEB/$SOURCES
 }
 
@@ -28,7 +30,7 @@ F_variables() {
 F_compilar() {
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
+	sleep 1
 	rpm2dir $SOURCES $PKG
 }
 
