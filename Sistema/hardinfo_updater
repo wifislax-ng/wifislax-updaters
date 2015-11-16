@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,33 +16,33 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables(){
-	WEB=http://sourceforge.net/projects/hardinfo.berlios/files/
-	VERSION=`curl -s $WEB | grep /latest | cut -d "/" -f 7 | cut -d- -f2 | cut -d "." -f-3`
 	PRGNAM=hardinfo
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	EXTENSION=tar.bz2
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	WEB=https://github.com/lpereira/hardinfo
+	VERSION=$(curl -s $WEB/blob/master/CMakeLists.txt|grep HARDINFO_VERSION|cut -d ';' -f2|cut -d '&' -f-1)_$(curl -s $WEB|grep commit/|head -1|rev|cut -d / -f1|cut -d '"' -f2|rev|cut -c-6)
 	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Git clone
+F_download(){
+echo ""
+echo "$VERDE"Descargando sources de ${AMARILLO}$PRGNAM-$VERSION${BLANCO}..."$CIERRE"
+sleep 1
+cd $TMP
+git clone $WEB
 }
 
 # Compilamos
 F_compilar(){
-	sed -i "s|share/man|man|" configure
-
-	CFLAGS="$SLKCFLAGS" \
-	CXXFLAGS="$SLKCFLAGS" \
-	./configure \
-	--prefix=/usr \
-	--libdir=/usr/lib${LIBDIRSUFFIX} \
-	--sysconfdir=/etc \
-	--localstatedir=/var \
-	--mandir=/usr/man \
-	--build=$ARCH-slackware-linux
-
+echo ""
+echo "$VERDE"Compilamos${BLANCO}..."$CIERRE"
+sleep 1
+	cd $TMP/$PRGNAM
+	mkdir build
+	cd build
+	cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 	make  || exit 1
 	make install DESTDIR=$PKG
-
-	rm -rf $PKG/usr/local
 
 # Entrada desktop
 rm -rf $PKG/usr/share/applications/hardinfo.desktop
@@ -81,9 +81,7 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-f_download
-#Preparamos entorno
-f_preparar
+F_download
 #Creamos la entrada al menu
 F_compilar
 #Hacemos strip sobre el paquete
