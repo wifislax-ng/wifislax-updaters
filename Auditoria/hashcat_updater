@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -55,13 +55,13 @@ F_download(){
 if [ ! -f cudaHashcat-$VERSION.7z ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de cudaHashcat-$VERSION"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 $DESCARGA_NVIDIA
 fi
 if [ ! -f oclHashcat-$VERSION.7z ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de oclHashcat-$VERSION"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 $DESCARGA_AMD
 fi
 }
@@ -70,7 +70,7 @@ fi
 F_compilar(){
 echo ""
 echo "$VERDE"Descomprimiendo cudaHashcat-$VERSION ..."$CIERRE"
-sleep 3
+sleep 1
 7z -y x cudaHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
 echo ""
 echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
@@ -83,7 +83,7 @@ rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION
 
 echo ""
 echo "$VERDE"Descomprimiendo oclHashcat-$VERSION ..."$CIERRE"
-sleep 3
+sleep 1
 7z -y x oclHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
 echo ""
 echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"

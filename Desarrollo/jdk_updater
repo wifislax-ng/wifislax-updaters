@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -29,7 +29,7 @@ F_variables() {
 F_crearpaquete(){
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
+	sleep 1
 	LIB_ARCH=i386
 	LIBDIRSUFFIX=""
 	SRC_ARCH="i586"
@@ -84,7 +84,7 @@ echo ""
 echo "Se detecto en el sistema el paquete Jre..."
 echo "Se eliminara antes de instalar jdk..."
 echo ""
-sleep 2
+sleep 1
 removepkg /var/log/packages/jre-[0-9]*
 fi
 

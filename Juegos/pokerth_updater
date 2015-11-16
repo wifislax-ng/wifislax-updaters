@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,36 +16,21 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://sourceforge.net/projects/pokerth/files/pokerth/
-	VERSION=`curl -s $WEB | grep -i latest | grep PokerTH |cut -d "/" -f9 | cut -d- -f2 | cut -d "a" -f1 | sed 's/.$//g' | sed "s/ //g"`
 	PRGNAM=pokerth
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DOWNLOAD=http://downloads.sourceforge.net/pokerth/PokerTH-$VERSION-src.tar.bz2
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f PokerTH-$VERSION-src.tar.bz2 ]; then
-	echo ""
-	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
-	aria2c -x 3 $DOWNLOAD
-fi
+	WEB=http://sourceforge.net/projects/$PRGNAM/files/$PRGNAM/
+	VERSION=`curl -s $WEB | grep -i latest | grep PokerTH |cut -d "/" -f9 | cut -d- -f2 | cut -d "a" -f1 | sed 's/.$//g' | sed "s/ //g"`
+	EXTENSION=tar.bz2
+	SRCNAM=PokerTH-$VERSION-src
+	SOURCES=$SRCNAM.$EXTENSION
+	DOWNLOAD=http://downloads.sourceforge.net/$PRGNAM/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo ""
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
-tar xvf PokerTH-$VERSION-src.tar.bz2
-cd PokerTH-$VERSION-src
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
- -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+echo "$VERDE"Compilamos ..."$CIERRE"
+sleep 1
 
 sed -i "s|libircclient/||" src/net/common/ircthread.cpp
 
@@ -81,7 +66,9 @@ f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
