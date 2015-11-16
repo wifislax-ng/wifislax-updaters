@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 CATEGORIA=Grabacion
 
 ############################################################
@@ -38,7 +38,7 @@ F_compilar(){
 # Configuramos paquete
 echo ""
 echo "$VERDE"Configurando ..."$CIERRE"
-sleep 3
+sleep 1
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \

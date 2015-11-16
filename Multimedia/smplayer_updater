@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151103
+SCRIPT_VERSION=20151116
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -31,7 +31,7 @@ F_compilar(){
 # Configuramos paquete
 echo ""
 echo "$VERDE"Configurando y compilano..."$CIERRE"
-sleep 3
+sleep 1
 chown -R root:root .
 
 sed -i "/^PREFIX/s/=.*$/=\/usr/;

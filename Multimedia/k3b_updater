@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 CATEGORIA=Grabacion
 
 ############################################################
@@ -29,7 +29,7 @@ F_download(){
 	if [ ! -f $ARCHIVO ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 $WEB/$ARCHIVO
 	fi
 }
@@ -38,7 +38,7 @@ F_download(){
 F_compilar(){
 echo ""
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
+sleep 1
 rm -rf $PRGNAM-$VERSION
 txz2dir $TMP/$ARCHIVO $PKG
 rm -Rf $PKG/var/log/packages/*

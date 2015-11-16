@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 CATEGORIA="Reproductores streaming"
 
 ############################################################
@@ -37,7 +37,7 @@ f_dependencias
 F_compilar(){
 echo ""
 echo "$VERDE"Compilando ..."$CIERRE"
-sleep 3
+sleep 1
 make  PREFIX=/usr || exit 1
 make install DESTDIR=$PKG
 }

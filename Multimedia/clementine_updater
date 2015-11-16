@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151101
+SCRIPT_VERSION=20151116
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -39,7 +39,7 @@ F_compilar(){
 # Compilamos paquete
 echo ""
 echo "$VERDE"Compilando ..."$CIERRE"
-sleep 3
+sleep 1
 
 mkdir build
 cd build
