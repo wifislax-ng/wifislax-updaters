@@ -2,7 +2,7 @@
 
 # Script for www.seguridadwireless.net by vk496
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,7 +20,7 @@ if [ ! "$(ping -w 5 -c1 github.com 2>/dev/null)" ]; then
 echo "$ROJO"
 echo "Parece que el repositorio no responde,intentalo mas tarde."
 echo "$CIERRE"
-sleep 3
+sleep 1
 exit 0
 fi
 }
@@ -144,7 +144,7 @@ if [ $CREAR_MODULO = SI ]; then
    
    echo -n ${CYAN}Creando logs e instalando....$CIERRE
    echo -ne "${CYAN} $ROJO$contador${CYAN} scripts$CIERRE"
-   sleep 3
+   sleep 1
 
    mkdir -p $PKG/usr/share/applications/wifislax/Actualizadores $PKG/opt/wifislax-updaters
    cp -Ru /usr/share/applications/wifislax/Actualizadores/ $PKG/usr/share/applications/wifislax/
@@ -162,7 +162,7 @@ f_tareasFinales
 else
 echo $VERDE
 echo No hay actualizaciones para los updaters
-sleep 3
+sleep 1
 echo
 echo Bye Bye
 echo $CIERRE

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -28,7 +28,7 @@ F_download(){
 	if [ ! -f install_flash_player_11_linux.i386.tar.gz ]; then
 		echo ""
 		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-		sleep 3
+		sleep 1
 		aria2c -x 3 $DOWNLOAD
 	fi
 }
@@ -37,7 +37,7 @@ F_download(){
 F_descomprimir(){
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
-	sleep 3
+	sleep 1
 	tar xvf install_flash_player_11_linux.i386.tar.gz -C $PKG
 
 	mkdir -p $PKG/usr/lib/mozilla/plugins

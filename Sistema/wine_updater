@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151116
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -31,21 +31,21 @@ F_download(){
 	if [ ! -f $PRGNAM-$VERSION-$ARCH-1sg.txz ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 ${WEB}$VERSION/$ARCH/$PRGNAM-$VERSION-$ARCH-1sg.txz
 	fi
 # Si gecko no existe se descargara de internet
 	if [ ! -f ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi ]; then
 	echo ""
 	echo "$CYAN"Descargando plugin ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 $GECKO_WEB/$GECKO_VERSION/${PRGNAM}_gecko-$GECKO_VERSION-x86.msi
 	fi
 # Si mono no existe se descargara de internet
 	if [ ! -f ${PRGNAM}-mono-$MONO_VERSION.msi ]; then
 	echo ""
 	echo "$CYAN"Descargando plugin ${PRGNAM}-mono-$MONO_VERSION.msi"$CIERRE"
-	sleep 3
+	sleep 1
 	aria2c -x 3 $MONO_WEB/$MONO_VERSION/${PRGNAM}-mono-$MONO_VERSION.msi
 fi
 }
