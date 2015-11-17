@@ -3,7 +3,6 @@
 # Script by www.seguridadwireless.net
 
 SCRIPT_VERSION=20151117
-CATEGORIA=Grabacion
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,44 +16,21 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=brasero
+	PRGNAM=pexpect
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://download.gnome.org/sources/brasero/
-	RAMA=`curl -s $WEB | grep DIR | tail -1 | cut -d "=" -f5 | cut -d '"' -f2 | cut -d "/" -f1`
-	VERSION=`curl -s ${WEB}${RAMA}/ | grep LATEST | cut -d '"' -f8 | sed "s/LATEST-IS-//g" | sed "s/ //g"`
-	EXTENSION=tar.xz
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://download.gnome.org/sources/brasero/$RAMA/$SOURCES
-}
-
-# Comprobar dependencias
-F_dependencias(){
-DEPENDENCIAS="gst-plugins-bad"
-f_dependencias
+	WEB=https://github.com/pexpect/pexpect
+	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d / -f5|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-# Configuramos paquete
-echo ""
-echo "$VERDE"Configurando ..."$CIERRE"
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-./configure \
-  --prefix=/usr \
-  --libdir=/usr/lib${LIBDIRSUFFIX} \
-  --sysconfdir=/etc \
-  --localstatedir=/var \
-  --enable-static=no \
-  --enable-shared=yes \
-  --enable-gtk-doc=no \
-  --disable-schemas-compile \
-  --enable-nautilus=no \
-  --enable-libburnia=yes
-
-make  || exit 1
-make install DESTDIR=$PKG
+python setup.py install --root=$PKG
 }
 
 ###################################
@@ -77,10 +53,8 @@ f_presentacion
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
 f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

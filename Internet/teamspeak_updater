@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151114
+SCRIPT_VERSION=20151115
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -40,8 +40,8 @@ echo '#!/bin/bash
 
 cd "/opt/teamspeak3"
 ./ts3client_runscript.sh $@
-exit $?' > $PKG/usr/bin/ts3client_runscript.sh
-chmod +x $PKG/usr/bin/ts3client_runscript.sh
+exit $?' > $PKG/usr/bin/teamspeak
+chmod +x $PKG/usr/bin/teamspeak
 #Entrada al menu e icono
 mkdir -p $PKG/usr/share/pixmaps
 echo "
@@ -144,7 +144,7 @@ Mzo1MzoyOSswMTowMD0lPqoAAAAASUVORK5CYII=" | base64 -d > $PKG/usr/share/pixmaps/$
 mkdir -p $PKG/usr/share/applications
 echo "[Desktop Entry]
 Categories=Application;Network;
-Exec=sh ts3client_runscript.sh
+Exec=$PRGNAM
 Icon=$PRGNAM
 MimeType=
 Name=TeamSpeak3

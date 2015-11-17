@@ -3,7 +3,7 @@
 # Script by www.seguridadwireless.net
 
 SCRIPT_VERSION=20151117
-CATEGORIA=Grabacion
+CATEGORIA="Editores de audio"
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,26 +17,25 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=brasero
+	PRGNAM=sound-juicer
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://download.gnome.org/sources/brasero/
-	RAMA=`curl -s $WEB | grep DIR | tail -1 | cut -d "=" -f5 | cut -d '"' -f2 | cut -d "/" -f1`
-	VERSION=`curl -s ${WEB}${RAMA}/ | grep LATEST | cut -d '"' -f8 | sed "s/LATEST-IS-//g" | sed "s/ //g"`
+	WEB=http://ftp.gnome.org/pub/gnome/sources/$PRGNAM/
+	RAMA=`curl -s $WEB|grep [0-9]/|tail -1|rev|cut -d '=' -f-1|rev|cut -d / -f-1|rev|sed 's/.$//g'|rev`
+	VERSION=`curl -s ${WEB}$RAMA/|grep tar.xz|tail -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://download.gnome.org/sources/brasero/$RAMA/$SOURCES
+	DOWNLOAD=${WEB}$RAMA/$SOURCES
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="gst-plugins-bad"
+DEPENDENCIAS="libdiscid gst-plugins-base gst-plugins-good brasero hicolor-icon-theme iso-codes libmusicbrainz"
 f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-# Configuramos paquete
-echo ""
+echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
 CFLAGS="$SLKCFLAGS" \
@@ -45,15 +44,12 @@ CXXFLAGS="$SLKCFLAGS" \
   --prefix=/usr \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
-  --localstatedir=/var \
-  --enable-static=no \
-  --enable-shared=yes \
-  --enable-gtk-doc=no \
-  --disable-schemas-compile \
-  --enable-nautilus=no \
-  --enable-libburnia=yes
+  --localstatedir=/var
 
-make  || exit 1
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+make || exit 1
 make install DESTDIR=$PKG
 }
 
@@ -77,9 +73,9 @@ f_presentacion
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
 f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
+#Compronar dependencias
 F_dependencias
 #Si no existe el fichero se descargara
 f_download
