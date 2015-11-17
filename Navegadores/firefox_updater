@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151025
+SCRIPT_VERSION=20151116
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=firefox
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://download-origin.cdn.mozilla.net/pub/firefox/releases/latest/linux-i686/es-ES/
-	VERSION=`curl -s $WEB|grep .tar.bz2|tail -1|rev|cut -d- -f1|rev|cut -d t -f-1|sed 's/.$//g'`
+	WEB=https://download.mozilla.org/?product=firefox-latest\&os=linux\&lang=es-ES
+	VERSION=$(curl -s $WEB|grep .tar.bz2|tail -1|rev|cut -d- -f1|rev|cut -d t -f-1|sed 's/.$//g')
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=$WEB${SOURCES}
+	DOWNLOAD="-O $SOURCES $WEB"
 }
 
 # Descomprimimos el fichero descargado y compilamos
