@@ -1,0 +1,163 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20151117
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=bmon
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/tgraf/bmon
+	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SRCNAM=v$VERSION
+	SOURCES=$SRCNAM.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="confuse"
+f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+autoreconf -if
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+make || exit 1
+make install-strip DESTDIR=$PKG || exit 1
+mkdir -p $PKG/etc
+cat examples/$PRGNAM.conf > $PKG/etc/$PRGNAM.conf
+rm -rf $PKG/usr/share
+
+
+
+if [ ! -f /var/log/packages/bmon_starter* ]; then
+#Icono
+mkdir -p $PKG/usr/share/pixmaps
+echo "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
+" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+#Entrada a menu
+mkdir -p $PKG/usr/share/applications/wifislax/Hardware-Tools/
+echo '[Desktop Entry]
+Categories=Hardware-Tools;
+Exec=sh -c "bmon;${SHELL:-bash}"
+GenericName[es]=Analizador de señal
+GenericName=Signal analyzer
+Icon=bmon
+Name[es]=Bmon
+Name=Bmon
+StartupNotify=true
+Terminal=true
+TerminalOptions=
+Type=Application' > $PKG/usr/share/applications/wifislax/Hardware-Tools/Bmon.desktop
+fi
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
