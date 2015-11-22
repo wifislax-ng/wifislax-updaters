@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20151122
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,34 +16,24 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
+	PRGNAM=gambas
+	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://sourceforge.net/projects/gambas/files/
 	VERSION=`curl -s $WEB | grep latest/ | head -1 | cut -d "/" -f 8 | cut -d- -f 2 | cut -d "t" -f-1 | sed "s/.$//g" | sed "s/ //g"`
 	RAMA=`echo $VERSION | cut -d "." -f1`
-	PRGNAM=gambas
-	echo -ne "\033]2;${PRGNAM}_updater\007"
-	PRGNAM_FULL=gambas$RAMA
 	EXTENSION=tar.bz2
-	SOURCES=$PRGNAM_FULL-$VERSION.$EXTENSION
-	DOWNLOAD=http://downloads.sourceforge.net/project/gambas/$PRGNAM_FULL/$SOURCES
-	SHORT_PRGNAM=${PRGNAM%$(cut -d . -f 1 <<< $VERSION)}
+	SRCNAM=gambas${RAMA}-$VERSION
+	SOURCES=$SRCNAM.$EXTENSION
+	DOWNLOAD="http://downloads.sourceforge.net/project/gambas/gambas$RAMA/$SOURCES"
 }
 
 # Descomprimimos el fichero descargado
 F_compilar(){
 echo ""
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 1
-rm -rf $PRGNAM_FULL-$VERSION
-tar xvf $SOURCES
-cd $PRGNAM_FULL-$VERSION
-chown -R root:root .
-  
-# Compilamos paquete
-echo ""
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
 
-./reconf-all
+./reconf-all \
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -56,18 +46,18 @@ make || exit 1
 make -j1 install-strip DESTDIR=$PKG XDG_UTILS=""
 
 mkdir -p $PKG/usr/share/icons/hicolor/{scalable/apps,48x48/apps,64x64/mimetypes}
-cp -a app/desktop/$PRGNAM_FULL.svg $PKG/usr/share/icons/hicolor/scalable/apps
-cp -a app/desktop/$PRGNAM_FULL.png $PKG/usr/share/icons/hicolor/48x48/apps
-cp -a app/mime/application-x-${SHORT_PRGNAM}{script,serverpage}.png \
+cp -a app/desktop/gambas${RAMA}.svg $PKG/usr/share/icons/hicolor/scalable/apps
+cp -a app/desktop/gambas${RAMA}.png $PKG/usr/share/icons/hicolor/48x48/apps
+cp -a app/mime/application-x-${PRGNAM}{script,serverpage}.png \
   $PKG/usr/share/icons/hicolor/64x64/mimetypes
-cp -a main/mime/application-x-$PRGNAM_FULL.png \
+cp -a main/mime/application-x-gambas${RAMA}.png \
   $PKG/usr/share/icons/hicolor/64x64/mimetypes
 
 mkdir -p $PKG/usr/share/{applications,mime/packages}
-cp -a app/desktop/$PRGNAM_FULL.desktop $PKG/usr/share/applications
-cp -a app/mime/application-x-${SHORT_PRGNAM}{script,serverpage}.xml \
+cp -a app/desktop/gambas${RAMA}.desktop $PKG/usr/share/applications
+cp -a app/mime/application-x-${PRGNAM}{script,serverpage}.xml \
   $PKG/usr/share/mime/packages
-cp -a main/mime/application-x-$PRGNAM_FULL.xml $PKG/usr/share/mime/packages
+cp -a main/mime/application-x-gambas${RAMA}.xml $PKG/usr/share/mime/packages
 }
 
 ###################################
@@ -94,6 +84,8 @@ f_arquitectura
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Creamos xzm , instalamos y salimos
