@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151123
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=libechonest
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://projects.kde.org/projects/playground/libs/$PRGNAM
-	VERSION=`curl -s $WEB | grep Latest | head -1 | cut -d- -f2 | cut -d t -f1 | sed 's/.$//g'`
+	WEB=http://files.lfranchi.com/
+	VERSION=`curl -s $WEB |grep $PRGNAM-|tail -1|cut -d- -f2 |cut -d t -f1|sed 's/.$//g'`
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=http://files.lfranchi.com/$SOURCES
+	DOWNLOAD=${WEB}$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
