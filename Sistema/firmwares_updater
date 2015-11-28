@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151115
+SCRIPT_VERSION=20151128
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -41,20 +41,20 @@ rm -Rf $TMP/linux-firmware/README
 rm -Rf $TMP/linux-firmware/Makefile
 rm -Rf $TMP/linux-firmware/GPL-3
 rm -Rf $TMP/linux-firmware/configure
-#rm -Rf $TMP/linux-firmware/htc_7010.fw
-#rm -Rf $TMP/linux-firmware/htc_9271.fw
+rm -Rf $TMP/linux-firmware/htc_7010.fw
+rm -Rf $TMP/linux-firmware/htc_9271.fw
 mkdir -p $PKG/lib/firmware
 mv $TMP/linux-firmware/* $PKG/lib/firmware/
 
 # Aqui conseguimos las ulimas version de firmware para chips atheros usb
-#if [ -d $TMP/ath9k-htc-firmware-blob ]; then
-#rm -rf $TMP/ath9k-htc-firmware-blob
-#fi
-#echo "$AMARILLO"
-#git clone https://github.com/olerem/ath9k-htc-firmware-blob
-#mv $TMP/ath9k-htc-firmware-blob/htc_7010.fw $PKG/lib/firmware/
-#mv $TMP/ath9k-htc-firmware-blob/htc_9271.fw $PKG/lib/firmware/
-#echo "$CIERRE"
+if [ -d $TMP/ath9k-htc-firmware-blob ]; then
+rm -rf $TMP/ath9k-htc-firmware-blob
+fi
+echo "$AMARILLO"
+git clone https://github.com/olerem/ath9k-htc-firmware-blob
+mv $TMP/ath9k-htc-firmware-blob/htc_7010.fw $PKG/lib/firmware/
+mv $TMP/ath9k-htc-firmware-blob/htc_9271.fw $PKG/lib/firmware/
+echo "$CIERRE"
 }
 
 ###################################
