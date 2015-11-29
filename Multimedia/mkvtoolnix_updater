@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151106
+SCRIPT_VERSION=20151129
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -19,7 +19,7 @@ f_variables(){
 F_variables() {
 	PRGNAM=mkvtoolnix
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://www.bunkus.org/videotools/$PRGNAM/sources/
+	WEB=https://mkvtoolnix.download/sources/
 	VERSION=`curl -s $WEB|grep .tar.xz|tail -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION

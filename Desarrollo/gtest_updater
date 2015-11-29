@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20151129
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=gtest
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB="https://code.google.com/p/googletest/downloads/list?can=1&q=&colspec=Filename+Summary+Uploaded+ReleaseDate+Size+DownloadCount"
-	SOURCES=$(curl -sk $WEB |grep "files/$PRGNAM" | grep -Po 'href="\K.*(?=" )' -m1 | rev | cut -d/ -f1|rev)
-	VERSION=$(echo "$SOURCES" | rev | cut -d\. -f2- | rev | cut -d- -f2-)
+	WEB=https://github.com/google/googletest/releases
+        VERSION=`curl -s $WEB|grep tar.gz|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=zip
-	DOWNLOAD="https://googletest.googlecode.com/files/$SOURCES"
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=http://googletest.googlecode.com/files/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos

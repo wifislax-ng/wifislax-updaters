@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151101
+SCRIPT_VERSION=20151129
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -24,8 +24,8 @@ F_variables() {
 	fi
 	SRCNAM=maskprocessor
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/jsteube/$SRCNAM
-	VERSION=`echo $(curl -s $WEB/releases|grep "tar.gz"|cut -d "/" -f5|cut -d "t" -f1|sed 's/.$//g'|sed 's/^.//g')`
+	WEB=https://github.com/hashcat/$SRCNAM
+	VERSION=`curl -s $WEB/releases|grep "tar.gz"|head -1|cut -d v -f3|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.gz
 	SOURCES=v$VERSION.$EXTENSION
 	DOWNLOAD=$WEB/archive/$SOURCES
