@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20151219
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -58,7 +58,7 @@ export PATH=\"\${PATH}:\${JAVA_HOME}/bin:\${JAVA_HOME}/jre/bin\"" >$PKG/etc/prof
 	chmod +x $PKG/etc/profile.d/jre.csh
 
 	mv $PKG/usr/java/jre*/* $PKG/usr/lib/java/
-	ln -s $PKG/usr/lib/java/ $PKG/usr/lib/$(ls $PKG/usr/java/ | cut -d "/" -f1)
+	ln -s /usr/lib/java/ $PKG/usr/lib/$(ls $PKG/usr/java/ | cut -d "/" -f1)
 	rm -Rf $PKG/usr/java
 
 
