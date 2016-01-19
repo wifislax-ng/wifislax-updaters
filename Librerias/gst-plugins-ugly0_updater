@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160119
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -216,48 +216,14 @@ cgit v0.9.0.2-2-gbebe
 
 EOF
 
-cat > opencore-amr.patch  << "EOF"
-echo "--- ext/amrnb/amrnbdec.h.orig	2012-03-12 16:49:14.417405139 +0000
-+++ ext/amrnb/amrnbdec.h	2012-03-12 16:49:35.393899419 +0000
-@@ -22,7 +22,7 @@
- 
- #include <gst/gst.h>
- #include <gst/audio/gstaudiodecoder.h>
--#include <interf_dec.h>
-+#include <opencore-amrnb/interf_dec.h>
- 
- G_BEGIN_DECLS
- 
---- ext/amrnb/amrnbenc.h.orig	2012-03-12 16:49:23.833996062 +0000
-+++ ext/amrnb/amrnbenc.h	2012-03-12 16:49:46.597141876 +0000
-@@ -21,7 +21,7 @@
- #define __GST_AMRNBENC_H__
- 
- #include <gst/gst.h>
--#include <interf_enc.h>
-+#include <opencore-amrnb/interf_enc.h>
- #include <gst/audio/gstaudioencoder.h>
- 
- G_BEGIN_DECLS
---- ext/amrwbdec/amrwbdec.h.orig	2012-03-12 16:47:48.658100992 +0000
-+++ ext/amrwbdec/amrwbdec.h	2012-03-12 16:48:12.177910733 +0000
-@@ -22,8 +22,8 @@
- 
- #include <gst/gst.h>
- #include <gst/audio/gstaudiodecoder.h>
--#include <dec_if.h>
--#include <if_rom.h>
-+#include <opencore-amrwb/dec_if.h>
-+#include <opencore-amrwb/if_rom.h>
- 
- G_BEGIN_DECLS
- 
-EOF
-
-
-patch -Np0 < opencore-amr.patch || exit 1
 patch -Np1 < cdio-cd-text-api.patch || exit 1
-sed -e 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/' -i configure.ac
+
+
+# Fix support for newer opencore-amr versions
+sed -i "s|interf_dec.h|opencore-amrnb/interf_dec.h|" ext/amrnb/amrnbdec.h
+sed -i "s|interf_enc.h|opencore-amrnb/interf_enc.h|" ext/amrnb/amrnbenc.h
+sed -i "s|dec_if.h|opencore-amrwb/dec_if.h|" ext/amrwbdec/amrwbdec.h
+sed -i "s|if_rom.h|opencore-amrwb/if_rom.h|" ext/amrwbdec/amrwbdec.h
 
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
@@ -273,8 +239,6 @@ NOCONFIGURE=1 ./autogen.sh \
   --localstatedir=/var \
   --mandir=/usr/man \
   --disable-static
-
-sed -e 's/gst-libs gst ext/gst-libs gst/' -i Makefile
 
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
