@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160119
+SCRIPT_VERSION=20160129
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -32,29 +32,21 @@ chmod -R u+w,go+r-w,a-s .
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
-sed -i 's/-lflite"/-lflite -lasound"/' configure &&
+
   ./configure \
-    --prefix=/usr \
-    --libdir=/usr/lib${LIBDIRSUFFIX} \
-    --shlibdir=/usr/lib${LIBDIRSUFFIX} \
+    --prefix='/usr' \
     --disable-debug \
-    --disable-doc \
-    --disable-htmlpages \
-    --disable-manpages \
-    --disable-podpages \
     --disable-static \
     --disable-stripping \
-    --disable-txtpages \
-    --enable-avfilter \
     --enable-avisynth \
     --enable-avresample \
     --enable-fontconfig \
     --enable-gnutls \
     --enable-gpl \
+    --enable-ladspa \
     --enable-libass \
     --enable-libbluray \
-    --enable-libcaca \
-    --enable-libcdio \
+    --enable-libdcadec \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-libgsm \
@@ -65,30 +57,26 @@ sed -i 's/-lflite"/-lflite -lasound"/' configure &&
     --enable-libopenjpeg \
     --enable-libopus \
     --enable-libpulse \
-    --enable-librtmp \
     --enable-libschroedinger \
+    --enable-libsoxr \
     --enable-libspeex \
+    --enable-libssh \
     --enable-libtheora \
     --enable-libv4l2 \
+    --enable-libvidstab \
     --enable-libvorbis \
     --enable-libvpx \
+    --enable-libwebp \
     --enable-libx264 \
     --enable-libx265 \
     --enable-libxvid \
-    --enable-pthreads \
-    --enable-postproc \
-    --enable-runtime-cpudetect \
     --enable-shared \
-    --enable-swresample \
-    --enable-swscale \
-    --enable-vdpau \
     --enable-version3 \
-    --enable-opengl \
     --enable-x11grab
-  
-make  || exit 1
-make tools/qt-faststart
-make install DESTDIR=$PKG
+
+  make || exit 1
+  make tools/qt-faststart || exit 1
+  make install DESTDIR=$PKG
 }
 
 ###################################
