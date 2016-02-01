@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151129
+SCRIPT_VERSION=20160201
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -41,7 +41,6 @@ LDFLAGS="-L/usr/lib${LIBDIRSUFFIX}" \
   --sysconfdir=/etc \
   --localstatedir=/var/lib \
   --disable-static \
-  --enable-python-binding \
   --with-boost-libdir=/usr/lib${LIBDIRSUFFIX} \
   --with-libgeoip \
   --with-libiconv \
