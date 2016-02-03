@@ -2,11 +2,11 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160204
 
-#################################################
+############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
-#################################################
+############################################################
 f_variables(){
 	. /opt/wifislax-updaters/Funciones/funciones_updater
 }
@@ -15,11 +15,14 @@ f_variables(){
 ## Funciones propias del script. Su nombre empieza por F_ ##
 ############################################################
 # Definicion de variables
-F_variables(){
-	WEB=http://winetricks.googlecode.com/svn/trunk/src/winetricks
-	VERSION=`curl -s $WEB | grep WINETRICKS_VERSION= |cut -d "=" -f 2 | sed "s/ //g"`
+F_variables() {
 	PRGNAM=winetricks
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/Winetricks/winetricks
+	VERSION=`curl -s $WEB/releases|grep .tar.gz|head -1|cut -d / -f5|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
 }
 
 # Comprobar dependencias ( si hay mas de una se separan por un espacio )
@@ -28,21 +31,13 @@ DEPENDENCIAS="wine"
 f_dependencias
 }
 
-# Si el paquete no existe se descargara de internet
-F_download(){
-if [ ! -f $PRGNAM ]; then
-echo ""
-echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-sleep 1
-aria2c -x 3 $WEB
-fi
-}
-
-# Es un paquete sencillo ya que solo es un script se mueve a su sitio y poco mas
+# Descomprimimos el fichero descargado y compilamos
 F_compilar(){
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
 mkdir -p $PKG/{usr/bin,usr/share/pixmaps,usr/share/applications}
-chmod 755 $PRGNAM
-mv -f $PRGNAM $PKG/usr/bin/$PRGNAM
+make DESTDIR=$PKG install
 
 # Creamos el fichero desktop
 echo "[Desktop Entry]
@@ -103,6 +98,7 @@ XmMT+Dmg99sCOpc5QD+wCXgF+3x/htoBLRoKOACs/rpfdD0kFFkZ25Q+BY4BZ6ldD9NABiunW4A1
 wD8q/9ORXetG1cpSWKksB4aAlVjg38Um9FlgN7CXFg+wWtk3RSCyJNb7PcBi7LGlD1uRJrGPEds6
 hUb2TROIWzI2IhwhHfaG/wMP69FzuY1cpwAAAABJRU5ErkJggg==
 " | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.png
+
 }
 
 ###################################
@@ -124,16 +120,17 @@ f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-f_arquitectura noarch
-#Comprobamos version instalada del script
+f_arquitectura
+#Comprobamos version instalada del paquete
 f_versionInstalada
-#Comprobar dependencias de este paquete
+#Compronar dependencias
 F_dependencias
 #Si no existe el fichero se descargara
-F_download
+f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
-#Creamos la entrada al menu
 #Hacemos strip sobre el paquete
 f_strip
 #Creamos xzm , instalamos y salimos
