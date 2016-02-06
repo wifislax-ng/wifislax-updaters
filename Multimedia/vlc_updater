@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160119
+SCRIPT_VERSION=20160206
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -34,25 +34,10 @@ echo "Configurando paquete$ROJO $PRGNAM-$VERSION $CIERRE..."
 sleep 1
 
 # Comprobamos version de opencv
-OPENCV=$(ls /var/log/packages/*|grep opencv|cut -d- -f2|cut -c 1)
-if [ $OPENCV = 3 ]; then
-echo "ZGlmZiAtLWdpdCBhL21vZHVsZXMvdmlkZW9fZmlsdGVyL29wZW5jdl9leGFtcGxlLmNwcCBiL21v
-ZHVsZXMvdmlkZW9fZmlsdGVyL29wZW5jdl9leGFtcGxlLmNwcAppbmRleCBhZTNhZjA1Li45OThm
-Mjg2IDEwMDY0NAotLS0gYS9tb2R1bGVzL3ZpZGVvX2ZpbHRlci9vcGVuY3ZfZXhhbXBsZS5jcHAK
-KysrIGIvbW9kdWxlcy92aWRlb19maWx0ZXIvb3BlbmN2X2V4YW1wbGUuY3BwCkBAIC00MSw2ICs0
-MSw4IEBACiAKICNpbmNsdWRlIDxvcGVuY3YyL2NvcmUvY29yZV9jLmg+CiAjaW5jbHVkZSA8b3Bl
-bmN2Mi9jb3JlL2NvcmUuaHBwPgorI2luY2x1ZGUgPG9wZW5jdjIvaW1ncHJvYy9pbWdwcm9jX2Mu
-aD4KKyNpbmNsdWRlIDxvcGVuY3YyL2ltZ3Byb2MvaW1ncHJvYy5ocHA+CiAjaW5jbHVkZSA8b3Bl
-bmN2Mi9vYmpkZXRlY3Qvb2JqZGV0ZWN0LmhwcD4KIAogLyoqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqCg==" |base64 -d > $TMP/opencv.patch
-echo $VERDE
-echo "Aplicando parche opencv3!..."
-echo $AMARILLO
-patch -p1 -i $TMP/opencv.patch || exit 1
-echo $CIERRE
-fi
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
 
-# Aqui empezamos a configurar 
 sh bootstrap
 
 CFLAGS="$SLKCFLAGS" \
@@ -69,7 +54,10 @@ CXXFLAGS="$SLKCFLAGS" \
   --enable-merge-ffmpeg \
   --with-kde-solid=no \
   --build=$ARCH-slackware-linux
-
+  
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
 make  || exit 1
 make install DESTDIR=$PKG
 }
