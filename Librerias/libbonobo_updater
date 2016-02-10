@@ -1,0 +1,140 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160210
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=libbonobo
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://ftp.gnome.org/pub/gnome/sources/$PRGNAM/2.32
+	VERSION=2.32.1
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="ORBit2"
+f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Aplicando parches ..."$CIERRE"
+sleep 1
+
+echo "RnJvbSBmZWYxM2EzNzFmYzkxZjZkOWI0MjUxODEyNmMyYThiNDU5ZmRmMGU4IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBDb2xpbiBXYWx0ZXJzIDx3YWx0ZXJzQHZlcmJ1bS5vcmc+CkRh
+dGU6IFRodSwgMDIgTWF5IDIwMTMgMTg6MTc6MzggKzAwMDAKU3ViamVjdDogUmVtb3ZlIHVzZSBv
+ZiBHX0RJU0FCTEVfREVQUkVDQVRFRAoKVGhpcyBub3cgdHJpcHMgdXAgb24gR1N0YXRpY1JlY011
+dGV4OyBJJ20gbm90IGdvaW5nIHRvIGJvdGhlciB0byBwb3J0LApyZWFsaXN0aWNhbGx5IG5vIG9u
+ZSBpcyBhY3RpdmVseSBtYWludGFpbmluZyB0aGlzIGNvZGUgYW55bW9yZS4KLS0tCmRpZmYgLS1n
+aXQgYS9hY3RpdmF0aW9uLXNlcnZlci9NYWtlZmlsZS5hbSBiL2FjdGl2YXRpb24tc2VydmVyL01h
+a2VmaWxlLmFtCmluZGV4IGVmYjE4YTguLmZmYTkwZjYgMTAwNjQ0Ci0tLSBhL2FjdGl2YXRpb24t
+c2VydmVyL01ha2VmaWxlLmFtCisrKyBiL2FjdGl2YXRpb24tc2VydmVyL01ha2VmaWxlLmFtCkBA
+IC0xNyw3ICsxNyw2IEBAIElOQ0xVREVTPQkJCQkJXAogCSQoU0VSVkVSX0NGTEFHUykJCQlcCiAJ
+JChXQVJOX0NGTEFHUykJCQkJXAogCS1EU0VSVkVSX0NPTkZESVI9XCIkKHN5c2NvbmZkaXIpXCIJ
+XAotCS1ER19ESVNBQkxFX0RFUFJFQ0FURUQJCQlcCiAJLURHX0xPR19ET01BSU49XCJCb25vYm8t
+QWN0aXZhdGlvbi1TZXJ2ZXJcIiBcCiAJJChOVUxMKQogCmRpZmYgLS1naXQgYS9jb25maWd1cmUu
+aW4gYi9jb25maWd1cmUuaW4KaW5kZXggNzBhNGUyNi4uNmJlMmJjYSAxMDA2NDQKLS0tIGEvY29u
+ZmlndXJlLmluCisrKyBiL2NvbmZpZ3VyZS5pbgpAQCAtMTMyLDcgKzEzMiw3IEBAIEFDX1NVQlNU
+KFNFUlZFUl9MSUJTKQogQUNfU1VCU1QoU0VSVkVSX0NGTEFHUykKIAogaWYgdGVzdCAiJGVuYWJs
+ZV9tYWludGFpbmVyX21vZGUiID0gInllcyI7IHRoZW4KLQlESVNBQkxFX0RFUFJFQ0FURURfQ0ZM
+QUdTPSItREdfRElTQUJMRV9ERVBSRUNBVEVEIC1ER19ESVNBQkxFX1NJTkdMRV9JTkNMVURFUyIK
+KwlESVNBQkxFX0RFUFJFQ0FURURfQ0ZMQUdTPSItREdfRElTQUJMRV9TSU5HTEVfSU5DTFVERVMi
+CiAJQUNfU1VCU1QoRElTQUJMRV9ERVBSRUNBVEVEX0NGTEFHUykKIGZpCiAKLS0KY2dpdCB2MC45
+LjIK" | base64 -d > $TMP/remove_use_of_G_DISABLE_DEPRECATED.patch
+
+patch -p1 < $TMP/remove_use_of_G_DISABLE_DEPRECATED.patch || exit 1
+
+echo "LS0tIGxpYmJvbm9iby0yLjMyLjEub3JpZy90ZXN0cy9NYWtlZmlsZS5hbQkyMDEwLTA4LTI5IDEz
+OjU2OjAwLjAwMDAwMDAwMCArMDIwMAorKysgbGliYm9ub2JvLTIuMzIuMS90ZXN0cy9NYWtlZmls
+ZS5hbQkyMDE1LTExLTI4IDExOjMzOjE3LjQzOTQ0NDU5MCArMDEwMApAQCAtNTEsMTEgKzUxLDEy
+IEBACiAJTERfTElCUkFSWV9QQVRIPSIkKHRvcF9idWlsZGRpcikvYm9ub2JvLy5saWJzOiQkTERf
+TElCUkFSWV9QQVRIIglcCiAJUEFUSD0iJCh0b3BfYnVpbGRkaXIpL2Jvbm9iby8ubGliczokJFBB
+VEgiCVwKIAlCT05PQk9fUExVR0lOX1BBVEg9IiQodG9wX2J1aWxkZGlyKS9zdG9yYWdlLW1vZHVs
+ZXMvLmxpYnM6JCRCT05PQk9fUExVR0lOX1BBVEgiXAotCUJPTk9CT19BQ1RJVkFUSU9OX1BBVEg9
+IiQoc3JjZGlyKSQoU0VBUkNIUEFUSFNFUCkkJEJPTk9CT19BQ1RJVkFUSU9OX1BBVEgiXAotCU1P
+REVMU19ESVI9IiQoc3JjZGlyKS9tb2RlbHMiCisJQk9OT0JPX0FDVElWQVRJT05fUEFUSD0iJChT
+RUFSQ0hQQVRIU0VQKSQkQk9OT0JPX0FDVElWQVRJT05fUEFUSCJcCisJTU9ERUxTX0RJUj0ibW9k
+ZWxzIgorCiAKIFRFU1RTID0gdGVzdC1tb25pa2VyJChFWEVFWFQpIHRlc3QtZXZlbnQtc291cmNl
+JChFWEVFWFQpIHRlc3Qtb2JqZWN0JChFWEVFWFQpIFwKLQl0ZXN0LXN0cmVhbS1tZW0kKEVYRUVY
+VCkgJChzcmNkaXIpL3Rlc3QtcHJvcGVydGllcy5zaCB0ZXN0LXN0b3JhZ2UtbWVtJChFWEVFWFQp
+IFwKKwl0ZXN0LXN0cmVhbS1tZW0kKEVYRUVYVCkgdGVzdC1wcm9wZXJ0aWVzLnNoIHRlc3Qtc3Rv
+cmFnZS1tZW0kKEVYRUVYVCkgXAogCXRlc3QtbWFpbi1sb29wJChFWEVFWFQpCiAKICMgVEVTVFMg
+Kz0gdGVzdC1nZW5lcmljLWZhY3Rvcnkuc2gK" | base64 -d > $TMP/test_no_srcdir.patch
+
+patch -p1 < $TMP/test_no_srcdir.patch
+
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+autoreconf -fi
+
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --disable-static \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+make install-strip DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

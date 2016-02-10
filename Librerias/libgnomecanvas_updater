@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160210
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,45 +16,38 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=live555
-	SRCNAM=live
+	PRGNAM=libgnomecanvas
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://sourceforge.net/projects/slackbuildsdirectlinks/files/live555/
-	VERSION=`curl -s $WEB | grep live | grep -o [0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9] | head -1`
-	EXTENSION=tar.gz
-	SOURCES=${SRCNAM}.$VERSION.$EXTENSION
-	DOWNLOAD=${WEB}$SOURCES
+	WEB=http://ftp.gnome.org/pub/gnome/sources/$PRGNAM/2.30
+	VERSION=2.30.3
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-for f in $(find . -type f |xargs grep -l "PREFIX =") ; do echo $f; sed -i -e "/PREFIX =/c\PREFIX = \/usr" $f ; done
-for f in $(find . -type f |xargs grep -l "LIBDIR =") ; do echo $f; sed -i -e "/LIBDIR =/c\LIBDIR = \$(PREFIX)\/lib$LIBDIRSUFFIX" $f ; done
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
 
-cat > live555.pc.in << "EOF"
-prefix=%PREFIX%
-exec_prefix=${prefix}
-includedir=${prefix}/include
-libdir=${prefix}/lib%LIBDIRSUFFIX%
-
-Name: live555
-Description: C++ multimedia streaming libraries
-Version: %VERSION%
-Cflags: -I${includedir} -I${includedir}/BasicUsageEnvironment -I${includedir}/UsageEnvironment -I${includedir}/groupsock -I${includedir}/liveMedia
-
-EOF
-
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --enable-glade \
+  --enable-static=no \
+  --build=$ARCH-slackware-linux
 
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-./genMakefiles linux-with-shared-libraries
-make  || exit 1
-make install DESTDIR=$PKG
 
-mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig
-sed -e "s/%VERSION%/$VERSION/" -e "s/%LIBDIRSUFFIX%/$LIBDIRSUFFIX/" -e "s/%PREFIX%/\/usr/" live555.pc.in >$PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig/live555.pc
-chmod 0644 $PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig/live555.pc
+make || exit 1
+make install-strip DESTDIR=$PKG || exit 1
 }
 
 ###################################
