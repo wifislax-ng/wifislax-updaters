@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151104
+SCRIPT_VERSION=20160210
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,7 +18,7 @@ f_variables(){
 F_variables() {
 	PRGNAM=libnice
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://nice.freedesktop.org/releases/
+	WEB=https://nice.freedesktop.org/releases/
 	VERSION=`curl -s $WEB|grep tar.gz|tail -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION

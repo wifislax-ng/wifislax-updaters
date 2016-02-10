@@ -1,0 +1,126 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160210
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=libffado
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://www.ffado.org/files/
+	VERSION=2.2.1
+	EXTENSION=tgz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=${WEB}$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+# Use our CFLAGS
+sed -i "s/-O2 -DNDEBUG/$SLKCFLAGS -DNDEBUG/" SConstruct
+
+# Parcheamos
+echo "LS0tIGEvdGVzdHMvdGVzdC1lbmhhbmNlZC1taXhlci5jcHAKKysrIGIvdGVzdHMvdGVzdC1lbmhh
+bmNlZC1taXhlci5jcHAKQEAgLTc3LDcgKzc3LDcgQEAKICAgICAgICAgZXhpdCgwKTsKICAgICB9
+CiAKLSAgICBpbnQgZXJybm8gPSAwOworICAgIGV4dGVybiBpbnQgZXJybm87CiAgICAgY2hhciog
+dGFpbDsKICAgICBpbnQgbm9kZV9pZCA9IHN0cnRvbCggYXJndlsxXSwgJnRhaWwsIDAgKTsKICAg
+ICBpbnQgZmJfaWQgICA9IHN0cnRvbCggYXJndlsyXSwgJnRhaWwsIDAgKTsKLS0tIGEvdGVzdHMv
+dGVzdC1taXhlci5jcHAKKysrIGIvdGVzdHMvdGVzdC1taXhlci5jcHAKQEAgLTIyNyw3ICsyMjcs
+NyBAQAogICAgICAgICBleGl0KDApOwogICAgIH0KIAotICAgIGludCBlcnJubyA9IDA7CisgICAg
+ZXh0ZXJuIGludCBlcnJubzsKICAgICBjaGFyKiB0YWlsOwogICAgIGludCBwb3J0ID0gc3RydG9s
+KCBhcmd2WzFdLCAmdGFpbCwgMCApOwogICAgIGludCBub2RlX2lkID0gc3RydG9sKCBhcmd2WzJd
+LCAmdGFpbCwgMCApOwotLS0gYS90ZXN0cy90ZXN0LXBhbi5jcHAKKysrIGIvdGVzdHMvdGVzdC1w
+YW4uY3BwCkBAIC0xMzEsNyArMTMxLDcgQEAKICAgICAgICAgZXhpdCgwKTsKICAgICB9CiAKLSAg
+ICBpbnQgZXJybm8gPSAwOworICAgIGV4dGVybiBpbnQgZXJybm87CiAgICAgY2hhciogdGFpbDsK
+ICAgICBpbnQgbm9kZV9pZCA9IHN0cnRvbCggYXJndlsxXSwgJnRhaWwsIDAgKTsKICAgICBpbnQg
+ZmJfaWQgICA9IHN0cnRvbCggYXJndlsyXSwgJnRhaWwsIDAgKTsKLS0tIGEvdGVzdHMvdGVzdC12
+b2x1bWUuY3BwCisrKyBiL3Rlc3RzL3Rlc3Qtdm9sdW1lLmNwcApAQCAtMTI3LDcgKzEyNyw3IEBA
+CiAgICAgICAgIGV4aXQoMCk7CiAgICAgfQogCi0gICAgaW50IGVycm5vID0gMDsKKyAgICBleHRl
+cm4gaW50IGVycm5vOwogICAgIGNoYXIqIHRhaWw7CiAgICAgaW50IG5vZGVfaWQgPSBzdHJ0b2wo
+IGFyZ3ZbMV0sICZ0YWlsLCAwICk7CiAgICAgaW50IGZiX2lkICAgPSBzdHJ0b2woIGFyZ3ZbMl0s
+ICZ0YWlsLCAwICk7Cgo=" | base64 -d > $TMP/libffado-mixer.patch
+
+patch -p1 < $TMP/libffado-mixer.patch || exit 1
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+if [ "$ARCH" = "i586" ]; then
+  TARGET="i386"
+elif [ "$ARCH" = "i686" ]; then
+  TARGET="i686"
+elif [ "$ARCH" = "x86_64" ]; then
+  TARGET="x86_64"
+fi
+
+scons \
+  PREFIX=/usr \
+  LIBDIR=/usr/lib${LIBDIRSUFFIX} \
+  DIST_TARGET="$TARGET" \
+  COMPILE_FLAGS="$CFLAGS -std=gnu++11" \
+  DEBUG="False"
+
+scons \
+  --implicit-deps-unchanged \
+  PREFIX=/usr \
+  LIBDIR=/usr/lib${LIBDIRSUFFIX} \
+  DIST_TARGET="$TARGET" \
+  DEBUG="False" \
+  DESTDIR=$PKG \
+  install
+  
+mkdir -p $PKG/usr/share/{applications,pixmaps}
+install -m 0644 support/xdg/ffado.org-ffadomixer.desktop \
+  $PKG/usr/share/applications/ffadomixer.desktop
+install -m 0644 support/xdg/hi64-apps-ffado.png \
+  $PKG/usr/share/pixmaps/ffado.png
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
