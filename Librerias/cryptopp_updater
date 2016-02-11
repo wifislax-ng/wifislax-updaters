@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,12 +18,12 @@ f_variables(){
 F_variables() {
 	PRGNAM=cryptopp
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://sourceforge.net/projects/$PRGNAM/files/
+	WEB=https://sourceforge.net/projects/$PRGNAM/files/
 	VERSION=`curl -s $WEB | grep zip | cut -d "/" -f8 | sed "s/ //g"`
 	RAMA=`echo $VERSION | sed "s/[.]//g"`
 	EXTENSION=zip
 	SOURCES=$PRGNAM$RAMA.$EXTENSION
-	DOWNLOAD=http://downloads.sourceforge.net/project/$PRGNAM/$PRGNAM/$VERSION/$SOURCES
+	DOWNLOAD=https://downloads.sourceforge.net/project/$PRGNAM/$PRGNAM/$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos

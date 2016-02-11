@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,9 +18,9 @@ f_variables(){
 F_variables() {
 	PRGNAM=dosbox
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://sourceforge.net/projects/$PRGNAM/files/$PRGNAM/
+	WEB=https://sourceforge.net/projects/$PRGNAM/files/$PRGNAM/
 	VERSION=`curl -s $WEB | grep /latest | cut -d "/" -f8 | sed "s/ //g"`
-	DOWNLOAD=http://downloads.sourceforge.net/project/$PRGNAM/$PRGNAM/$VERSION/$PRGNAM-$VERSION.tar.gz
+	DOWNLOAD=https://downloads.sourceforge.net/project/$PRGNAM/$PRGNAM/$VERSION/$PRGNAM-$VERSION.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet

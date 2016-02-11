@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,7 +16,7 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://sourceforge.net/projects/networkminer/files/networkminer/
+	WEB=https://sourceforge.net/projects/networkminer/files/networkminer/
 	VERSION=`curl -s $WEB | grep /latest | cut -d "/" -f8 | cut -d "-" -f 2`
 	VERSION2=`echo $VERSION | tr '.' '-'`
 	PRGNAM=NetworkMiner

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,7 +18,7 @@ f_variables(){
 F_variables() {
 	PRGNAM=xampp
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://sourceforge.net/projects/xampp/files/XAMPP%20Linux/
+	WEB=https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/
 	VERSION=$(curl -s $WEB | grep class=\"folder | grep -Po 'title="\K.*(?=" )' | sort | tail -1)
 	ARCHIVO=$(curl -s $WEB$VERSION/ | grep class=\"file | grep -Po 'title="\K.*(?=" )' | head -2 | grep -v x64)
 }

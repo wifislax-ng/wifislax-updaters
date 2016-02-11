@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151025
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=mjpegtools
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://sourceforge.net/projects/mjpeg/files/$PRGNAM/
+	WEB=https://sourceforge.net/projects/mjpeg/files/$PRGNAM/
 	VERSION=`curl -s $WEB|grep mjpegtools/[0-9]|head -1|cut -d- -f2`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=http://downloads.sourceforge.net/mjpeg/$SOURCES
+	DOWNLOAD=https://downloads.sourceforge.net/mjpeg/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos

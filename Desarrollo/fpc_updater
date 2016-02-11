@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160211
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=fpc
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://sourceforge.net/projects/freepascal/files/Linux/
+	WEB=https://sourceforge.net/projects/freepascal/files/Linux/
 	VERSION=$(curl -s $WEB/ | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
 	DOWNLOAD=$(curl -s $WEB/$VERSION/ | grep "class=\"file " | awk '{print $2}' | cut -d "\"" -f 2 | awk '{print $1}' | grep "i386")
-	DOWNLOAD2=http://downloads.sourceforge.net/freepascal/${PRGNAM}build-$VERSION.tar.gz
-	DOWNLOAD3=http://downloads.sourceforge.net/project/freepascal/Source/$VERSION/$PRGNAM-$VERSION.source.tar.gz
+	DOWNLOAD2=https://downloads.sourceforge.net/freepascal/${PRGNAM}build-$VERSION.tar.gz
+	DOWNLOAD3=https://downloads.sourceforge.net/project/freepascal/Source/$VERSION/$PRGNAM-$VERSION.source.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet
