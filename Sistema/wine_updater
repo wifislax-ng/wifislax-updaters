@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160211
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables(){
 	PRGNAM=wine
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://sourceforge.net/projects/wine/files/Slackware%20Packages/
+	WEB=https://sourceforge.net/projects/wine/files/Slackware%20Packages/
 	VERSION=$(curl -s $WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
-	GECKO_WEB=http://sourceforge.net/projects/wine/files/Wine%20Gecko/
+	GECKO_WEB=https://sourceforge.net/projects/wine/files/Wine%20Gecko/
 	GECKO_VERSION=$(curl -s $GECKO_WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
-	MONO_WEB=http://sourceforge.net/projects/wine/files/Wine%20Mono/
+	MONO_WEB=https://sourceforge.net/projects/wine/files/Wine%20Mono/
 	MONO_VERSION=$(curl -s $MONO_WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
 }
 
