@@ -5,8 +5,9 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160212
+SCRIPT_VERSION=20160214
 
+# 20160214  Incluidos parametros para informar de tiempo empleado
 # 20160212  Arreglos multiarch se suprime soporte aufs3
 # 20160117  Limpieza de codigo
 # 20151024  Cambiado parametro arch a i586
@@ -327,6 +328,8 @@ patch -f -p1 -i aufs$RAMA.patch || exit 1
 make oldconfig || exit 1
 make xconfig || exit 1
 
+# Variables para calcular tiempo de inicio
+COMIENZO=$(date +%s)
 
 # Comienza la compilacion del kernel
 make  || exit 1
@@ -393,20 +396,14 @@ mv $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$
 # Limpiamos
 rm -Rf $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG
 
-# Comprobamos si es wifislax y si esta en livecd para intentar instalar el kernel a sistema
-if [ -d /mnt/live ]; then
-echo "$AMARILLO"
-echo "Detectado modo live ...el nuevo kernel no se instalara a sistema"
-echo "$VERDE"
-echo "Bye Bye"
-exit 0
-fi
-
 # Si no salio en las dos opciones anteriores es un wifislax en hdd se da opcion de instalar el kernel en sistema
+# Variables para calcular tiempo de acabado
+AHORA=$(($(date +%s)-3600));
+TIEMPO="$(date --date=@$(($AHORA-$COMIENZO)) +%X)"
 echo ""
-echo ""$ROSA"Detectado wifislax instalado en HDD..."$CIERRE""
+echo "${AMARILLO}Tiempo empleado${BLANCO}: $TIEMPO"
 echo ""
-echo ""$AMARILLO"Pulsa ENTER si quieres instalar el nuevo kernel,si no te interesa cierra el scipt."$CIERRE""
+echo ""$AMARILLO"Pulsa ENTER si quieres instalar el kernel,si no te interesa cierra el scipt."$CIERRE""
 read junk
 echo ""
 echo ""$VERDE"Instalando Kernel $KERNEL_ONLINE en sistema ..."$CIERRE""
@@ -421,4 +418,4 @@ update-grub
 echo ""
 echo ""$CYAN"Instalacion completada ..."$CIERRE""
 echo ""
-echo ""$AMARILLO"Bye Bye"$CIERRE"" 
+echo ""$AMARILLO"Bye Bye"$CIERRE""
