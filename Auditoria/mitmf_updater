@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160212
+SCRIPT_VERSION=20160214
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -21,7 +21,7 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://github.com/byt3bl33d3r/MITMf
 	RAMA=$(curl -s $WEB|grep commit/|head -1|rev|cut -d / -f1|cut -d '"' -f2|rev|cut -c-6)
-	VERSION=$(curl -s $WEB/releases|grep .gz|head -1|cut -d v -f3|cut -d t -f-1|sed 's/.$//g')_${RAMA}
+	VERSION=$(curl -s $WEB/releases|grep .gz|head -1|cut -d / -f5|cut -d t -f-1|sed 's/v//g'|sed 's/.$//g')_${RAMA}
 }
 
 # Descomprimimos el fichero descargado y compilamos
