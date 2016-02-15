@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151117
+SCRIPT_VERSION=20160215
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -20,8 +20,10 @@ F_variables() {
 	PRGNAM=sound-juicer
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://ftp.gnome.org/pub/gnome/sources/$PRGNAM/
-	RAMA=`curl -s $WEB|grep [0-9]/|tail -1|rev|cut -d '=' -f-1|rev|cut -d / -f-1|rev|sed 's/.$//g'|rev`
-	VERSION=`curl -s ${WEB}$RAMA/|grep tar.xz|tail -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
+	#RAMA=`curl -s $WEB|grep [0-9]/|tail -1|rev|cut -d '=' -f-1|rev|cut -d / -f-1|rev|sed 's/.$//g'|rev`
+	#VERSION=`curl -s ${WEB}$RAMA/|grep tar.xz|tail -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
+	RAMA=3.18
+	VERSION=3.18.1
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=${WEB}$RAMA/$SOURCES
