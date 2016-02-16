@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160206
+SCRIPT_VERSION=20160216
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -28,12 +28,6 @@ F_variables() {
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-# Configuramos el paquete 
-echo "$VERDE"
-echo "Configurando paquete$ROJO $PRGNAM-$VERSION $CIERRE..."
-sleep 1
-
-# Comprobamos version de opencv
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
@@ -54,7 +48,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --enable-merge-ffmpeg \
   --with-kde-solid=no \
   --build=$ARCH-slackware-linux
-  
+ 
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160211
+SCRIPT_VERSION=20160216
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -32,8 +32,29 @@ f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
-F_compilar(){ 
-# Configuramos paquete
+F_compilar(){
+if [ $VERSION = "1.5.5" ]; then
+cat > ffmpeg3.patch << "EOF"
+--- wxsvg-1.5.5.orig/src/mediadec_ffmpeg.cpp
++++ wxsvg-1.5.5/src/mediadec_ffmpeg.cpp
+@@ -263,7 +263,7 @@ wxImage wxFfmpegMediaDecoder::GetNextFra
+ 			avcodec_decode_video2(m_codecCtx, m_frame, &frameFinished, &packet);
+ 			if (frameFinished) {
+ 				SwsContext* imgConvertCtx = sws_getContext(m_codecCtx->width, m_codecCtx->height, m_codecCtx->pix_fmt,
+-						m_width, m_height, PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
++						m_width, m_height, AV_PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
+ 				if (imgConvertCtx == NULL) {
+ 					av_free_packet(&packet);
+ 					return wxImage();
+ 
+EOF
+
+echo ""
+echo "$VERDE"Aplicando parche ..."$CIERRE"
+sleep 1
+patch -p1 < ffmpeg3.patch || exit 1
+fi
+
 echo ""
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
@@ -44,16 +65,9 @@ CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
-  --libdir=/usr/lib${LIBDIRSUFFIX} \
-  --sysconfdir=/etc \
-  --localstatedir=/var \
-  --mandir=/usr/man \
-  --docdir=/usr/doc/$PRGNAM-$VERSION \
-  --enable-static=no \
-  --enable-shared \
+  --with-wx-config=/usr/bin/wx-config \
   --build=$ARCH-slackware-linux
   
-# Compilamos paquete
 echo ""
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
