@@ -16,41 +16,40 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=https://sourceforge.net/projects/wxsvg/files/wxsvg/
-	VERSION=`curl -s $WEB | grep /latest | cut -d '/' -f 8 | cut -d ":" -f 1 | cut -d '-' -f 2 | cut -d "t" -f-1`
-	PRGNAM=wxsvg
+	PRGNAM=libilbc
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/TimothyGu/libilbc/releases/download
+	VERSION=2.0.2
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=$WEB/$VERSION/$SOURCES
-}
-
-# Comprobar dependencias
-F_dependencias(){
-DEPENDENCIAS="wxPython ffmpeg"
-f_dependencias
+	DOWNLOAD=$WEB/v$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-echo ""
+echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
-
-sh autogen.sh || true
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
-  --with-wx-config=/usr/bin/wx-config \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --infodir=/usr/info \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --enable-static=no \
   --build=$ARCH-slackware-linux
-  
-echo ""
+
+echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-make  || exit 1
-make install DESTDIR=$PKG
+
+make || exit 1
+make install DESTDIR=$PKG || exit 1
 }
 
 ###################################
@@ -73,10 +72,8 @@ f_presentacion
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
 f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

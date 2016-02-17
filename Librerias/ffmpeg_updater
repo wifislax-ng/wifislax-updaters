@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160129
+SCRIPT_VERSION=20160217
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,12 +17,19 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	WEB=https://www.ffmpeg.org/download.html
-	VERSION=`curl -s $WEB | grep latest | head -1 | cut -d "w" -f1 | sed "s/ //g"`
+	#VERSION=`curl -s $WEB | grep latest | head -1 | cut -d "w" -f1 | sed "s/ //g"`
+	VERSION=2.8.6
 	PRGNAM=ffmpeg
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=http://ffmpeg.org/releases/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="libass libbluray celt libdc1394 faac libfdk-aac frei0r gsm libiec61883 libavc1394 libilbc openjpeg ladspa_sdk lame libmodplug OpenAL opencore-amr opencv opus rtmpdump schroedinger speex twolame vid.stab x264 x265 xvidcore zvbi"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -101,6 +108,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
+#Compronar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
