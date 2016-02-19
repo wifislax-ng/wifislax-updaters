@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160120
+SCRIPT_VERSION=20160218
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -29,7 +29,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="wxGTK3"
+DEPENDENCIAS="wxGTK3 ffmpeg"
 f_dependencias
 }
 
