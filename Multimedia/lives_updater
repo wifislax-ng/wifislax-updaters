@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160220
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -25,6 +25,18 @@ F_variables() {
 	EXTENSION=tar.bz2
 	SOURCES=$SRCNAM-$VERSION.$EXTENSION
 	DOWNLOAD=http://lives-video.com/releases/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+if [ $VERSION = "2.6.0" ]; then
+FFMPEGVERSION=ffmpeg28
+PKG_CONFIG_PATH="/usr/lib/ffmpeg2.8/pkgconfig"
+else
+FFMPEGVERSION=ffmpeg
+fi
+DEPENDENCIAS="$FFMPEGVERSION"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -72,6 +84,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
