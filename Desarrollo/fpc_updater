@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160211
+SCRIPT_VERSION=20160219
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,19 +19,20 @@ F_variables() {
 	PRGNAM=fpc
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://sourceforge.net/projects/freepascal/files/Linux/
-	VERSION=$(curl -s $WEB/ | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
-	DOWNLOAD=$(curl -s $WEB/$VERSION/ | grep "class=\"file " | awk '{print $2}' | cut -d "\"" -f 2 | awk '{print $1}' | grep "i386")
+	#VERSION=$(curl -s $WEB/ | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
+	VERSION=2.6.4
+	DOWNLOAD=http://downloads.sourceforge.net/freepascal/${PRGNAM}-$VERSION.i386-linux.tar
 	DOWNLOAD2=https://downloads.sourceforge.net/freepascal/${PRGNAM}build-$VERSION.tar.gz
 	DOWNLOAD3=https://downloads.sourceforge.net/project/freepascal/Source/$VERSION/$PRGNAM-$VERSION.source.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f $DOWNLOAD ]; then
+	if [ ! -f ${PRGNAM}-$VERSION.i386-linux.tar ]; then
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 2
-	aria2c -x 3 $WEB/$VERSION/$DOWNLOAD
+	aria2c -x 3 $DOWNLOAD
 	fi
 	if [ ! -f ${PRGNAM}build-$VERSION.tar.gz ]; then
 	echo 

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160219
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -18,7 +18,8 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	WEB=http://www.openshot.org/download/
-	VERSION=`curl -s $WEB | grep Version | head -1 | cut -d ">" -f2 | cut -d "<" -f-1 | sed "s/ //g"`
+	#VERSION=`curl -s $WEB | grep Version | head -1 | cut -d ">" -f2 | cut -d "<" -f-1 | sed "s/ //g"`
+	VERSION=1.4.3
 	RAMA=`echo $VERSION | cut -d "." -f-2`
 	PRGNAM=openshot
 	echo -ne "\033]2;${PRGNAM}_updater\007"
