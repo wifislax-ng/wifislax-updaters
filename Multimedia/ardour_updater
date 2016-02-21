@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160221
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -41,6 +41,7 @@ F_compilar(){
                         --with-backends="jack,alsa" \
                         --libjack=weak \
                         --optimize \
+                        --cxx11 \
                         --docs
 
   python waf build $MAKEFLAGS
