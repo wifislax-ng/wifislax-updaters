@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160118
+SCRIPT_VERSION=20160224
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,7 +20,13 @@ F_variables() {
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://download.aircrack-ng.org/
 	VERSION=`curl -s $WEB|grep Latest|cut -d : -f2|cut -d '<' -f-1|sed 's/ //g'|sed 's/-//g'`
+	if [ $VERSION = 1.2rc4 ]; then
+	VERSION=1.2rc3
+	fi
 	SRCNAM=`echo aircrack-ng-$(curl -s $WEB|grep Latest|cut -d : -f2|cut -d '<' -f-1|sed 's/ //g')`
+	if [ $SRCNAM = aircrack-ng-1.2-rc4 ]; then
+	SRCNAM=aircrack-ng-1.2-rc3
+	fi
 	EXTENSION=tar.gz
 	SOURCES=$SRCNAM.$EXTENSION
 	DOWNLOAD=${WEB}$SOURCES
