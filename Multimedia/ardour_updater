@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160221
+SCRIPT_VERSION=20160228
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -18,20 +18,30 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	PRGNAM=ardour
-	SRCNAM=Ardour
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://www.liwjatan.at/files/src/ardour/
-	VERSION=`curl -s $WEB | grep .tar.bz2 | head -1 | cut -d- -f3 | cut -d t -f1 | sed "s/.$//g"`
+	WEB=https://github.com/Ardour/${PRGNAM}
+	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d t -f1|cut -d / -f5|sed "s/.$//g"`
 	RAMA=`echo $VERSION | cut -d . -f1`
-	EXTENSION=tar.bz2
-	SOURCES=${SRCNAM}-${VERSION}.$EXTENSION
-	DOWNLOAD=${WEB}$SOURCES
+	WEB=git://git.ardour.org/ardour/ardour.git
 }
 
 # Comprobar dependencias
 F_dependencias(){
 DEPENDENCIAS="graphviz liblrdf aubio"
 f_dependencias
+}
+
+# Git clone
+F_download(){
+if [ -d $TMP/$PRGNAM ]; then
+rm -rf $TMP/$PRGNAM
+fi
+echo ""
+echo "$VERDE"Descargando sources de ${AMARILLO}$PRGNAM-$VERSION${BLANCO}..."$CIERRE"
+sleep 1
+cd $TMP
+git clone $WEB
+cd $TMP/$PRGNAM
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -85,10 +95,8 @@ f_arquitectura
 f_versionInstalada
 #Compronar dependencias
 F_dependencias
-#Si no existe el fichero se descargara
-f_download
-#Preparamos entorno
-f_preparar
+# Git clone
+F_download
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
