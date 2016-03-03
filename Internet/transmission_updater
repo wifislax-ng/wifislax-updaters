@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151101
+SCRIPT_VERSION=20160303
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,7 +16,7 @@ f_variables(){
 ############################################################
 #Definicion de variables
 F_variables() {
-	WEB=http://www.transmissionbt.com/download/
+	WEB=https://www.transmissionbt.com/download/
 	VERSION=`curl -s $WEB | grep .tar.xz | cut -d "-" -f2 | cut -d "t" -f1 | sed "s/.$//g" | sed "s/ //g"`
 	PRGNAM=transmission
 	echo -ne "\033]2;${PRGNAM}_updater\007"
@@ -31,16 +31,7 @@ echo ""
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
 
-sed -i -e 's%-g -O3 -funroll-loops %%g' configure.ac
-sed -i -e 's%-ggdb3 %%g' configure.ac
-
-# Fix hard-coded path of man file of Qt client
-sed -i "s|share/man/|man/|" qt/qtr.pro
-
-libtoolize --force
-aclocal
-automake --force-missing --add-missing
-autoconf
+autoreconf -fi
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
