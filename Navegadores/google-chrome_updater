@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160303
+SCRIPT_VERSION=20160305
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,15 +19,9 @@ F_variables() {
 	PRGNAM=google-chrome
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-	if [ $(uname -m) = i686 ]; then
-	ARCH=i386
-	VERSION=48.0.2564.116
-	else
-	ARCH=$(uname -m)
 	VERSION="$(curl -s $WEB|grep -om1 "google-chrome-stable_[0-9]*.*"|awk -F'_' '{print $2}'|cut -d- -f-1)"
-	fi
 	RAMA="$(curl -s $WEB|grep -om1 "google-chrome-stable_[0-9]*.*"|awk -F'_' '{print $2}'|cut -d- -f2)"
-	SOURCES=google-chrome-stable_${VERSION}-${RAMA}_$ARCH.deb
+	SOURCES=google-chrome-stable_${VERSION}-${RAMA}_i386.deb
 	DOWNLOAD=http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/$SOURCES
 }
 
@@ -90,7 +84,7 @@ f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-f_arquitectura
+f_arquitectura i386
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
