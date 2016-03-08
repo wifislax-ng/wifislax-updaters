@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160224
+SCRIPT_VERSION=20160307
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,28 +18,38 @@ f_variables(){
 F_variables() {
 	PRGNAM=aircrack-ng
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://download.aircrack-ng.org/
-	VERSION=`curl -s $WEB|grep Latest|cut -d : -f2|cut -d '<' -f-1|sed 's/ //g'|sed 's/-//g'`
-	if [ $VERSION = 1.2rc4 ]; then
-	VERSION=1.2rc3
-	fi
-	SRCNAM=`echo aircrack-ng-$(curl -s $WEB|grep Latest|cut -d : -f2|cut -d '<' -f-1|sed 's/ //g')`
-	if [ $SRCNAM = aircrack-ng-1.2-rc4 ]; then
-	SRCNAM=aircrack-ng-1.2-rc3
-	fi
-	EXTENSION=tar.gz
-	SOURCES=$SRCNAM.$EXTENSION
-	DOWNLOAD=${WEB}$SOURCES
+	WEB=http://svn.aircrack-ng.org/trunk
+	VERSION=`echo $(curl -s $WEB/VERSION | sed "s/-/_/g")_r$(curl -s $WEB/ | grep -i revision | head -1 | cut -d ":" -f 1 | cut -d ' ' -f4)`
+	SVN="svn co http://svn.aircrack-ng.org/trunk/"
 }
 
+# Verificamos
+F_verificar() {
+	TEST_SVN=`svn info http://svn.aircrack-ng.org|grep -i url|cut -d ":" -f1|head -1`
+	if [ $TEST_SVN = URL ]; then
+		echo ""
+		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+		sleep 1
+		echo ""
+		$SVN
+	else 
+		echo "$ROJO"El sitio svn de aircrack-ng no responde"$CIERRE ... $BLANCO"el script se cerrara."$CIERRE"
+		echo ""
+		sleep 1
+		exit 0
+	fi
+}
 
 # Compilamos
 F_compila() {
+	cd $TMP/trunk
+	#echo -n -e 'NEWSSE=false\nSIMDCORE=false\nPTHREAD=Y' > $TMP/trunk/common.cfg
+	echo $CYAN
 	echo "Compilamos las sources de$VERDE $PRGNAM-$VERSION"
 	sleep 1
-	make  experimental=true prefix=/usr sqlite=true libnl=true pcre=true 
+	make experimental=true prefix=/usr sqlite=true libnl=true pcre=true 
 	sleep 1
-	make  experimental=true prefix=/usr sqlite=true libnl=true pcre=true install
+	make experimental=true prefix=/usr sqlite=true libnl=true pcre=true install
 # Actualizamos la oui.list
 	echo $VERDE
 	echo "Actualizando aircrack oui.list ...."
@@ -47,7 +57,7 @@ F_compila() {
 	airodump-ng-oui-update
 	sleep 1
 # Instalamos
-	make  experimental=true prefix=/usr sqlite=true libnl=true pcre=true DESTDIR=$PKG install &>/dev/null
+	make experimental=true prefix=/usr sqlite=true libnl=true pcre=true DESTDIR=$PKG install &>/dev/null
 	mkdir -p $PKG/etc/aircrack-ng/ &>/dev/null
 	cp /etc/aircrack-ng/airodump-ng-oui.txt $PKG/etc/aircrack-ng/airodump-ng-oui.txt &>/dev/null	
 # Por unos cambios en el svn me procuro una version de airmon-ng clasica
@@ -691,10 +701,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
-#Si no existe el fichero se descargara
-f_download
-#Preparamos entorno
-f_preparar
+# Verificamos
+F_verificar
 #Compilamos
 F_compila
 #Hacemos strip sobre el paquete
