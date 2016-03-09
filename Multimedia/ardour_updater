@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160228
+SCRIPT_VERSION=20160309
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -46,17 +46,19 @@ cd $TMP/$PRGNAM
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-  python waf configure --prefix=/usr \
-                        --configdir=/etc \
-                        --with-backends="jack,alsa" \
-                        --libjack=weak \
-                        --optimize \
-                        --cxx11 \
-                        --docs
+python2 waf configure \
+  --prefix=/usr \
+  --configdir=/etc \
+  --with-backends="jack,alsa" \
+  --libjack=weak \
+  --optimize \
+  --docs \
+  --cxx11 \
+  --no-phone-home
 
-  python waf build $MAKEFLAGS
-  
-  python2 waf install --destdir=$PKG
+python2 waf build
+
+python2 waf install --destdir=$PKG
   
 # Entrada a menu
 mkdir -p $PKG/usr/share/applications
