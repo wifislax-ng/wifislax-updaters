@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160211
+SCRIPT_VERSION=20160310
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,13 +16,14 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
+	PRGNAM=codeblocks
 	WEB=https://sourceforge.net/projects/codeblocks/files/Sources/
 	VERSION=$(curl -s $WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
-	PRGNAM=codeblocks
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	SOURCES=$(curl -s ${WEB}$VERSION/ | grep "class=\"file" | grep tar.gz | cut -d "\"" -f 2)
-	DOWNLOAD=${WEB}${VERSION}/$SOURCES
 	EXTENSION=tar.gz
+	SOURCES=${PRGNAM}_${VERSION}.$EXTENSION
+	SRCNAM=${PRGNAM}-${VERSION}.release
+	DOWNLOAD=${WEB}${VERSION}/$SOURCES
 }
 
 # Comprobar dependencias
