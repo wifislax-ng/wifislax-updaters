@@ -5,32 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160304
-
-# 20160304  Incluido parche temporal para ralink
-# 20160214  Incluidos parametros para informar de tiempo empleado
-# 20160212  Arreglos multiarch se suprime soporte aufs3
-# 20160117  Limpieza de codigo
-# 20151024  Cambiado parametro arch a i586
-# 20150815  Ajustes para adaptarse a github
-# 20150723  Limpiezas en codigo
-# 20150704  Corregido bug en DOWNLOAD , se ponia 3.x en vez de la variable FAMILIA
-# 20150630  Se cambian variables PAE por SMP que es mas correcto.
-# 20150426  Se añade parametro para identificar fammilia de kernel 3.x , 4.x etc etc
-# 20141027  Se crea funcion que dejara un nucleo libre al sistema si hay mas de 2 cores
-# 20141023  Se incluye funcion para detectar posible bug en aufs
-# 20141020  Si en 3 segundos no responde el ftp con la version de script, se continua.
-# 20141009  Se ajustan algunos parametros como la creacion del patch aufs que ya no busca por nombre sino *.patch
-# 20140827  Se incluye el kernel logo  dentro del script y pequeñas mejoras en la identificacion de rama
-# 20140801  Si el sistema esta en modo live el script lo detecta y se cierra
-# 20140727  Corregido bug al crear variable TAG y mejorada la creacion del patch wireless
-#           Se comprueba la existencia del directorio de trabajo /usr/src si no existe se crea
-# 20140723  Ya nos e busca el fichero config se genera en base al sistema anfitrion (feat d1kov)
-#           Añadida variable para estilo de configuracion de kernel , si es wifislax xconf si no menuconfig
-#           Añadido en las partes mas criticas un || exit 1 , en caso de error el script se detendra justo hay
-# 20140722  Correido bug al instalar en disco duro linea 386 antes dir2xzm y es un xzm2dir
-#           corregido un bug gramatical y 2 en variables no definidas (TAG Y BUILD)
-# 20140721  version inicial
+SCRIPT_VERSION=20160311
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -41,12 +16,19 @@ AMARILLO=${AMARILLO:-"[1;33m"}
 BLANCO=${BLANCO:-"[1;37m"}
 ROSA=${ROSA:-"[1;35m"}
 
-# Nombre del script
+# Variables globales
 # El PRGNAM2 se usa en la creacion del xzm ,NO BORRAR
 PRGNAM2=kernel
 PRGNAM=linux
 SCRIPTNAME=linux_updater
 TAG=sw
+M0DNUM=000
+MODNAM=Kernel
+BUILD=1
+KERNEL_SISTEMA=`uname -r|cut -d '-' -f1|sed 's/ //g'`
+RAMA_SISTEMA=`uname -r|cut -d '-' -f1|cut -d "." -f-2|sed 's/ //g'`
+WEB=https://www.kernel.org/
+
 echo -ne "\033]2;${PRGNAM}_updater\007"
 
 # Bienvenida
@@ -61,29 +43,13 @@ echo "
 echo ""                                         
 echo ""$AMARILLO"   ##### By USUARIONUEVO @ www.seguridadwireless.net #####"$CIERRE""
 echo ""
-sleep 3
+sleep 1
 
-# Si el sistema esta en modo live se avisa y se sale del script
-if [ -d /mnt/live/memory ]; then
-echo ""
-echo ""$ROJO"Se ha detectado que el sistema esta en modo LIVE "$BLANCO"..."$CIERRE""
-sleep 3
-echo ""
-echo ""$ROJO"Este script solo funcion en sistemas instalados al HDD "$BLANCO"..."$CIERRE""
-sleep 3
-echo ""$ROJO"Lo siento , el script se cierra aqui"$BLANCO"... "$ROJO"usalo desde HDD"$CIERRE""
-sleep 3
-exit 0
-fi
-
-# Sin internet el script no continua al no poder saber version online ni descargarla
-# Comprobar conexion by geminis_demon @ www.seguridadwireless.net
-# Se hace un ping a google si no hay respuesta se determina que no hay internet y se sale.
-# Si hay respuesta al ping el script continuara.
+# Sin internet el script no continua.
 if [ ! "$(ping google.com -c1 2>/dev/null)" ]; then
 echo "$ROJO"No tengo internet"$CIERRE ... $BLANCO"el script se cerrara..."$CIERRE"
 echo ""
-sleep 3
+sleep 1
 exit 0
 fi
 
@@ -106,13 +72,12 @@ echo
 echo ${CYAN}Actualizando ${SCRIPTNAME}
 curl -s $SERVIDOR_WEB/${DIRECTORIO##*/}/${SCRIPTNAME} -o $DIRECTORIO/${SCRIPTNAME}
 echo ${ROJO}LISTO$CIERRE
-sleep 3
+sleep 1
 $0
 exit
 fi
 fi
 
-# Variables
 # Definimos arquitectura del sitema anfitrion
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -138,75 +103,77 @@ if [ ! -d /usr/src ]; then
 mkdir -p /usr/src
 fi
 
-# Cantidad de nucleos del sistema usables para make -j
-NUCLEOS=$(grep -c \^processor /proc/cpuinfo)
-
-# variable que restara un nucleo para reservarlo al sistema si hay mas de 2
-if [ $NUCLEOS -gt 2 ]; then
-let NUCLEOS=$NUCLEOS-1
-fi
-
-# Numero de modulo xzm
-M0DNUM=000
-
-# Nombre de modulo xzm
-MODNAM=Kernel
-
-# Numero de build
-BUILD=1
-
-# Numero de Kernel completo instalado en el sistema
-KERNEL_SISTEMA=`uname -r | cut -d '-' -f1 | sed 's/ //g'`
-
-# Rama de kernel eliminando del numero de kernel la parte final por ejemplo 3.12.4 se cortaria a 3.12
-RAMA=`uname -r | cut -d '-' -f1 | cut -d "." -f-2 | sed 's/ //g'`
-
-# Pagina web de kernel org donde se buscara actualizacion sobre la misma rama de nuestro kernel
-WEB=https://www.kernel.org/
-
-# Grepeando numero kernel mas nuevo para nuestra rama en kernel.org
-KERNEL_ONLINE=`curl -s $WEB | grep linux-$RAMA.* | head -1 |cut -d 'x' -f 4 | cut -d '-' -f 2 | cut -d " " -f 2 | cut -d "t" -f1 | sed 's/.$//g'`
-
-# Web completa para descargar el source code
-DESCARGA=https://www.kernel.org/pub/linux/kernel/v4.x/linux-$KERNEL_ONLINE.tar.xz
-
-# Comparamos version sistema con version online si son iguales se sale del script
-if [[ $KERNEL_SISTEMA = $KERNEL_ONLINE ]]; then
-echo ""$VERDE"No hay updates para la rama de kernel "$AMARILLO"$RAMA"$CIERRE""
-sleep 3
-echo ""$AMARILLO"Si quieres recompilar el mismo kernel pulsa "$ROJO"ENTER"$CIERRE""
+# Menu de opciones
 echo ""
-echo ""$AMARILLO"Si no quieres recompilar simplemente cierra la ventana"$CIERRE""
-read junk
-rm -Rf /usr/src/$PRGNAM-$KERNEL_ONLINE &>/dev/null
+PS3='Selecciona una opcion: '
+OPCIONES=("${VERDE}Seguir rama del sistema ${AMARILLO}(recomendado)${CIERRE}" "${VERDE}Ultimo disponible como estable${CIERRE}" "${VERDE}Elegir uno custom${CIERRE}" "${VERDE}El ultimo disponible rcX${CIERRE}")
+select OPT in "${OPCIONES[@]}"
+do
+    case $OPT in
+        "${VERDE}Seguir rama del sistema ${AMARILLO}(recomendado)${CIERRE}")
+            KERNEL_ELEGIDO=`curl -s $WEB|grep linux-$RAMA.*|head -1 |cut -d 'x' -f 4|cut -d '-' -f 2|cut -d " " -f 2|cut -d "t" -f1|sed 's/.$//g'`
+            RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO |cut -d "." -f-2 |sed 's/ //g'`
+            FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
+            DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
+            AUFS=aufs$RAMA_ELEGIDO
+            break;;
+        "${VERDE}Ultimo disponible como estable${CIERRE}")
+            KERNEL_ELEGIDO=`curl -s $WEB|grep .tar.xz|head -1|cut -d "-" -f2|cut -d "t" -f-1|sed "s/.$//g"`
+            RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "." -f-2|sed 's/ //g'`
+            FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
+            DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
+            AUFS=aufs$RAMA_ELEGIDO
+            break;;
+        "${VERDE}Elegir uno custom${CIERRE}")
+            CUSTOM="TRUE"
+            break;;
+        "${VERDE}El ultimo disponible rcX${CIERRE}")
+            KERNEL_ELEGIDO=`curl -s $WEB|grep rc[0-9]|tail -1|cut -d v -f3|cut -d '"' -f-1`
+            RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "-" -f-1|sed 's/ //g'`
+            FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
+            DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/testing/linux-$KERNEL_ELEGIDO.tar.xz
+            AUFS=aufs$FAMILIA.x-rcN
+            break;;
+        *)  echo opcion invalida;;
+    esac
+done
+
+if [ ! -z $CUSTOM ]; then
+# Numero de Kernel completo que queremos compilar
+echo "$VERDE"
+echo "Escribe el numero de kernel exacto que te gustaria compilar y pulsa ${BLANCO}ENTER"
+echo "$ROSA"
+read KERNEL_ELEGIDO
+RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "." -f-2|sed 's/ //g'`
+FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
+DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
+echo "$CIERRE"
 fi
 
-# Se comprueba si el archivo a descargar ya existe por pruebas anteriores y evitar descargar de nuevo
 # Entramos a la ruta de trabajo
 cd /usr/src/
 
 # Si el paquete no existe se descargara de internet
-if [ ! -f linux-$KERNEL_ONLINE.tar.xz ]; then
+if [ ! -f linux-$KERNEL_ELEGIDO.tar.xz ]; then
 echo ""
-echo "$CYAN"Descargando sources de $PRGNAM-$KERNEL_ONLINE "$CIERRE"
-sleep 3
-
-# Bajamos el kernel
-aria2c -x 3 $DESCARGA
+echo "$CYAN"Descargando sources de $PRGNAM-$KERNEL_ELEGIDO "$CIERRE"
+sleep 1
+echo $ROSA
+wget -N -L -c -q --show-progress $DESCARGA
+echo $CIERRE
 fi
 
-# Descomprimir en /usr/src
 # Si existen restos de una prueba anterior seeliminaran
-rm -rf /usr/src/$PRGNAM-$KERNEL_ONLINE &>/dev/null
+rm -rf /usr/src/$PRGNAM-$KERNEL_ELEGIDO &>/dev/null
 
 # Descomprimir fichero
 echo ""
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
-sleep 3
-tar xvf $PRGNAM-$KERNEL_ONLINE.tar.xz
+sleep 1
+tar xvf $PRGNAM-$KERNEL_ELEGIDO.tar.xz
 
 # Entrar a la ruta del kernel descomprimido
-cd $PRGNAM-$KERNEL_ONLINE
+cd $PRGNAM-$KERNEL_ELEGIDO
 # Se limpia por si los de kernel.org se dejaron algun fichero que no es de kernel
 make mrproper
 
@@ -251,12 +218,12 @@ EOF
 # Aplicamos parche si hay error se parara el proceso ( exit 1 )
 echo ""
 echo ""$VERDE"Aplicando parche wireless para channel -1 "$BLANCO"..."$CIERRE""
-sleep 3
+sleep 1
 patch -f -p1 < Negative-channel-multi.patch || exit 1
 
 
 # Parche para bug temporal ralink no ve clientes en modo monitor
-if [ $RAMA = 4.4 ]; then
+if [ $RAMA_ELEGIDO = 4.4 ]; then
 cat > ralink.patch << "EOF"
 --- a/drivers/net/wireless/rt2x00/rt2400pci.c
 +++ b/drivers/net/wireless/rt2x00/rt2400pci.c
@@ -379,23 +346,19 @@ cat > ralink.patch << "EOF"
  	rt2x00_set_field32(&reg, TXRX_CSR0_DROP_VERSION_ERROR, 1);
  	rt2x00_set_field32(&reg, TXRX_CSR0_DROP_MULTICAST,
 EOF
-
 echo ""
 echo ""$VERDE"Aplicando parche ralink "$BLANCO"..."$CIERRE""
-sleep 3
+sleep 1
 patch -f -p1 < ralink.patch || exit 1
 fi
 
 # Parte1 avisamos por si quieres poner un config
-if [ ! -f /usr/src/$PRGNAM-$KERNEL_ONLINE/.config ]; then
+if [ ! -f /usr/src/$PRGNAM-$KERNEL_ELEGIDO/.config ]; then
 echo ""
 echo ""$CYAN"No se detecto fichero config ..."$CIERRE""
-sleep 2
 echo ""
-echo ""$CYAN"Si quieres añadir uno hazlo en /usr/src/$PRGNAM-$KERNEL_ONLINE/.config ..."$CIERRE""
-sleep 2
-echo ""$CYAN"Si no añades un config se usara directamente la config del kernel actual."$CIERRE""
-sleep 2
+echo ""$CYAN"Si quieres añadir uno hazlo en /usr/src/$PRGNAM-$KERNEL_ELEGIDO/.config ..."$CIERRE""
+echo ""$CYAN"Si no añades un config se usara la config del kernel actual."$CIERRE""
 echo ""
 echo ""$CYAN"Cuando pulses "$AMARILLO"ENTER "$CYAN"el proceso continuara"$CIERRE""
 echo ""
@@ -403,7 +366,7 @@ read junk
 fi
 
 # Parte2 sino hay config generamos una en base al kernel actual
-if [ -f /usr/src/$PRGNAM-$KERNEL_ONLINE/.config ]; then
+if [ -f /usr/src/$PRGNAM-$KERNEL_ELEGIDO/.config ]; then
 echo ""
 echo ""$CYAN"Usando config añadida por el usuario ..."$CIERRE""
 echo ""
@@ -411,17 +374,14 @@ else
 echo ""
 echo ""$CYAN"Generamos fichero .config ..."$CIERRE""
 echo ""
-modprobe configs && zcat /proc/config.gz > /usr/src/$PRGNAM-$KERNEL_ONLINE/.config
-sleep 2
+modprobe configs && zcat /proc/config.gz > /usr/src/$PRGNAM-$KERNEL_ELEGIDO/.config
 fi
 
 # Descargamos version de aufs correspondiente a nuestra rama y aplicamos
-# Indicamos version aufs igual a rama de kernel
-# Ruta donde se enviara patch de aufs que es a las sources del kernel
-if [ $RAMA = 4.1 ]; then
-RAMA=4.1.13+
+if [ $RAMA_ELEGIDO = 4.1 ]; then
+RAMA_ELEGIDO=4.1.13+
 fi
-DEST=/usr/src/$PRGNAM-$KERNEL_ONLINE/aufs$RAMA.patch
+DEST=/usr/src/$PRGNAM-$KERNEL_ELEGIDO/$AUFS.patch
 
 # Creamos parche y aplicamos
 echo ""
@@ -429,33 +389,29 @@ echo ""$VERDE"Creamos y aplicamos el parche aufs "$BLANCO"..."$CIERRE""
 rm -r /tmp/aufs* 2>/dev/null
 mkdir /tmp/aufs$$
 cd /tmp/aufs$$
-git clone https://github.com/sfjro/aufs4-standalone.git || exit 1
-cd aufs4-standalone
-git checkout origin/aufs$RAMA || exit 1
+git clone https://github.com/sfjro/aufs$FAMILIA-standalone.git || exit 1
+cd aufs$FAMILIA-standalone
+git checkout origin/$AUFS || exit 1
 mkdir ../a ../b
 cp -r {Documentation,fs,include} ../b
 rm ../b/include/uapi/linux/Kbuild 2>/dev/null || rm ../b/include/linux/Kbuild
 cd ..
 diff -rupN a/ b/ > $DEST
-cat aufs4-standalone/*.patch >> $DEST
+cat aufs$FAMILIA-standalone/*.patch >> $DEST
 rm -r /tmp/aufs$$
 
-
-
 # Verificamos la existencia del parche aufs
-if [ ! -f /usr/src/$PRGNAM-$KERNEL_ONLINE/aufs$RAMA.patch ]; then
+if [ ! -f /usr/src/$PRGNAM-$KERNEL_ELEGIDO/$AUFS.patch ]; then
 echo ""
 echo ""$ROJO"La creacion del parche aufs a fallado ...saliendo..."
 echo ""
-sleep 3
+sleep 1
 exit 0
 fi
 
 # Aplicamos parche aufs
-cd /usr/src/$PRGNAM-$KERNEL_ONLINE
-
-# Parcheamos
-patch -f -p1 -i aufs$RAMA.patch || exit 1
+cd /usr/src/$PRGNAM-$KERNEL_ELEGIDO
+patch -f -p1 -i $AUFS.patch || exit 1
 
 # Compilamos el kernel
 make oldconfig || exit 1
@@ -465,12 +421,9 @@ make xconfig || exit 1
 COMIENZO=$(date +%s)
 
 # Comienza la compilacion del kernel
-make  || exit 1
+make || exit 1
+make modules || exit 1
 
-# Compilados los modulos del kernel
-make modules  || exit 1
-
-# Variable que se consultara despues de configurar kernel
 # Comprobar si es un kernel SMP (pae)
 if [ -z "`grep -i 'CONFIG_HIGHMEM64G=y' .config`" ]; then
 SMP=""
@@ -479,13 +432,13 @@ SMP="SMP-"
 fi
 
 # Creamos la tuta de destina a instalar el kernel
-mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG
-make modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG || exit 1
+mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG
+make modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG || exit 1
 
 # Instalamos las cabeceras kernel-headers
-make headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr || exit 1
-rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/include/*/.install
-rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/include/*/..install.cmd
+make headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr || exit 1
+rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/.install
+rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/..install.cmd
 
 # Copiamos vmlinuz a escritorio
 if [ -z "`grep -i 'CONFIG_HIGHMEM64G=y' .config`" ]; then
@@ -493,7 +446,7 @@ VMLINUZ="vmlinuz"
 else
 VMLINUZ="vmlinuz2"
 fi
-cp /usr/src/$PRGNAM-$KERNEL_ONLINE/arch/$IMAGEN/boot/bzImage $HOME/Desktop/$VMLINUZ &>/dev/null
+cp /usr/src/$PRGNAM-$KERNEL_ELEGIDO/arch/$IMAGEN/boot/bzImage $HOME/Desktop/$VMLINUZ &>/dev/null
 
 # Generamos kernel sources recortadas
 mv System.map ../
@@ -506,31 +459,26 @@ ls -1d arch/* | grep -v $IMAGEN | xargs rm -Rf
 ls -1d include/* | grep asm- | grep -v $IMAGEN | grep -v generic | xargs rm -Rf
 cp include/generated/* include/linux &>/dev/null
 
-
 # Preparamos creacion de xzm
-mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/src
-cp -r /usr/src/$PRGNAM-$KERNEL_ONLINE $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/src
+mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/src
+cp -r /usr/src/$PRGNAM-$KERNEL_ELEGIDO $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/src
 
 # Realizamos limpieza
-rm $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/src/$PRGNAM-$KERNEL_ONLINE/kernel.txt &>/dev/null
-rm $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/src/$PRGNAM-$KERNEL_ONLINE/Negative-channel-multi.patch &>/dev/null
-rm $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/src/$PRGNAM-$KERNEL_ONLINE/aufs$RAMA.patch &>/dev/null
-rm aufs$RAMA.patch &>/dev/null
-rm $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/usr/src/$PRGNAM-$KERNEL_ONLINE/.config.old &>/dev/null
+RUTA_LIMPIEZA=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/src/$PRGNAM-$KERNEL_ELEGIDO
+FILES_BORRAR="kernel.txt Negative-channel-multi.patch ralink.patch $AUFS.patch .config.old"
+for X in $FILES_BORRAR; do
+rm $RUTA_LIMPIEZA/$X &>/dev/null
+done
 
-# Esta regla eliminara la carpeta firmwares del kernel si el sistema es wifislax
 # Por que usa una script que baja todos los firmwares desde el git
-rm -Rf $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG/lib/firmware
+rm -Rf $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/lib/firmware
 
 # Creamos xzm de kernel + sources
-dir2xzm $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG.xzm
-mv $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$M0DNUM-$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG.xzm
+mksquashfs $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG.xzm -comp xz -b 256K
+mv $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$M0DNUM-$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG.xzm
 
-# Limpiamos
-rm -Rf $HOME/Desktop/$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG
-
-# Si no salio en las dos opciones anteriores es un wifislax en hdd se da opcion de instalar el kernel en sistema
-# Variables para calcular tiempo de acabado
+# Finalizamos
+rm -Rf $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG
 AHORA=$(($(date +%s)-3600));
 TIEMPO="$(date --date=@$(($AHORA-$COMIENZO)) +%X)"
 echo ""
@@ -539,14 +487,14 @@ echo ""
 echo ""$AMARILLO"Pulsa ENTER si quieres instalar el kernel,si no te interesa cierra el scipt."$CIERRE""
 read junk
 echo ""
-echo ""$VERDE"Instalando Kernel $KERNEL_ONLINE en sistema ..."$CIERRE""
+echo ""$VERDE"Instalando Kernel $KERNEL_ELEGIDO en sistema ..."$CIERRE""
 if [ $SMP = "SMP-" ]; then
 VMLINUZCONFIG="smp"
 else
 VMLINUZCONFIG=""
 fi
-cp -r $HOME/Desktop/$VMLINUZ /boot/vmlinuz-$KERNEL_ONLINE-$VMLINUZCONFIG-wifislax
-xzm2dir $HOME/Desktop/$M0DNUM-$SMP$MODNAM-$KERNEL_ONLINE-$ARCH-$BUILD$TAG.xzm /
+cp -r $HOME/Desktop/$VMLINUZ /boot/vmlinuz-$KERNEL_ELEGIDO-$VMLINUZCONFIG-wifislax
+xzm2dir $HOME/Desktop/$M0DNUM-$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG.xzm /
 update-grub
 echo ""
 echo ""$CYAN"Instalacion completada ..."$CIERRE""
