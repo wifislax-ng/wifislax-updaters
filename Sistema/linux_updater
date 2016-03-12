@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160311
+SCRIPT_VERSION=20160312
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -146,6 +146,7 @@ echo "$ROSA"
 read KERNEL_ELEGIDO
 RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "." -f-2|sed 's/ //g'`
 FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
+AUFS=aufs$RAMA_ELEGIDO
 DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
 echo "$CIERRE"
 fi
