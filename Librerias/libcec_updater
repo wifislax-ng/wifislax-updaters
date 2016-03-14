@@ -1,0 +1,98 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160313
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=libcec
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/Pulse-Eight/$PRGNAM
+	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SRCNAM=$PRGNAM-$PRGNAM-$VERSION
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="platform"
+f_dependencias
+}
+
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+# Fix python install folder.
+sed -i \
+  -e "s|lib/|lib${LIBDIRSUFFIX}/|" -e 's|dist-|site-|' \
+  src/$PRGNAM/cmake/CheckPlatformSupport.cmake
+
+mkdir -p build
+cd build
+  cmake -G "Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX:PATH="/usr" \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_BUILD_TYPE=Release ..
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make VERBOSE=1 || exit 1
+make install DESTDIR=$PKG || exit 1
+# Fix permissions on python file.
+chmod 755 $PKG/usr/bin/pyCecClient.py
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
