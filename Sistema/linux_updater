@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160316
+SCRIPT_VERSION=20160317
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -382,6 +382,9 @@ fi
 # Descargamos version de aufs correspondiente a nuestra rama y aplicamos
 if [ $RAMA_ELEGIDO = 4.1 ]; then
 RAMA_ELEGIDO=4.1.13+
+fi
+if [ $RAMA_ELEGIDO = 3.18 ]; then
+RAMA_ELEGIDO=3.18.25+
 fi
 DEST=/usr/src/$PRGNAM-$KERNEL_ELEGIDO/$AUFS.patch
 
