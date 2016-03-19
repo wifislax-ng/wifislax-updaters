@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160317
+SCRIPT_VERSION=20160319
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -90,9 +90,9 @@ fi
 if [ $ARCH = "i586" ]; then
 HEADERS=i386
 IMAGEN=x86
-elif [ "$ARCH" = "x86_x64" ]; then
-HEADERS=x86_x64
-IMAGEN=x86_x64
+elif [ "$ARCH" = "x86_64" ]; then
+HEADERS=x86_64
+IMAGEN=x86_64
 elif [ "$ARCH" = "arm" ]; then
 HEADERS=arm
 IMAGEN=arm
@@ -489,6 +489,19 @@ TIEMPO="$(date --date=@$(($AHORA-$COMIENZO)) +%X)"
 echo ""
 echo "${AMARILLO}Tiempo empleado${BLANCO}: $TIEMPO"
 echo ""
+# Si no es wifislax ya hemos acabado aqui.
+if [ ! -f /etc/wifislax-version ]; then
+echo ""
+echo ""$AMARILLO"Bye Bye"$CIERRE""
+exit 0
+fi
+# En modo live es absurdo ofrecer instarlo
+if [ -d /mnt/live ]; then
+echo ""
+echo ""$AMARILLO"Bye Bye"$CIERRE""
+exit 0
+fi
+# Si se trata de wifislax en HDD puedo instalar el kernel.
 echo ""$AMARILLO"Pulsa ENTER si quieres instalar el kernel,si no te interesa cierra el scipt."$CIERRE""
 read junk
 echo ""
