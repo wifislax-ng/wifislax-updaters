@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160307
+SCRIPT_VERSION=20160321
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -43,7 +43,7 @@ F_verificar() {
 # Compilamos
 F_compila() {
 	cd $TMP/trunk
-	#echo -n -e 'NEWSSE=false\nSIMDCORE=false\nPTHREAD=Y' > $TMP/trunk/common.cfg
+	echo -n -e 'NEWSSE=false\nSIMDCORE=false\nPTHREAD=Y' > $TMP/trunk/common.cfg
 	echo $CYAN
 	echo "Compilamos las sources de$VERDE $PRGNAM-$VERSION"
 	sleep 1
@@ -59,7 +59,11 @@ F_compila() {
 # Instalamos
 	make experimental=true prefix=/usr sqlite=true libnl=true pcre=true DESTDIR=$PKG install &>/dev/null
 	mkdir -p $PKG/etc/aircrack-ng/ &>/dev/null
-	cp /etc/aircrack-ng/airodump-ng-oui.txt $PKG/etc/aircrack-ng/airodump-ng-oui.txt &>/dev/null	
+	cp /etc/aircrack-ng/airodump-ng-oui.txt $PKG/etc/aircrack-ng/airodump-ng-oui.txt &>/dev/null
+	
+
+
+if [ ! $ARCH = "x86_64" ]; then
 # Por unos cambios en el svn me procuro una version de airmon-ng clasica
 	if [ ! -f $PKG/usr/sbin/airmon-zc ]; then
 	mv -f $PKG/usr/sbin/airmon-ng $PKG/usr/sbin/airmon-zc
@@ -676,6 +680,7 @@ c2luZ19hdGgwX2F0aDFfYXRoMi4uLi5fYXRoNDUKCWVjaG8gCmZpCgppd2NvbmZpZyAkMiB0eHBv
 d2VyIG9uID4vZGV2L251bGwgMj4mMQ==" | base64 -d > $PKG/usr/sbin/airmon-ng
 
 chmod 777 $PKG/usr/sbin/airmon-ng
+fi
 fi
 }
 
