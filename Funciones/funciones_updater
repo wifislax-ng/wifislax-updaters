@@ -304,9 +304,6 @@ f_tareasFinales() {
    if [ $PRGNAM = metasploit ]; then
        /etc/rc.d/rc.metasploit start &> /dev/null
    fi
-   if [ $PRGNAM = pulseaudio ]; then
-       pulseaudio --start >/dev/null 2>&1
-   fi
 
    # Comandos de sistema
    /usr/bin/update-desktop-database -q /usr/share/applications &>/dev/null &
