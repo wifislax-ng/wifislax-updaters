@@ -16,47 +16,46 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://www.qbittorrent.org/download.php
-	VERSION=`curl -s $WEB | grep rasterbar | head -1 | cut -d- -f5 | cut -d t -f1 | sed "s/.$//g"`
-	PRGNAM=libtorrent-rasterbar
+	PRGNAM=GeoIP
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	CONVERT=`echo $VERSION | tr . _`
+	WEB=http://geolite.maxmind.com/download/geoip/api/c
+	VERSION=1.5.1
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://github.com/arvidn/libtorrent/releases/download/libtorrent-$CONVERT/$SOURCES
-}
-
-F_dependencias(){
-DEPENDENCIAS="GeoIP"
-f_dependencias
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-# Configuramos paquete
-echo ""
+echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
+
+autoreconf -i
+
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
-LDFLAGS="-L/usr/lib${LIBDIRSUFFIX}" \
 ./configure \
   --prefix=/usr \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
-  --localstatedir=/var/lib \
+  --datadir=/usr/share \
+  --localstatedir=/var \
+  --mandir=/usr/man \
   --disable-static \
-  --with-boost-libdir=/usr/lib${LIBDIRSUFFIX} \
-  --with-libgeoip \
-  --with-libiconv \
   --build=$ARCH-slackware-linux
-  
-# Compilamos paquete
-echo ""
+
+echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-make  || exit 1
-make install DESTDIR=$PKG
+
+make || exit 1
+make install DESTDIR=$PKG || exit 1
+
+# Other distros (and some other software) look in /var/lib/GeoIP/
+mkdir -p $PKG/var/lib
+mv $PKG/usr/share/GeoIP $PKG/var/lib
+ln -s ../../var/lib/GeoIP $PKG/usr/share/GeoIP
 }
 
 ###################################
@@ -79,10 +78,8 @@ f_presentacion
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
 f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
