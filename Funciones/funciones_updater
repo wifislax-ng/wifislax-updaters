@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20151129
+FUNCIONES_VERSION=20160321
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -138,7 +138,7 @@ f_versionInstalada() {
 
 # Si el paquete esta instalado y es el mismo se sube el numero de build
 if [ "$INSTALADA" = $VERSION ]; then
-BUILDLOCAL="$(ls /var/log/packages/$PRGNAM-$INSTALADA-*|rev|cut -d'-' -f1|grep -o "[0-9]*"|rev)"
+BUILDLOCAL="$(ls /var/log/packages/$PRGNAM-$INSTALADA-*|rev|cut -d'-' -f1|grep -o "[0-9]*"|rev|tail -1)"
 BUILD=`expr $BUILDLOCAL + 1`
 fi
 
