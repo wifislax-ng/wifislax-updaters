@@ -1,0 +1,209 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160323
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=id3lib
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://sourceforge.net/projects/id3lib/files/id3lib
+	RAMA=`curl -s $WEB/|grep -m1 "class=\"folder"|awk '{print $2}'|cut -d "\"" -f 2`
+	VERSION=`curl -s $WEB/$RAMA/|grep tar.gz|tail -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$RAMA/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+if [ $VERSION = 3.8.3 ]; then
+
+echo 
+echo "$VERDE"Parcheando ..."$CIERRE"
+sleep 1
+
+echo "
+ZGlmZiAtcnVOIGlkM2xpYi0zLjguMy5vcmlnL0NoYW5nZUxvZyBpZDNsaWItMy44LjMvQ2hhbmdl
+TG9nCi0tLSBpZDNsaWItMy44LjMub3JpZy9DaGFuZ2VMb2cJMjAwMy0wMy0wMiAwMToyMzowMC4w
+MDAwMDAwMDAgKzAxMDAKKysrIGlkM2xpYi0zLjguMy9DaGFuZ2VMb2cJMjAwNi0wMi0yMiAwMDoz
+Mzo1OS45NDYyMTQ0NzIgKzAxMDAKQEAgLTEsMyArMSw4IEBACisyMDA2LTAyLTE3ICBKZXJvbWUg
+Q291ZGVyYworCisgICAgKiBQYXRjaCBmcm9tIFNwb29uIHRvIGZpeCBVVEYtMTYgd3JpdGluZyBi
+dWcKKyAgICAgIGh0dHA6Ly9zb3VyY2Vmb3JnZS5uZXQvdHJhY2tlci9pbmRleC5waHA/ZnVuYz1k
+ZXRhaWwmYWlkPTEwMTYyOTAmZ3JvdXBfaWQ9OTc5JmF0aWQ9MzAwOTc5CisKIDIwMDMtMDMtMDIg
+U3VuZGF5IDE3OjM4ICAgVGhpam1lbiBLbG9rIDx0aGlqbWVuQGlkM2xpYi5vcmc+CiAKIAkqIFRI
+QU5LUyAoMS4yMCk6IGFkZGVkIG1vcmUgcGVvcGxlIApkaWZmIC1ydU4gaWQzbGliLTMuOC4zLm9y
+aWcvc3JjL2lvX2hlbHBlcnMuY3BwIGlkM2xpYi0zLjguMy9zcmMvaW9faGVscGVycy5jcHAKLS0t
+IGlkM2xpYi0zLjguMy5vcmlnL3NyYy9pb19oZWxwZXJzLmNwcAkyMDAzLTAzLTAyIDAxOjIzOjAw
+LjAwMDAwMDAwMCArMDEwMAorKysgaWQzbGliLTMuOC4zL3NyYy9pb19oZWxwZXJzLmNwcAkyMDA2
+LTAyLTIyIDAwOjM1OjAyLjkyNjYzOTk5MiArMDEwMApAQCAtMzYzLDExICszNjMsMjIgQEAKICAg
+ICAvLyBXcml0ZSB0aGUgQk9NOiAweEZFRkYKICAgICB1bmljb2RlX3QgQk9NID0gMHhGRUZGOwog
+ICAgIHdyaXRlci53cml0ZUNoYXJzKChjb25zdCB1bnNpZ25lZCBjaGFyKikgJkJPTSwgMik7Cisg
+ICAgLy8gUGF0Y2ggZnJvbSBTcG9vbiA6IDIwMDQtMDgtMjUgMTQ6MTcKKyAgICAvLyAgIGh0dHA6
+Ly9zb3VyY2Vmb3JnZS5uZXQvdHJhY2tlci9pbmRleC5waHA/ZnVuYz1kZXRhaWwmYWlkPTEwMTYy
+OTAmZ3JvdXBfaWQ9OTc5JmF0aWQ9MzAwOTc5CisgICAgLy8gV3JvbmcgY29kZQorICAgIC8vZm9y
+IChzaXplX3QgaSA9IDA7IGkgPCBzaXplOyBpICs9IDIpCisgICAgLy97CisgICAgLy8gIHVuaWNv
+ZGVfdCBjaCA9IChkYXRhW2ldIDw8IDgpIHwgZGF0YVtpKzFdOworICAgIC8vICB3cml0ZXIud3Jp
+dGVDaGFycygoY29uc3QgdW5zaWduZWQgY2hhciopICZjaCwgMik7CisgICAgLy99CisgICAgLy8g
+UmlnaHQgY29kZQorICAgIHVuc2lnbmVkIGNoYXIgKnBkYXRhID0gKHVuc2lnbmVkIGNoYXIgKikg
+ZGF0YS5jX3N0cigpOwogICAgIGZvciAoc2l6ZV90IGkgPSAwOyBpIDwgc2l6ZTsgaSArPSAyKQog
+ICAgIHsKLSAgICAgIHVuaWNvZGVfdCBjaCA9IChkYXRhW2ldIDw8IDgpIHwgZGF0YVtpKzFdOwor
+ICAgICAgdW5pY29kZV90IGNoID0gKHBkYXRhW2ldIDw8IDgpIHwgcGRhdGFbaSsxXTsKICAgICAg
+IHdyaXRlci53cml0ZUNoYXJzKChjb25zdCB1bnNpZ25lZCBjaGFyKikgJmNoLCAyKTsKICAgICB9
+CisgICAgLy8gRW5kIHBhdGNoCiAgIH0KICAgcmV0dXJuIHdyaXRlci5nZXRDdXIoKSAtIGJlZzsK
+IH0K"  | base64 -d > $TMP/id3lib_3.8.3_UTF16_writing_bug.patch
+
+echo "
+U3VibWl0dGVkIEJ5OiAgICAgICAgICAgIHppcHBvIHppcHBvQG9wcGl6Lm5ldApEYXRlOiAgICAg
+ICAgICAgICAgICAgICAgMjAwOC0xMC0yOApJbml0aWFsIFBhY2thZ2UgVmVyc2lvbjogMy44LjMK
+VXBzdHJlYW0gU3RhdHVzOiAgICAgICAgIFVua25vd24KT3JpZ2luOiAgICAgICAgICAgICAgICAg
+IHppcHBvQG9wcGl6Lm5ldApEZXNjcmlwdGlvbjpGaXhlcyB0aGluZ3MgdXAgZm9yIEdDQy00LjMu
+MgoKZGlmZiAtTmF1ciBpZDNsaWItMy44LjMvZXhhbXBsZXMvZGVtb19jb252ZXJ0LmNwcCAzMi9p
+ZDNsaWItMy44LjMvZXhhbXBsZXMvZGVtb19jb252ZXJ0LmNwcAotLS0gaWQzbGliLTMuOC4zL2V4
+YW1wbGVzL2RlbW9fY29udmVydC5jcHAJMjAwMy0wMy0wMiAwMDoyMzowMC4wMDAwMDAwMDAgKzAw
+MDAKKysrIDMyL2lkM2xpYi0zLjguMy9leGFtcGxlcy9kZW1vX2NvbnZlcnQuY3BwCTIwMDgtMTAt
+MjkgMjA6MTA6MDQuMDAwMDAwMDAwICswMDAwCkBAIC04NCw3ICs4NCw3IEBACiAgIH0KIH0KIAot
+aW50IG1haW4oIHVuc2lnbmVkIGludCBhcmdjLCBjaGFyICogY29uc3QgYXJndltdKQoraW50IG1h
+aW4oaW50IGFyZ2MsIGNoYXIgKiBjb25zdCBhcmd2W10pCiB7CiAgIGZsYWdzX3QgdWxGbGFnID0g
+SUQzVFRfQUxMOwogICBnZW5nZXRvcHRfYXJnc19pbmZvIGFyZ3M7CmRpZmYgLU5hdXIgaWQzbGli
+LTMuOC4zL2V4YW1wbGVzL2RlbW9fY29weS5jcHAgMzIvaWQzbGliLTMuOC4zL2V4YW1wbGVzL2Rl
+bW9fY29weS5jcHAKLS0tIGlkM2xpYi0zLjguMy9leGFtcGxlcy9kZW1vX2NvcHkuY3BwCTIwMDMt
+MDMtMDIgMDA6MjM6MDAuMDAwMDAwMDAwICswMDAwCisrKyAzMi9pZDNsaWItMy44LjMvZXhhbXBs
+ZXMvZGVtb19jb3B5LmNwcAkyMDA4LTEwLTI5IDIwOjEwOjU0LjAwMDAwMDAwMCArMDAwMApAQCAt
+ODEsNyArODEsNyBAQAogICB9CiB9CiAKLWludCBtYWluKCB1bnNpZ25lZCBpbnQgYXJnYywgY2hh
+ciAqIGNvbnN0IGFyZ3ZbXSkKK2ludCBtYWluKGludCBhcmdjLCBjaGFyICogY29uc3QgYXJndltd
+KQogewogICBpbnQgdWxGbGFnID0gSUQzVFRfSUQzOwogICBJRDNEX0lOSVRfRE9VVCgpOwpkaWZm
+IC1OYXVyIGlkM2xpYi0zLjguMy9leGFtcGxlcy9kZW1vX2luZm8uY3BwIDMyL2lkM2xpYi0zLjgu
+My9leGFtcGxlcy9kZW1vX2luZm8uY3BwCi0tLSBpZDNsaWItMy44LjMvZXhhbXBsZXMvZGVtb19p
+bmZvLmNwcAkyMDAzLTAzLTAyIDAwOjIzOjAwLjAwMDAwMDAwMCArMDAwMAorKysgMzIvaWQzbGli
+LTMuOC4zL2V4YW1wbGVzL2RlbW9faW5mby5jcHAJMjAwOC0xMC0yOSAyMDowOTozMS4wMDAwMDAw
+MDAgKzAwMDAKQEAgLTMwOSw3ICszMDksNyBAQAogCiAjZGVmaW5lIERFQlVHCiAKLWludCBtYWlu
+KCB1bnNpZ25lZCBpbnQgYXJnYywgY2hhciAqIGNvbnN0IGFyZ3ZbXSkKK2ludCBtYWluKGludCBh
+cmdjLCBjaGFyICogY29uc3QgYXJndltdKQogewogICBJRDNEX0lOSVRfRE9VVCgpOwogCmRpZmYg
+LU5hdXIgaWQzbGliLTMuOC4zL2V4YW1wbGVzL2RlbW9fdGFnLmNwcCAzMi9pZDNsaWItMy44LjMv
+ZXhhbXBsZXMvZGVtb190YWcuY3BwCi0tLSBpZDNsaWItMy44LjMvZXhhbXBsZXMvZGVtb190YWcu
+Y3BwCTIwMDMtMDMtMDIgMDA6MjM6MDAuMDAwMDAwMDAwICswMDAwCisrKyAzMi9pZDNsaWItMy44
+LjMvZXhhbXBsZXMvZGVtb190YWcuY3BwCTIwMDgtMTAtMjkgMjA6MTA6MjYuMDAwMDAwMDAwICsw
+MDAwCkBAIC00Niw3ICs0Niw3IEBACiAgICAgb3MgPDwgInYyIjsKIH0KIAotaW50IG1haW4oIHVu
+c2lnbmVkIGludCBhcmdjLCBjaGFyICogY29uc3QgYXJndltdKQoraW50IG1haW4oaW50IGFyZ2Ms
+IGNoYXIgKiBjb25zdCBhcmd2W10pCiB7CiAgIGludCB1bEZsYWcgPSBJRDNUVF9JRDM7CiAgIElE
+M0RfSU5JVF9ET1VUKCk7CmRpZmYgLU5hdXIgaWQzbGliLTMuOC4zL2luY2x1ZGUvaWQzL2lkM2xp
+Yl9zdHJpbmdzLmggMzIvaWQzbGliLTMuOC4zL2luY2x1ZGUvaWQzL2lkM2xpYl9zdHJpbmdzLmgK
+LS0tIGlkM2xpYi0zLjguMy9pbmNsdWRlL2lkMy9pZDNsaWJfc3RyaW5ncy5oCTIwMDMtMDMtMDIg
+MDA6MjM6MDAuMDAwMDAwMDAwICswMDAwCisrKyAzMi9pZDNsaWItMy44LjMvaW5jbHVkZS9pZDMv
+aWQzbGliX3N0cmluZ3MuaAkyMDA4LTEwLTI5IDIwOjAzOjI4LjAwMDAwMDAwMCArMDAwMApAQCAt
+MzAsNiArMzAsNyBAQAogI2RlZmluZSBfSUQzTElCX1NUUklOR1NfSF8KIAogI2luY2x1ZGUgPHN0
+cmluZz4KKyNpbmNsdWRlICJzdHJpbmcuaCIKIAogI2lmIChkZWZpbmVkKF9fR05VQ19fKSAmJiAo
+X19HTlVDX18gPj0gMykgfHwgKGRlZmluZWQoX01TQ19WRVIpICYmIF9NU0NfVkVSID4gMTAwMCkp
+CiBuYW1lc3BhY2Ugc3RkCmRpZmYgLU5hdXIgaWQzbGliLTMuOC4zL2luY2x1ZGUvaWQzL3dyaXRl
+cnMuaCAzMi9pZDNsaWItMy44LjMvaW5jbHVkZS9pZDMvd3JpdGVycy5oCi0tLSBpZDNsaWItMy44
+LjMvaW5jbHVkZS9pZDMvd3JpdGVycy5oCTIwMDMtMDMtMDIgMDA6MjM6MDAuMDAwMDAwMDAwICsw
+MDAwCisrKyAzMi9pZDNsaWItMy44LjMvaW5jbHVkZS9pZDMvd3JpdGVycy5oCTIwMDgtMTAtMjkg
+MjA6MDU6NTYuMDAwMDAwMDAwICswMDAwCkBAIC0zMCw3ICszMCw3IEBACiAKICNpbmNsdWRlICJp
+ZDMvd3JpdGVyLmgiCiAjaW5jbHVkZSAiaWQzL2lkM2xpYl9zdHJlYW1zLmgiCi0vLyNpbmNsdWRl
+IDxzdHJpbmcuaD4KKyNpbmNsdWRlICJzdHJpbmcuaCIKIAogY2xhc3MgSUQzX0NQUF9FWFBPUlQg
+SUQzX09TdHJlYW1Xcml0ZXIgOiBwdWJsaWMgSUQzX1dyaXRlcgogewpkaWZmIC1OYXVyIGlkM2xp
+Yi0zLjguMy9zcmMvZmllbGQuY3BwIDMyL2lkM2xpYi0zLjguMy9zcmMvZmllbGQuY3BwCi0tLSBp
+ZDNsaWItMy44LjMvc3JjL2ZpZWxkLmNwcAkyMDAzLTAzLTAyIDAwOjIzOjAwLjAwMDAwMDAwMCAr
+MDAwMAorKysgMzIvaWQzbGliLTMuOC4zL3NyYy9maWVsZC5jcHAJMjAwOC0xMC0yOSAyMDowMjox
+OS4wMDAwMDAwMDAgKzAwMDAKQEAgLTMzLDYgKzMzLDggQEAKICNpbmNsdWRlICJyZWFkZXJzLmgi
+CiAjaW5jbHVkZSA8YXNzZXJ0Lmg+CiAKKyNpbmNsdWRlICJzdHJpbmcuaCIKKwogdXNpbmcgbmFt
+ZXNwYWNlIGRhbWk7CiAKIC8vIFRoaXMgaXMgdXNlZCBmb3IgdW5pbXBsZW1lbnRlZCBmcmFtZXMg
+c28gdGhhdCB0aGVpciBkYXRhIGlzIHByZXNlcnZlZCB3aGVuCg==
+"  | base64 -d > $TMP/id3lib-3.8.3-GCC43FIX-1.patch
+
+echo "
+LS0tIGEvRG94eWZpbGUuaW4JMjAwNS0wMS0wNSAxNDoyNzowNS4wMDAwMDAwMDAgKzAxMDAKKysr
+IGIvRG94eWZpbGUuaW4JMjAwNS0wMS0wNSAxNDozMDoxOS4wMDAwMDAwMDAgKzAxMDAKQEAgLTI2
+MywxNCArMjYzLDE3IEBACiAKIElOUFVUICAgICAgICAgICAgICAgICAgPSAuLi9zcmMgXAogICAg
+ICAgICAgICAgICAgICAgICAgICAgIC4uL2luY2x1ZGUvaWQzL2ZpZWxkLmggXAotICAgICAgICAg
+ICAgICAgICAgICAgICAgIC4uL2luY2x1ZGUvaWQzL2ZyYW1lLmggXAogICAgICAgICAgICAgICAg
+ICAgICAgICAgIC4uL2luY2x1ZGUvaWQzL2dsb2JhbHMuaCBcCisgICAgICAgICAgICAgICAgICAg
+ICAgICAgLi4vaW5jbHVkZS9pZDMvaGVscGVycy5oIFwKKyAgICAgICAgICAgICAgICAgICAgICAg
+ICAuLi9pbmNsdWRlL2lkMy9pZDNsaWJfZnJhbWUuaCBcCisgICAgICAgICAgICAgICAgICAgICAg
+ICAgLi4vaW5jbHVkZS9pZDMvaWQzbGliX3N0cmVhbXMuaCBcCisgICAgICAgICAgICAgICAgICAg
+ICAgICAgLi4vaW5jbHVkZS9pZDMvaWQzbGliX3N0cmluZ3MuaCBcCiAgICAgICAgICAgICAgICAg
+ICAgICAgICAgLi4vaW5jbHVkZS9pZDMvbWlzY19zdXBwb3J0LmggXAogICAgICAgICAgICAgICAg
+ICAgICAgICAgIC4uL2luY2x1ZGUvaWQzL3JlYWRlci5oIFwKICAgICAgICAgICAgICAgICAgICAg
+ICAgICAuLi9pbmNsdWRlL2lkMy9yZWFkZXJzLmggXAogICAgICAgICAgICAgICAgICAgICAgICAg
+IC4uL2luY2x1ZGUvaWQzL3NpemVkX3R5cGVzLmggXAogICAgICAgICAgICAgICAgICAgICAgICAg
+IC4uL2luY2x1ZGUvaWQzL3RhZy5oIFwKLSAgICAgICAgICAgICAgICAgICAgICAgICAuLi9pbmNs
+dWRlL2lkMy90YWcuaCBcCisgICAgICAgICAgICAgICAgICAgICAgICAgLi4vaW5jbHVkZS9pZDMv
+dXRpbHMuaCBcCiAgICAgICAgICAgICAgICAgICAgICAgICAgLi4vaW5jbHVkZS9pZDMvd3JpdGVy
+LmggXAogICAgICAgICAgICAgICAgICAgICAgICAgIC4uL2luY2x1ZGUvaWQzL3dyaXRlcnMuaAog
+Cg=="  | base64 -d > $TMP/id3lib_Doxyfile.patch
+
+
+patch -p1 < $TMP/id3lib_3.8.3_UTF16_writing_bug.patch || exit 1
+patch -p1 < $TMP/id3lib-3.8.3-GCC43FIX-1.patch || exit 1
+patch -p1 -d doc < $TMP/id3lib_Doxyfile.patch || exit 1
+fi
+
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+sed -i "s%iomanip.h%iomanip%g" configure
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --localstatedir=/var \
+  --sysconfdir=/etc \
+  --enable-static=no \
+  --enable-debug=no \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+make install DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
