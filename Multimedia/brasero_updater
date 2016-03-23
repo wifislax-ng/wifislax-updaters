@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151117
+SCRIPT_VERSION=20160322
 CATEGORIA=Grabacion
 
 ############################################################
@@ -19,12 +19,12 @@ f_variables(){
 F_variables() {
 	PRGNAM=brasero
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://download.gnome.org/sources/brasero/
-	RAMA=`curl -s $WEB | grep DIR | tail -1 | cut -d "=" -f5 | cut -d '"' -f2 | cut -d "/" -f1`
-	VERSION=`curl -s ${WEB}${RAMA}/ | grep LATEST | cut -d '"' -f8 | sed "s/LATEST-IS-//g" | sed "s/ //g"`
+	WEB=https://download.gnome.org/sources/$PRGNAM
+	RAMA=`curl -s $WEB/|egrep -o ">[0-9].[0-9]{1,2}/"|tr -d '>/'|egrep -v "1$|3$|5$|7$|9$"|tail -1`
+	VERSION=`curl -s ${WEB}/${RAMA}/|egrep -o "IS-$RAMA.[0-9]{1,2}"|cut -d- -f2|tail -1`
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://download.gnome.org/sources/brasero/$RAMA/$SOURCES
+	DOWNLOAD=$WEB/$RAMA/$SOURCES
 }
 
 # Comprobar dependencias
