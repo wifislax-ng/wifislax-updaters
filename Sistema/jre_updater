@@ -18,19 +18,27 @@ f_variables(){
 F_variables() {
 	PRGNAM=jre
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=$(curl -s http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html | grep -E i586.tar.gz | grep linux | cut -d ":" -f4- | cut -d "\"" -f2|tail -1)
-	ARCHIVO=${WEB##*/}
-	VERSION=$(echo $ARCHIVO | cut -d "-" -f 2)
+	WEB=http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
+	VERSION=`curl -s $WEB|grep -E tar.gz|grep linux|cut -d ":" -f4-|cut -d "\"" -f2|tail -1|cut -d- -f2|cut -d / -f4`
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
+        if [ $ARCH = x86_64 ]; then
+        ARCH=x64
+        LIB_ARCH=amd64
+	else
+	LIB_ARCH=i386
+        fi
+        DESCARGA=$(curl -s $WEB|grep -E $ARCH.tar.gz|grep linux|cut -d ":" -f4-|cut -d "\"" -f2|tail -1)
+	ARCHIVO=${DESCARGA##*/}
+
 echo ".oracle.com	TRUE	/	FALSE	1906724535	oraclelicense	accept-securebackup-cookie">cookie
 	if [ ! -f $ARCHIVO ]; then
 		echo ""
 		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 		sleep 1
-		aria2c -x 3 --load-cookies=cookie $WEB
+		aria2c -x 3 --load-cookies=cookie $DESCARGA
 	fi
 }
 
@@ -40,7 +48,7 @@ F_crearpaquete(){
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
 	sleep 1
 
-	mkdir -p $PKG/usr/java/ $PKG/etc/profile.d $PKG/usr/lib/mozilla/plugins/ $PKG/usr/lib/java $PKG/usr/share/applications
+	mkdir -p $PKG/usr/java/ $PKG/etc/profile.d $PKG/usr/lib${LIBDIRSUFFIX}/mozilla/plugins/ $PKG/usr/lib${LIBDIRSUFFIX}/java $PKG/usr/share/applications
 	tar -xvf $ARCHIVO -C $PKG/usr/java/
 	cleandir $PKG
 
@@ -57,19 +65,18 @@ export PATH=\"\${PATH}:\${JAVA_HOME}/bin:\${JAVA_HOME}/jre/bin\"" >$PKG/etc/prof
 	chmod +x $PKG/etc/profile.d/jre.sh
 	chmod +x $PKG/etc/profile.d/jre.csh
 
-	mv $PKG/usr/java/jre*/* $PKG/usr/lib/java/
-	ln -s /usr/lib/java/ $PKG/usr/lib/$(ls $PKG/usr/java/ | cut -d "/" -f1)
+	mv $PKG/usr/java/jre*/* $PKG/usr/lib${LIBDIRSUFFIX}/java/
+	ln -s /usr/lib${LIBDIRSUFFIX}/java/ $PKG/usr/lib${LIBDIRSUFFIX}/$(ls $PKG/usr/java/ | cut -d "/" -f1)
 	rm -Rf $PKG/usr/java
 
-
-	ln -s /usr/lib/java/lib/i386/libnpjp2.so $PKG/usr/lib/mozilla/plugins/libnpjp2.so
-	ln -s /usr/lib/java/lib/i386/server/libjvm.so $PKG/usr/lib/libjvm.so
-	ln -s /usr/lib/jvm/bin/javac $PKG/usr/lib/java/bin/javac
+	ln -s /usr/lib${LIBDIRSUFFIX}/java/lib/$LIB_ARCH/libnpjp2.so $PKG/usr/lib${LIBDIRSUFFIX}/mozilla/plugins/libnpjp2.so
+	ln -s /usr/lib${LIBDIRSUFFIX}/java/lib/$LIB_ARCH/server/libjvm.so $PKG/usr/lib${LIBDIRSUFFIX}/libjvm.so
+	ln -s /usr/lib${LIBDIRSUFFIX}/jvm/bin/javac $PKG/usr/lib${LIBDIRSUFFIX}/java/bin/javac
 	sleep 1
 
 # Entrada a escritorio
 echo "[Desktop Entry]
-Exec=/usr/lib/java/bin/jcontrol
+Exec=/usr/lib${LIBDIRSUFFIX}/java/bin/jcontrol
 Icon=sun-jcontrol
 Name[es]=Java Control Panel
 Name=Java Control Panel
@@ -79,8 +86,8 @@ Terminal=false
 Type=Application" >$PKG/usr/share/applications/sun_java.desktop
 
 # Copiamos iconos y mimetypes
-cp -rf $PKG/usr/lib/java/lib/desktop/mime $PKG/usr/share/
-cp -rf $PKG/usr/lib/java/lib/desktop/icons $PKG/usr/share/
+cp -rf $PKG/usr/lib${LIBDIRSUFFIX}/java/lib/desktop/mime $PKG/usr/share/
+cp -rf $PKG/usr/lib${LIBDIRSUFFIX}/java/lib/desktop/icons $PKG/usr/share/
 }
 
 ###################################
