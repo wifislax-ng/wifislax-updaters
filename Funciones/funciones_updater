@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20160324
+FUNCIONES_VERSION=20160325
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -284,9 +284,13 @@ f_tareasFinales() {
    # Variables especiales para renombrar algunos modulos
    WIFISLAX=`cat /etc/wifislax-version|cut -d ' ' -f1`
    if [ $WIFISLAX = wifislax64 ]; then
-   JRENUMBER=012-Extra
+   JRENUMBER=009-Extra
+   FIRMSNUMBER=010-Extra
+   CHROMENUMBER=011-Extra
    else
    JRENUMBER=008-Extra
+   FIRMSNUMBER=011-Extra
+   CHROMENUMBER=013-Extra
    fi
    
    if [ $PRGNAM = jre ]; then
@@ -294,11 +298,11 @@ f_tareasFinales() {
    fi
 
    if [ $PRGNAM = "google-chrome" ]; then
-   mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/013-Extra_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
+   mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/${CHROMENUMBER}_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
    fi
    
    if [ $PRGNAM = firmwares ]; then
-   mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/011-Extra_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
+   mv $HOME/Desktop/$CATEGORIA/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm $HOME/Desktop/$CATEGORIA/${FIRMSNUMBER}_$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.xzm
    fi
 
    rm -Rf $TMP &>/dev/null
