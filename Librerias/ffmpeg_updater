@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160218
+SCRIPT_VERSION=20160324
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,7 +27,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="libass libbluray celt libdc1394 faac libfdk-aac frei0r gsm libiec61883 libavc1394 libilbc openjpeg ladspa_sdk lame libmodplug OpenAL opencore-amr opencv opus rtmpdump schroedinger speex twolame vid.stab x264 x265 xvidcore zvbi"
+DEPENDENCIAS="libwebp libass libbluray celt libdc1394 faac libfdk-aac frei0r gsm libiec61883 libavc1394 libilbc openjpeg ladspa_sdk lame libmodplug OpenAL opencore-amr opencv opus rtmpdump schroedinger speex twolame vid.stab x264 x265 xvidcore zvbi"
 f_dependencias
 }
 
@@ -52,7 +52,6 @@ CXXFLAGS="$SLKCFLAGS" \
     --enable-ladspa \
     --enable-libass \
     --enable-libbluray \
-    --enable-libdcadec \
     --enable-libfreetype \
     --enable-libfribidi \
     --enable-libgsm \
@@ -64,7 +63,6 @@ CXXFLAGS="$SLKCFLAGS" \
     --enable-libopus \
     --enable-libpulse \
     --enable-libschroedinger \
-    --enable-libsoxr \
     --enable-libspeex \
     --enable-libssh \
     --enable-libtheora \
