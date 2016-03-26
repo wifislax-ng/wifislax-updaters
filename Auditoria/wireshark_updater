@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151119
+SCRIPT_VERSION=20160326
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -49,7 +49,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --without-lua \
   --with-qt=no \
   --disable-usr-local \
-  --with-plugins=/usr/lib/wireshark/plugins \
+  --with-plugins=/usr/lib${LIBDIRSUFFIX}/wireshark/plugins \
   --with-gtk2=yes \
   --enable-packet-editor \
   --enable-setuid-install \
@@ -177,9 +177,7 @@ dHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGlt
 aXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLW9wYWNpdHk6MSIKICAgICAgIGlkPSJy
 ZWN0NTcwNSIKICAgICAgIHdpZHRoPSIxIgogICAgICAgaGVpZ2h0PSIwIgogICAgICAgeD0iMTU3
 IgogICAgICAgeT0iMjg1LjM2MjE4IgogICAgICAgcng9IjguOTQ5NjkzNyIKICAgICAgIHJ5PSIw
-IiAvPgogIDwvZz4KPC9zdmc+Cg==
-
-" | base64 -d >/$PKG/usr/share/pixmaps/$PRGNAM.svg
+IiAvPgogIDwvZz4KPC9zdmc+Cg==" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.svg
 
 # Generamos desktop
 if [ -f $PKG/usr/bin/wireshark-gtk ]; then
