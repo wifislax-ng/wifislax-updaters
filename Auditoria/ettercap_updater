@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151106
+SCRIPT_VERSION=20160327
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -25,9 +25,9 @@ F_variables() {
 	DOWNLOAD=https://github.com/Ettercap/ettercap/archive/$SOURCES
 }
 
-# Creamos directoprios extra
-F_extradirs(){
-mkdir -p $PKG/usr/share/applications/wifislax/Redes
+F_dependencias(){
+DEPENDENCIAS="libnet"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -54,6 +54,7 @@ sleep 1
 cd ..
 
 # Creamos un nuevo desktop
+mkdir -p $PKG/usr/share/applications/wifislax/Redes
 rm -rf $PKG/usr/share/pixmaps/$PRGNAM.svg
 rm -f $PKG/usr/share/applications/$PRGNAM.desktop 
 cp -rf $PKG/usr/share/$PRGNAM/$PRGNAM.png $PKG/usr/share/pixmaps/$PRGNAM-gtk.png
@@ -81,8 +82,6 @@ f_comprobarConexion
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-# Creamos directoprios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos conexion a Internet
@@ -93,6 +92,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entrono
