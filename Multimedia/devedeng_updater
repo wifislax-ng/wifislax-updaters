@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151107
+SCRIPT_VERSION=20160327
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -28,7 +28,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="python3 py3cairo py3gobject3"
+DEPENDENCIAS="python3 py3cairo py3gobject3 dvdauthor vcdimager"
 f_dependencias
 }
 
