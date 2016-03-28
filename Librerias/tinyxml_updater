@@ -1,0 +1,128 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160328
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=tinyxml
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://downloads.sourceforge.net/tinyxml
+	VERSION=2.6.2
+	EXTENSION=tar.gz
+	SOURCES=${PRGNAM}_${VERSION//./_}.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+sed -i -e '/^TINYXML_USE_STL/s|=.*|= YES|' -e "s|-O3|$SLKCFLAGS|" Makefile
+
+echo "ZGlmZiAtdXAgdGlueXhtbC90aW55eG1sLmh+IHRpbnl4bWwvdGlueXhtbC5oCi0tLSB0aW55eG1s
+L3Rpbnl4bWwuaH4JMjAwNy0xMS0zMCAyMjozOTozNi4wMDAwMDAwMDAgKzAxMDAKKysrIHRpbnl4
+bWwvdGlueXhtbC5oCTIwMDctMTEtMzAgMjI6Mzk6MzYuMDAwMDAwMDAwICswMTAwCkBAIC0yNiw2
+ICsyNiw4IEBAIGRpc3RyaWJ1dGlvbi4KICNpZm5kZWYgVElOWVhNTF9JTkNMVURFRAogI2RlZmlu
+ZSBUSU5ZWE1MX0lOQ0xVREVECiAKKyNkZWZpbmUgVElYTUxfVVNFX1NUTCAxCisKICNpZmRlZiBf
+TVNDX1ZFUgogI3ByYWdtYSB3YXJuaW5nKCBwdXNoICkKICNwcmFnbWEgd2FybmluZyggZGlzYWJs
+ZSA6IDQ1MzAgKQo=" | base64 -d > $TMP/tinyxml-2.5.3-stl.patch
+patch -p1 < $TMP/tinyxml-2.5.3-stl.patch || exit 1
+
+echo "PyBlbnRpdHkucGF0Y2gKSW5kZXg6IHRpbnl4bWwuY3BwCj09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KUkNTIGZpbGU6IC9j
+dnNyb290L3Rpbnl4bWwvdGlueXhtbC90aW55eG1sLmNwcCx2CnJldHJpZXZpbmcgcmV2aXNpb24g
+MS4xMDUKZGlmZiAtdSAtcjEuMTA1IHRpbnl4bWwuY3BwCi0tLSB0aW55eG1sLmNwcAk1IEp1biAy
+MDEwIDE5OjA2OjU3IC0wMDAwCTEuMTA1CisrKyB0aW55eG1sLmNwcAkxOSBKdWwgMjAxMCAyMToy
+NDoxNiAtMDAwMApAQCAtNTcsMzAgKzU3LDcgQEAKIAl7CiAJCXVuc2lnbmVkIGNoYXIgYyA9ICh1
+bnNpZ25lZCBjaGFyKSBzdHJbaV07CiAKLQkJaWYgKCAgICBjID09ICcmJyAKLQkJICAgICAmJiBp
+IDwgKCAoaW50KXN0ci5sZW5ndGgoKSAtIDIgKQotCQkJICYmIHN0cltpKzFdID09ICcjJwotCQkJ
+ICYmIHN0cltpKzJdID09ICd4JyApCi0JCXsKLQkJCS8vIEhleGFkZWNpbWFsIGNoYXJhY3RlciBy
+ZWZlcmVuY2UuCi0JCQkvLyBQYXNzIHRocm91Z2ggdW5jaGFuZ2VkLgotCQkJLy8gJiN4QTk7CS0t
+IGNvcHlyaWdodCBzeW1ib2wsIGZvciBleGFtcGxlLgotCQkJLy8KLQkJCS8vIFRoZSAtMSBpcyBh
+IGJ1ZyBmaXggZnJvbSBSb2IgTGF2ZWF1eC4gSXQga2VlcHMKLQkJCS8vIGFuIG92ZXJmbG93IGZy
+b20gaGFwcGVuaW5nIGlmIHRoZXJlIGlzIG5vICc7Jy4KLQkJCS8vIFRoZXJlIGFyZSBhY3R1YWxs
+eSAyIHdheXMgdG8gZXhpdCB0aGlzIGxvb3AgLQotCQkJLy8gd2hpbGUgZmFpbHMgKGVycm9yIGNh
+c2UpIGFuZCBicmVhayAoc2VtaWNvbG9uIGZvdW5kKS4KLQkJCS8vIEhvd2V2ZXIsIHRoZXJlIGlz
+IG5vIG1lY2hhbmlzbSAoY3VycmVudGx5KSBmb3IKLQkJCS8vIHRoaXMgZnVuY3Rpb24gdG8gcmV0
+dXJuIGFuIGVycm9yLgotCQkJd2hpbGUgKCBpPChpbnQpc3RyLmxlbmd0aCgpLTEgKQotCQkJewot
+CQkJCW91dFN0cmluZy0+YXBwZW5kKCBzdHIuY19zdHIoKSArIGksIDEgKTsKLQkJCQkrK2k7Ci0J
+CQkJaWYgKCBzdHJbaV0gPT0gJzsnICkKLQkJCQkJYnJlYWs7Ci0JCQl9Ci0JCX0KLQkJZWxzZSBp
+ZiAoIGMgPT0gJyYnICkKKwkJaWYgKCBjID09ICcmJyApCiAJCXsKIAkJCW91dFN0cmluZy0+YXBw
+ZW5kKCBlbnRpdHlbMF0uc3RyLCBlbnRpdHlbMF0uc3RyTGVuZ3RoICk7CiAJCQkrK2k7CkluZGV4
+OiB4bWx0ZXN0LmNwcAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09ClJDUyBmaWxlOiAvY3Zzcm9vdC90aW55eG1sL3Rpbnl4
+bWwveG1sdGVzdC5jcHAsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEuODkKZGlmZiAtdSAtcjEuODkg
+eG1sdGVzdC5jcHAKLS0tIHhtbHRlc3QuY3BwCTUgSnVuIDIwMTAgMTc6NDE6NTIgLTAwMDAJMS44
+OQorKysgeG1sdGVzdC5jcHAJMTkgSnVsIDIwMTAgMjE6MjQ6MTYgLTAwMDAKQEAgLTEzNDAsNiAr
+MTM0MCwxNiBAQAogCQl9Ki8KIAl9CiAKKwkjaWZkZWYgVElYTUxfVVNFX1NUTAorCXsKKwkJVGlY
+bWxEb2N1bWVudCB4bWw7CisJCXhtbC5QYXJzZSgiPGZvbz5mb28mYW1wOyN4YStiYXI8L2Zvbz4i
+KTsKKwkJc3RkOjpzdHJpbmcgc3RyOworCQlzdHIgPDwgeG1sOworCQlYbWxUZXN0KCAiRW50aXR5
+IGVzY2FwaW5nIiwgIjxmb28+Zm9vJmFtcDsjeGErYmFyPC9mb28+Iiwgc3RyLmNfc3RyKCkgKTsK
+Kwl9CisJI2VuZGlmCisKIAkvKiAgMTQxNzcxNyBleHBlcmltZW50CiAJewogCQlUaVhtbERvY3Vt
+ZW50IHhtbDsK" | base64 -d > $TMP/entity.patch
+patch -p0 < $TMP/entity.patch || exit 1
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+
+g++ -v $SLKCFLAGS -Wall -Wno-unknown-pragmas -Wno-format -shared -o \
+  lib${PRGNAM}.so.0.${VERSION} -Wl,-soname,lib${PRGNAM}.so.0 $(ls *.o | grep -v xmltest)
+
+mkdir -p $PKG/usr/{include,lib${LIBDIRSUFFIX}}
+install -m 0755 lib${PRGNAM}.so.0.${VERSION} $PKG/usr/lib${LIBDIRSUFFIX}
+ln -s lib${PRGNAM}.so.0.${VERSION} $PKG/usr/lib${LIBDIRSUFFIX}/lib${PRGNAM}.so.${VERSION}
+ln -s lib${PRGNAM}.so.0.${VERSION} $PKG/usr/lib${LIBDIRSUFFIX}/lib${PRGNAM}.so.0
+ln -s lib${PRGNAM}.so.0.${VERSION} $PKG/usr/lib${LIBDIRSUFFIX}/lib${PRGNAM}.so
+install -m 0644 $PRGNAM.h tinystr.h $PKG/usr/include
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
