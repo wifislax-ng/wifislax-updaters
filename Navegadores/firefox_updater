@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160331
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -22,29 +22,25 @@ F_variables() {
 	VERSION=$(curl -s $WEB|grep .tar.bz2|tail -1|rev|cut -d- -f1|rev|cut -d t -f-1|sed 's/.$//g')
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD="-O $SOURCES $WEB"
+	if [ ! $ARCH = x86_64 ]; then
+	ARCH=i686
+	fi
+	DOWNLOAD=https://ftp.mozilla.org/pub/firefox/releases/$VERSION/linux-$ARCH/es-ES/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-mkdir -p $PKG/usr/{lib,bin,share/pixmaps,share/applications}
-cp -r $TMP/$PRGNAM $PKG/usr/lib
+mkdir -p $PKG/usr/{lib${LIBDIRSUFFIX},bin,share/pixmaps,share/applications}
+cp -r $TMP/$PRGNAM $PKG/usr/lib${LIBDIRSUFFIX}
 cd $PKG
 
 # Por si persisten restos fuera del log package
-if [ -d /usr/lib/firefox ]; then
-rm -rf /usr/lib/firefox
+if [ -d /usr/lib${LIBDIRSUFFIX}/firefox ]; then
+rm -rf /usr/lib${LIBDIRSUFFIX}/firefox
 fi
 
-LIBLIST="$(find . -name \*.so -print | rev | cut -d "/" -f1 | rev | grep -v libbrowsercomps.so | grep -v libdbusservice.so | grep -v libmozgnome.so)"
-
-for LIB in $LIBLIST; do 
-	
-	(ln -s /usr/lib/firefox/$LIB ./usr/lib/$LIB)
-done
-
-    (ln -s /usr/lib/firefox/firefox ./usr/bin/firefox)
-    (ln -s /usr/lib/firefox/firefox ./usr/bin/mozilla-firefox.desktop)
+    (ln -s /usr/lib${LIBDIRSUFFIX}/firefox/firefox ./usr/bin/firefox)
+    (ln -s /usr/lib${LIBDIRSUFFIX}/firefox/firefox ./usr/bin/mozilla-firefox.desktop)
 
     
 cp $TMP/firefox/browser/icons/mozicon128.png $PKG/usr/share/pixmaps/firefox.png
@@ -70,6 +66,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -80,8 +78,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura i686
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
