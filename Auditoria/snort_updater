@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151105
+SCRIPT_VERSION=20160331
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,17 +18,17 @@ f_variables(){
 F_variables() {
 	PRGNAM=snort
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://www.snort.org/
-	VERSION=`echo $(curl -s $WEB/downloads|grep "tar.gz"|head -n1|cut -d "/" -f4|cut -d "-" -f2|cut -d "t" -f1|sed 's/.$//g')`
+	WEB=https://www.snort.org/downloads
+	VERSION=`echo $(curl -s $WEB|grep "tar.gz"|grep -v daq|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g')`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=$WEB/downloads/$PRGNAM/$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$PRGNAM/$PRGNAM-$VERSION.$EXTENSION
 }
 
 # Comprobar dependencias
 F_dependencias(){
-	DEPENDENCIAS="daq"
-	f_dependencias
+DEPENDENCIAS="daq"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -36,7 +36,7 @@ F_compilar(){
 	echo 
 	echo "$VERDE"Compilando ..."$CIERRE"
 	sleep 1
-	./configure --prefix=/usr --enable-sourcefire
+	./configure --prefix=/usr --libdir=/usr/lib${LIBDIRSUFFIX} --enable-sourcefire
 	make || exit 1
 	make install-strip DESTDIR=$PKG || exit 1
 }

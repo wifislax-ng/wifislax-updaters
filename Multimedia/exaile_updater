@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151102
+SCRIPT_VERSION=20160331
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -26,6 +26,12 @@ F_variables() {
 	DOWNLOAD=https://github.com/exaile-dev/exaile/archive/$SOURCES
 }
 
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="mutagen gst-python0" 
+f_dependencias
+}
+
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 # Fix manpage location.
@@ -37,7 +43,7 @@ LIBINSTALLDIR=/lib${LIBDIRSUFFIX} \
 make install DESTDIR=$PKG
 
 # Eliminamos la restriccion root
-sed -i '21,29d' $PKG/usr/lib/exaile/exaile.py
+sed -i '21,29d' $PKG/usr/lib${LIBDIRSUFFIX}/exaile/exaile.py
 }
 
 ###################################
@@ -62,6 +68,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
