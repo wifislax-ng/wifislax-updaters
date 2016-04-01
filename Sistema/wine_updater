@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160401
+SCRIPT_VERSION=20160402
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -62,7 +62,7 @@ fi
 F_compilar(){
 echo ""
 echo "$VERDE"
-txz2dir $PRGNAM-$VERSION-$ARCH-1sg.txz $PKG
+txz2dir $PRGNAM-$VERSION-$ARCH-${BUILD}.txz $PKG
 mkdir $PKG/usr/share/wine/gecko $PKG/usr/share/wine/mono
 mv ${PRGNAM}_gecko-$GECKO_VERSION-$SYSTEM.msi $PKG/usr/share/wine/gecko
 mv ${PRGNAM}-mono-$MONO_VERSION.msi $PKG/usr/share/wine/mono
