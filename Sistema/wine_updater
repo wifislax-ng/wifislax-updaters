@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160323
+SCRIPT_VERSION=20160401
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -28,7 +28,6 @@ F_variables(){
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	BUILD=`curl -s ${WEB}$VERSION/$ARCH/|grep -o [0-9]sg|tail -1`
 	DESCARGAR="wget -N -L -c -q --show-progress"
 	if [ $ARCH = i586 ]; then
 	ARCH=i486
@@ -36,6 +35,7 @@ F_download(){
 	else
 	SYSTEM=$(uname -m)
 	fi
+	BUILD=`curl -s ${WEB}$VERSION/$ARCH/|grep -o [0-9]sg|tail -1`
 	if [ ! -f $PRGNAM-$VERSION-$ARCH-$BUILD.txz ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
@@ -96,6 +96,8 @@ trap f_exitmode SIGHUP SIGINT
 f_variables
 #Comprobamos conexion a Internet
 f_comprobarConexion
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Inicializamos las variables del script
 F_variables
 #Creamos directorio de trabajo
@@ -104,8 +106,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
