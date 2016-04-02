@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160204
+SCRIPT_VERSION=20160402
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -24,6 +24,13 @@ F_variables() {
 	SOURCES=${PRGNAM}-$VERSION.$EXTENSION
 	DOWNLOAD=${WEB}$SOURCES
 }
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="libebml"
+f_dependencias
+}
+
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
@@ -83,6 +90,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

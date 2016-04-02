@@ -1,0 +1,166 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160402
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=dirac
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://pkgs.fedoraproject.org/repo/pkgs/$PRGNAM
+	VERSION=1.0.2
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES/a57c2c5e58062d437d9ab13dffb28f0f/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+echo "RnJvbSA4OGZhZTYyMjRiNTRlY2Y5MmFjNmUzYWU1MDgzYzNmMzUyYWRjNzk4IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBBbnVyYWRoYSBTdXJhcGFyYWp1IDxhbnVyYWRoYUBob3lsZS5y
+ZC5iYmMuY28udWs+CkRhdGU6IEZyaSwgMTcgQXByIDIwMDkgMTc6NDc6MjcgKzEwMDAKU3ViamVj
+dDogW1BBVENIXSBGaXggdW5pbml0aWFsaXNlZCBtZW1vcnkgcmVhZCB0aGF0IGNhdXNlcyB0aGUg
+ZW5jb2RlciB0byBjcmFzaCB3aGVuIHVzaW5nCiBub24tb3ZlcmxhcHBpbmcgYmxvY2tzLgoKLS0t
+CiBsaWJkaXJhY19jb21tb24vbW90X2NvbXAuY3BwIHwgICAyMSArKysrKysrKysrKysrKystLS0t
+LS0KIDEgZmlsZXMgY2hhbmdlZCwgMTUgaW5zZXJ0aW9ucygrKSwgNiBkZWxldGlvbnMoLSkKCmRp
+ZmYgLS1naXQgYS9saWJkaXJhY19jb21tb24vbW90X2NvbXAuY3BwIGIvbGliZGlyYWNfY29tbW9u
+L21vdF9jb21wLmNwcAppbmRleCBhYThkMzdjLi5lMGVjMmZmIDEwMDY0NAotLS0gYS9saWJkaXJh
+Y19jb21tb24vbW90X2NvbXAuY3BwCisrKyBiL2xpYmRpcmFjX2NvbW1vbi9tb3RfY29tcC5jcHAK
+QEAgLTMwNiw2ICszMDYsOCBAQCB2b2lkIE1vdGlvbkNvbXBlbnNhdG9yOjpDb21wZW5zYXRlQ29t
+cG9uZW50KCBQaWN0dXJlKiBwaWMgLAogCiAgICAgaW50IHNhdmVfZnJvbV9yb3cgPSBtX2JwYXJh
+bXMuWWJzZXAoKS1tX2JwYXJhbXMuWW9mZnNldCgpOwogCisgICAgYm9vbCByb3dfb3ZlcmxhcCA9
+ICgobV9icGFyYW1zLllibGVuKCkgLSBtX2JwYXJhbXMuWWJzZXAoKSkgPiAwKTsKKwogICAgIC8v
+IHVucGFkZGVkIHBpY3R1cmUgZGltZW5zaW9ucwogICAgIGNvbnN0IGludCB4X2VuZF9kYXRhID0g
+cGljX2RhdGFfb3V0LkZpcnN0WCgpICsgc3RkOjptaW4ocGljX2RhdGFfb3V0Lkxlbmd0aFgoKSwg
+cGljX3NpemUueCApOwogICAgIGNvbnN0IGludCB5X2VuZF9kYXRhID0gcGljX2RhdGFfb3V0LkZp
+cnN0WSgpICsgc3RkOjptaW4ocGljX2RhdGFfb3V0Lkxlbmd0aFkoKSwgcGljX3NpemUueSApOwpA
+QCAtNDg5LDEyICs0OTEsMTkgQEAgdm9pZCBNb3Rpb25Db21wZW5zYXRvcjo6Q29tcGVuc2F0ZUNv
+bXBvbmVudCggUGljdHVyZSogcGljICwKICAgICAgICAgLy9JbmNyZW1lbnQgdGhlIGJsb2NrIHZl
+cnRpY2FsIHBvc2l0aW9uCiAgICAgICAgIHBvcy55ICs9IG1fYnBhcmFtcy5ZYnNlcCgpOwogCi0g
+ICAgICAgIC8vIENvcHkgdGhlIHJvd3MgcmVxdWlyZWQgdG8gbW90aW9uIGNvbXBlbnNhdGUgdGhl
+IG5leHQgcm93IG9mIGJsb2NrLgotICAgICAgICAvLyBUaGlzIGlzIHVzdWFsbHkgWWJsZW4tWWJz
+ZXAgcm93cy4KLSAgICAgICAgbWVtbW92ZSAocGljX2RhdGFbMF0sIHBpY19kYXRhW3NhdmVfZnJv
+bV9yb3ddLCAobV9icGFyYW1zLllibGVuKCkgLSBzYXZlX2Zyb21fcm93KSpwaWNfZGF0YS5MZW5n
+dGhYKCkqc2l6ZW9mKFZhbHVlVHlwZSkpOwotICAgICAgICBtZW1zZXQoIHBpY19kYXRhW21fYnBh
+cmFtcy5ZYmxlbigpIC0gc2F2ZV9mcm9tX3Jvd10sIDAsIHNhdmVfZnJvbV9yb3cqcGljX2RhdGEu
+TGVuZ3RoWCgpKnNpemVvZihWYWx1ZVR5cGUpICk7Ci0gICAgICAgIHNhdmVfZnJvbV9yb3cgPSBt
+X2JwYXJhbXMuWWJzZXAoKTsKLQorICAgICAgICBpZiAocm93X292ZXJsYXApCisgICAgICAgIHsK
+KyAgICAgICAgICAgIC8vIENvcHkgdGhlIHJvd3MgcmVxdWlyZWQgdG8gbW90aW9uIGNvbXBlbnNh
+dGUgdGhlIG5leHQgcm93IG9mIAorICAgICAgICAgICAgLy8gYmxvY2tzLiBUaGlzIGlzIHVzdWFs
+bHkgWWJsZW4tWWJzZXAgcm93cy4KKyAgICAgICAgICAgIG1lbW1vdmUgKHBpY19kYXRhWzBdLCBw
+aWNfZGF0YVtzYXZlX2Zyb21fcm93XSwgKG1fYnBhcmFtcy5ZYmxlbigpIC0gc2F2ZV9mcm9tX3Jv
+dykqcGljX2RhdGEuTGVuZ3RoWCgpKnNpemVvZihWYWx1ZVR5cGUpKTsKKyAgICAgICAgICAgIG1l
+bXNldCggcGljX2RhdGFbbV9icGFyYW1zLllibGVuKCkgLSBzYXZlX2Zyb21fcm93XSwgMCwgc2F2
+ZV9mcm9tX3JvdypwaWNfZGF0YS5MZW5ndGhYKCkqc2l6ZW9mKFZhbHVlVHlwZSkgKTsKKyAgICAg
+ICAgICAgIHNhdmVfZnJvbV9yb3cgPSBtX2JwYXJhbXMuWWJzZXAoKTsKKyAgICAgICAgfQorICAg
+ICAgICBlbHNlCisgICAgICAgIHsKKyAgICAgICAgICAgIC8vIG5vIHJvdyBvdmVybGFwLiBTbyBy
+ZXNldCBwaWNfZGF0YSB0byAwLgorICAgICAgICAgICAgbWVtc2V0KCBwaWNfZGF0YVswXSwgMCwg
+IG1fYnBhcmFtcy5ZYmxlbigpKnBpY19kYXRhLkxlbmd0aFgoKSpzaXplb2YoVmFsdWVUeXBlKSAp
+OworICAgICAgICB9CiAgICAgfS8veWJsb2NrCiAKICAgICBpZiAoIG1fYWRkX29yX3N1YiA9PSBT
+VUJUUkFDVCkKLS0gCjEuNy4wLjQKCg==" | base64 -d > $TMP/encoder.patch
+
+patch -p1 -i $TMP/encoder.patch || exit 1
+
+echo "RnJvbSBjOTljZjhkMmNiMWU5ZTY5YjQ2NGY0ZGYyZGNhZTlmOWJhYWI0OWRjIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBBbnVyYWRoYSBTdXJhcGFyYWp1IDxhc3VyYXBhcmFqdUBnbWFp
+bC5jb20+CkRhdGU6IFN1biwgOSBNYXkgMjAxMCAxNDowNDo0MyArMTAwMApTdWJqZWN0OiBbUEFU
+Q0hdIEZpeGVkICMyOTg0MzA0LiAgRml4IGNvbXBpbGF0aW9uIGVycm9ycyByZXBvcnRlZCBieSBn
+Y2MgNC41LjAuCgotLS0KIGxpYmRpcmFjX2VuY29kZXIvcXVhbnRfY2hvb3Nlci5jcHAgfCAgICA2
+ICsrKy0tLQogMSBmaWxlcyBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0p
+CgpkaWZmIC0tZ2l0IGEvbGliZGlyYWNfZW5jb2Rlci9xdWFudF9jaG9vc2VyLmNwcCBiL2xpYmRp
+cmFjX2VuY29kZXIvcXVhbnRfY2hvb3Nlci5jcHAKaW5kZXggMTZmZmNiMy4uN2JhYTEyOSAxMDA2
+NDQKLS0tIGEvbGliZGlyYWNfZW5jb2Rlci9xdWFudF9jaG9vc2VyLmNwcAorKysgYi9saWJkaXJh
+Y19lbmNvZGVyL3F1YW50X2Nob29zZXIuY3BwCkBAIC0zMzMsMTQgKzMzMywxNCBAQCB2b2lkIFF1
+YW50Q2hvb3Nlcjo6U2VsZWN0QmVzdFF1YW50KCkKIHZvaWQgUXVhbnRDaG9vc2VyOjpTZXRTa2lw
+KCBDb2RlQmxvY2smIGNibG9jayAsIGNvbnN0IGludCBxaWR4KQogewogICAgIGNvbnN0IGludCB1
+X3RocmVzaG9sZCA9IGRpcmFjX3F1YW50aXNlcl9saXN0cy5RdWFudEZhY3RvcjQoIHFpZHggKTsK
+LSAgICAKKwogICAgIC8vIFNldHMgdGhlIHNraXAgZmxhZyBmb3IgYSBjb2RlYmxvY2sKICAgICBi
+b29sIGNhbl9za2lwID0gdHJ1ZTsKICAgICBmb3IgKGludCBqPWNibG9jay5Zc3RhcnQoKTsgajxj
+YmxvY2suWWVuZCgpOyArK2ogKQogICAgIHsKICAgICAgICAgZm9yIChpbnQgaT1jYmxvY2suWHN0
+YXJ0KCk7IGk8Y2Jsb2NrLlhlbmQoKTsgKytpICkKICAgICAgICAgewotICAgICAgICAgICAgaWYg
+KCAoc3RkOjphYnMobV9jb2VmZl9kYXRhW2pdW2ldKTw8MikgPj0gdV90aHJlc2hvbGQgKQorICAg
+ICAgICAgICAgaWYgKCAoc3RhdGljX2Nhc3Q8aW50PihzdGQ6OmFicyhtX2NvZWZmX2RhdGFbal1b
+aV0pKTw8MikgPj0gdV90aHJlc2hvbGQgKQogICAgICAgICAgICAgICAgIGNhbl9za2lwID0gZmFs
+c2U7CiAgICAgICAgIH0gICAKICAgICB9CkBAIC0zNTUsNyArMzU1LDcgQEAgQ29lZmZUeXBlIFF1
+YW50Q2hvb3Nlcjo6QmxvY2tBYnNNYXgoIGNvbnN0IFN1YmJhbmQmIG5vZGUgKQogICAgIHsKICAg
+ICAgICAgZm9yIChpbnQgaT1ub2RlLlhwKCkgOyBpPG5vZGUuWHAoKStub2RlLlhsKCk7ICsraSkK
+ICAgICAgICAgeyAgICAKLSAgICAgICAgICAgIHZhbCA9IHN0ZDo6bWF4KCB2YWwgLCBzdGQ6OmFi
+cyhtX2NvZWZmX2RhdGFbal1baV0pICk7CisgICAgICAgICAgICB2YWwgPSBzdGQ6Om1heCggdmFs
+ICwgc3RhdGljX2Nhc3Q8aW50PihzdGQ6OmFicyhtX2NvZWZmX2RhdGFbal1baV0pKSApOwogICAg
+ICAgICB9Ly8gaQogICAgIH0vLyBqCiAKLS0gCjEuNy4wLjQKCg==" | base64 -d > $TMP/gcc.patch
+
+patch -p1 -i $TMP/gcc.patch || exit 1
+
+# -Werror breaks build on 14.0
+sed -i "s|\ -Werror\"|\"|" configure
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --sysconfdir=/etc \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --infodir=/usr/info \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --disable-static \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+make install \
+  htmldir=/usr/doc/$PRGNAM-$VERSION/html \
+  DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

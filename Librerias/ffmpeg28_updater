@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160218
+SCRIPT_VERSION=20160402
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -37,14 +37,17 @@ F_compilar(){
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
+# Fix linking with flite
+sed -i "s| -lflite\"| -lflite -lm -lasound\"|" \
+  ./configure
 
-  ./configure \
-    --prefix='/usr' \
-    --incdir='/usr/include/ffmpeg2.8' \
-    --libdir='/usr/lib/ffmpeg2.8' \
-    --shlibdir='/usr/lib/ffmpeg2.8' \
+CFLAGS="$SLKCFLAGS -I/usr/include/openmj2-2.1" \
+CXXFLAGS="$SLKCFLAGS -I/usr/include/openmj2-2.1" \
+./configure \
+    --prefix=/usr \
+    --incdir=/usr/include/ffmpeg2.8 \
+    --libdir=/usr/lib$LIBDIRSUFFIX/ffmpeg2.8 \
+    --shlibdir=/usr/lib$LIBDIRSUFFIX/ffmpeg2.8 \
     --disable-debug \
     --disable-static \
     --disable-stripping \
@@ -68,7 +71,6 @@ CXXFLAGS="$SLKCFLAGS" \
     --enable-libopus \
     --enable-libpulse \
     --enable-libschroedinger \
-    --enable-libsoxr \
     --enable-libspeex \
     --enable-libssh \
     --enable-libtheora \
@@ -89,7 +91,7 @@ CXXFLAGS="$SLKCFLAGS" \
   
   rm -rf "$PKG"/usr/{bin,share}
   install -dm 755 "$PKG"/etc/ld.so.conf.d
-  echo -e '/usr/lib/\n/usr/lib/ffmpeg2.8/' > "$PKG"/etc/ld.so.conf.d/ffmpeg2.8.conf
+  echo -e "/usr/lib$LIBDIRSUFFIX/\n/usr/lib$LIBDIRSUFFIX/ffmpeg2.8/" > "$PKG"/etc/ld.so.conf.d/ffmpeg2.8.conf
 }
 
 ###################################

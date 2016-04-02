@@ -3,7 +3,6 @@
 # Script by www.seguridadwireless.net
 
 SCRIPT_VERSION=20160402
-CATEGORIA="Reproductores multimedia"
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,25 +16,13 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=vlc
+	PRGNAM=libdca
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://download.videolan.org
-	VERSION=$(curl -s $WEB/$PRGNAM/ | grep -Po 'href="\K.*(?=")' | sed 's/\///g' | sort -g | tail -1)
-	EXTENSION=tar.xz
+	WEB=http://download.videolan.org/pub/videolan/$PRGNAM
+	VERSION=`curl -s $WEB/|grep [0-9]/|tail -1|cut -d / -f-1|cut -d '"' -f2`
+	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=$WEB/$PRGNAM/$VERSION/$SOURCES
-}
-
-# Comprobar dependencias
-F_dependencias(){
-if [ $VERSION = "2.2.2" ]; then
-FFMPEGVERSION=ffmpeg28
-PKG_CONFIG_PATH="/usr/lib${LIBDIRSUFFIX}/ffmpeg2.8/pkgconfig"
-else
-FFMPEGVERSION=ffmpeg
-fi
-DEPENDENCIAS="$FFMPEGVERSION libass libdc1394 libdvbpsi libmpeg2 libupnp portaudio twolame opus gsm opencv libkate faac libdca libmatroska libshout speex jack-audio-connection-kit zvbi faad2 libavc1394 libmodplug musepack-tools vcdimager dirac gnome-vfs live555 rtmpdump lua libdvdcss fluidsynth schroedinger chromaprint x264 x265 libbluray"
-f_dependencias
+	DOWNLOAD=$WEB/$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -44,28 +31,23 @@ echo
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
 
-autoreconf -f
-
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
-LDFLAGS="$SLKLDFLAGS" \
 ./configure \
   --prefix=/usr \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
-  --sysconfdir=/etc \
   --mandir=/usr/man \
-  --enable-run-as-root \
-  --docdir=/usr/doc/vlc-$VERSION \
-  --localstatedir=/var \
-  --enable-merge-ffmpeg \
-  --with-kde-solid=no \
-  --build=$ARCH-slackware-linux
- 
+  --program-prefix="" \
+  --program-suffix="" \
+  --enable-shared
+
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
+
 make  || exit 1
-make install DESTDIR=$PKG
+make install DESTDIR=$PKG || exit 1
+cp -a libdca/dca_internal.h $PKG/usr/include
 }
 
 ###################################
@@ -76,6 +58,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -86,12 +70,8 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

@@ -3,7 +3,6 @@
 # Script by www.seguridadwireless.net
 
 SCRIPT_VERSION=20160402
-CATEGORIA="Reproductores multimedia"
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,55 +16,59 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=vlc
+	PRGNAM=lua
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://download.videolan.org
-	VERSION=$(curl -s $WEB/$PRGNAM/ | grep -Po 'href="\K.*(?=")' | sed 's/\///g' | sort -g | tail -1)
-	EXTENSION=tar.xz
+	WEB=http://www.lua.org/ftp
+	VERSION=5.1.5
+	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=$WEB/$PRGNAM/$VERSION/$SOURCES
-}
-
-# Comprobar dependencias
-F_dependencias(){
-if [ $VERSION = "2.2.2" ]; then
-FFMPEGVERSION=ffmpeg28
-PKG_CONFIG_PATH="/usr/lib${LIBDIRSUFFIX}/ffmpeg2.8/pkgconfig"
-else
-FFMPEGVERSION=ffmpeg
-fi
-DEPENDENCIAS="$FFMPEGVERSION libass libdc1394 libdvbpsi libmpeg2 libupnp portaudio twolame opus gsm opencv libkate faac libdca libmatroska libshout speex jack-audio-connection-kit zvbi faad2 libavc1394 libmodplug musepack-tools vcdimager dirac gnome-vfs live555 rtmpdump lua libdvdcss fluidsynth schroedinger chromaprint x264 x265 libbluray"
-f_dependencias
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
-echo "$VERDE"Configurando ..."$CIERRE"
-sleep 1
-
-autoreconf -f
-
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-LDFLAGS="$SLKLDFLAGS" \
-./configure \
-  --prefix=/usr \
-  --libdir=/usr/lib${LIBDIRSUFFIX} \
-  --sysconfdir=/etc \
-  --mandir=/usr/man \
-  --enable-run-as-root \
-  --docdir=/usr/doc/vlc-$VERSION \
-  --localstatedir=/var \
-  --enable-merge-ffmpeg \
-  --with-kde-solid=no \
-  --build=$ARCH-slackware-linux
- 
-echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-make  || exit 1
-make install DESTDIR=$PKG
+
+chown -R root:root .
+
+# Fix up a to-be-installed header and the pkgconfig file
+sed -i "s|/usr/local|/usr|" src/luaconf.h
+sed -i "s|lib/lua|lib$LIBDIRSUFFIX/lua|" src/luaconf.h
+sed -i "s|/usr/local|/usr|" etc/lua.pc
+sed -i "s|prefix}/lib|prefix}/lib${LIBDIRSUFFIX}|g" etc/lua.pc
+
+make linux \
+  CFLAGS="$SLKCFLAGS \$(MYCFLAGS)" \
+  INSTALL_TOP=/usr \
+  INSTALL_LIB=/usr/lib${LIBDIRSUFFIX} \
+  INSTALL_LMOD=/usr/share/lua/5.1 \
+  INSTALL_CMOD=/usr/lib${LIBDIRSUFFIX}/lua/5.1
+
+make linux install \
+  CFLAGS="$SLKCFLAGS \$(MYCFLAGS)" \
+  INSTALL_TOP=$PKG/usr \
+  INSTALL_LIB=$PKG/usr/lib${LIBDIRSUFFIX} \
+  INSTALL_LMOD=$PKG/usr/share/lua/5.1 \
+  INSTALL_CMOD=$PKG/usr/lib${LIBDIRSUFFIX}/lua/5.1
+
+# Now let's build the shared library
+mkdir -p shared
+cd shared
+  ar -x $PKG/usr/lib${LIBDIRSUFFIX}/liblua.a
+  gcc -ldl -lreadline -lhistory -lncurses -lm -shared *.o -o liblua.so.$VERSION
+  cp -a liblua.so.$VERSION $PKG/usr/lib${LIBDIRSUFFIX}
+  ( cd $PKG/usr/lib${LIBDIRSUFFIX}
+    ln -s liblua.so.$VERSION liblua.so.5.1
+    ln -s liblua.so.$VERSION liblua.so.5
+    ln -s liblua.so.$VERSION liblua.so
+  )
+cd ..
+
+# and install the pkgconfig file
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig
+cat etc/lua.pc > $PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig/lua.pc
 }
 
 ###################################
@@ -76,6 +79,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -86,12 +91,8 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

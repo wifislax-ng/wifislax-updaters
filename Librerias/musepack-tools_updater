@@ -1,0 +1,129 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160402
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=musepack-tools
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://files.musepack.net/source
+	VERSION=r475
+	SRCNAM=musepack_src_$VERSION
+	EXTENSION=tar.gz
+	SOURCES=$SRCNAM.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="libreplaygain libcuefile"
+f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+echo "ZGlmZiAtTmF1ciBtdXNlcGFja19zcmNfcjQ3NS5vcmlnL0NNYWtlTGlzdHMudHh0IG11c2VwYWNr
+X3NyY19yNDc1L0NNYWtlTGlzdHMudHh0Ci0tLSBtdXNlcGFja19zcmNfcjQ3NS5vcmlnL0NNYWtl
+TGlzdHMudHh0CTIwMTAtMDctMTMgMTM6MTU6MjQuMDAwMDAwMDAwICswMjAwCisrKyBtdXNlcGFj
+a19zcmNfcjQ3NS9DTWFrZUxpc3RzLnR4dAkyMDEzLTExLTE5IDE2OjE5OjI3LjkzMDU0NDUzMiAr
+MDEwMApAQCAtMTUsMTAgKzE1LDYgQEAKIAogYWRkX2RlZmluaXRpb25zKC1ERkFTVF9NQVRIIC1E
+Q1ZEX0ZBU1RMT0cpCiAKLWlmKE5PVCBNU1ZDKQotICBzZXQoQ01BS0VfQ19GTEFHUyAiLU8zIC1X
+YWxsIC1mb21pdC1mcmFtZS1wb2ludGVyIC1waXBlIikKLWVuZGlmKE5PVCBNU1ZDKQotCiBhZGRf
+c3ViZGlyZWN0b3J5KGxpYm1wY2RlYykKIGFkZF9zdWJkaXJlY3RvcnkobGlibXBjcHN5KQogYWRk
+X3N1YmRpcmVjdG9yeShsaWJtcGNlbmMpCmRpZmYgLU5hdXIgbXVzZXBhY2tfc3JjX3I0NzUub3Jp
+Zy9saWJtcGNkZWMvQ01ha2VMaXN0cy50eHQgbXVzZXBhY2tfc3JjX3I0NzUvbGlibXBjZGVjL0NN
+YWtlTGlzdHMudHh0Ci0tLSBtdXNlcGFja19zcmNfcjQ3NS5vcmlnL2xpYm1wY2RlYy9DTWFrZUxp
+c3RzLnR4dAkyMDEwLTA4LTIxIDE3OjU1OjAxLjAwMDAwMDAwMCArMDIwMAorKysgbXVzZXBhY2tf
+c3JjX3I0NzUvbGlibXBjZGVjL0NNYWtlTGlzdHMudHh0CTIwMTMtMTEtMTkgMTY6Mjc6NTAuNDYw
+NTA2NzY0ICswMTAwCkBAIC0xLDcgKzEsMjIgQEAKIGluY2x1ZGVfZGlyZWN0b3JpZXMoJHtsaWJt
+cGNfU09VUkNFX0RJUn0vaW5jbHVkZSkKIGlmKFNIQVJFRCkKLSAgYWRkX2xpYnJhcnkobXBjZGVj
+IFNIQVJFRCBodWZmbWFuIG1wY19kZWNvZGVyIG1wY19yZWFkZXIgc3RyZWFtaW5mbyBtcGNfYml0
+c19yZWFkZXIgbXBjX2RlbXV4IHJlcXVhbnQgc3ludGhfZmlsdGVyICR7bGlibXBjX1NPVVJDRV9E
+SVJ9L2NvbW1vbi9jcmMzMikKLWVsc2UoU0hBUkVEKQotICBhZGRfbGlicmFyeShtcGNkZWNfc3Rh
+dGljIFNUQVRJQyBodWZmbWFuIG1wY19kZWNvZGVyIG1wY19yZWFkZXIgc3RyZWFtaW5mbyBtcGNf
+Yml0c19yZWFkZXIgbXBjX2RlbXV4IHJlcXVhbnQgc3ludGhfZmlsdGVyICR7bGlibXBjX1NPVVJD
+RV9ESVJ9L2NvbW1vbi9jcmMzMikKKyAgYWRkX2xpYnJhcnkobXBjZGVjX3NoYXJlZCBTSEFSRUQg
+aHVmZm1hbiBtcGNfZGVjb2RlciBtcGNfcmVhZGVyIHN0cmVhbWluZm8gbXBjX2JpdHNfcmVhZGVy
+IG1wY19kZW11eCByZXF1YW50IHN5bnRoX2ZpbHRlciAke2xpYm1wY19TT1VSQ0VfRElSfS9jb21t
+b24vY3JjMzIpCisgIHNldF90YXJnZXRfcHJvcGVydGllcyhtcGNkZWNfc2hhcmVkIFBST1BFUlRJ
+RVMgT1VUUFVUX05BTUUgbXBjZGVjIENMRUFOX0RJUkVDVF9PVVRQVVQgMSBWRVJTSU9OIDcuMC4x
+IFNPVkVSU0lPTiA3KQorICBpZihOT1QgTVNWQykKKyAgICB0YXJnZXRfbGlua19saWJyYXJpZXMo
+bXBjZGVjX3NoYXJlZCBtKQorICBlbmRpZihOT1QgTVNWQykKIGVuZGlmKFNIQVJFRCkKKyAKK2Fk
+ZF9saWJyYXJ5KG1wY2RlY19zdGF0aWMgU1RBVElDIGh1ZmZtYW4gbXBjX2RlY29kZXIgbXBjX3Jl
+YWRlciBzdHJlYW1pbmZvIG1wY19iaXRzX3JlYWRlciBtcGNfZGVtdXggcmVxdWFudCBzeW50aF9m
+aWx0ZXIgJHtsaWJtcGNfU09VUkNFX0RJUn0vY29tbW9uL2NyYzMyKQogCitzZXRfdGFyZ2V0X3By
+b3BlcnRpZXMobXBjZGVjX3N0YXRpYyBQUk9QRVJUSUVTIE9VVFBVVF9OQU1FIG1wY2RlYyBDTEVB
+Tl9ESVJFQ1RfT1VUUFVUIDEpCisKK2lmKE5PVCBNU1ZDKQorICB0YXJnZXRfbGlua19saWJyYXJp
+ZXMobXBjZGVjX3N0YXRpYyBtKQorZW5kaWYoTk9UIE1TVkMpCisKK2luc3RhbGwoVEFSR0VUUyBt
+cGNkZWNfc3RhdGljIExJQlJBUlkgREVTVElOQVRJT04gImxpYiR7TElCX1NVRkZJWH0iIEFSQ0hJ
+VkUgREVTVElOQVRJT04gImxpYiR7TElCX1NVRkZJWH0iKQorCitpZihTSEFSRUQpCisgIGluc3Rh
+bGwoVEFSR0VUUyBtcGNkZWNfc2hhcmVkIExJQlJBUlkgREVTVElOQVRJT04gImxpYiR7TElCX1NV
+RkZJWH0iIEFSQ0hJVkUgREVTVElOQVRJT04gImxpYiR7TElCX1NVRkZJWH0iKQorZW5kaWYoU0hB
+UkVEKQo=" | base64 -d > $TMP/musepack-tools-475.patch
+
+patch -p1 -i $TMP/musepack-tools-475.patch || exit 1
+
+mkdir -p build
+cd build
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DLIB_SUFFIX=$LIBDIRSUFFIX \
+    -DCMAKE_BUILD_TYPE=Release ..
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make -j1 || exit 1
+make install DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
