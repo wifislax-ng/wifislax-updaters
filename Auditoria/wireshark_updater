@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160326
+SCRIPT_VERSION=20160327
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -180,14 +180,9 @@ IgogICAgICAgeT0iMjg1LjM2MjE4IgogICAgICAgcng9IjguOTQ5NjkzNyIKICAgICAgIHJ5PSIw
 IiAvPgogIDwvZz4KPC9zdmc+Cg==" | base64 -d > $PKG/usr/share/pixmaps/$PRGNAM.svg
 
 # Generamos desktop
-if [ -f $PKG/usr/bin/wireshark-gtk ]; then
-EJECUTABLE=wireshark-gtk
-else
-EJECUTABLE=wireshark
-fi
 echo "[Desktop Entry]
 Categories=Redes;
-Exec=$EJECUTABLE
+Exec=wireshark-gtk
 Name=Wireshark Network Analyzer
 Icon=wireshark
 StartupNotify=true
@@ -199,127 +194,14 @@ rm -rf $PKG/usr/share/applications/*.desktop
 # Creamos una config basica
 CONFIG=$PKG/$HOME/.$PRGNAM
 mkdir -p $CONFIG
-echo "# Recent settings file for Wireshark $VERSION
-#
-# This file is regenerated each time Wireshark is quit.
-# So be careful, if you want to make manual changes here.
 
-######## Recent capture files (latest last), cannot be altered through command line ########
-
-
-######## Recent capture filters (latest last), cannot be altered through command line ########
-
-
-######## Recent display filters (latest last), cannot be altered through command line ########
-
-
-# Main window geometry.
-# Decimal numbers.
-gui.geometry_main_x: -3
-gui.geometry_main_y: -3
-gui.geometry_main_width: 1366
-gui.geometry_main_height: 713
-
-# Main window maximized.
+echo "# Main window maximized.
 # TRUE or FALSE (case-insensitive).
 gui.geometry_main_maximized: TRUE
 
-# Statusbar left pane size.
-# Decimal number.
-gui.geometry_status_pane: 250
-
-# Statusbar middle pane size.
-# Decimal number.
-gui.geometry_status_pane_right: 866
-
-# Last used Configuration Profile.
-gui.last_used_profile: Default
-
-# WLAN statistics upper pane size.
-# Decimal number.
-gui.geometry_status_wlan_stats_pane: 200
-
 # Warn if running with elevated permissions (e.g. as root).
 # TRUE or FALSE (case-insensitive).
-privs.warn_if_elevated: FALSE
-
-# Warn if npf.sys isn't loaded on Windows >= 6.0.
-# TRUE or FALSE (case-insensitive).
-privs.warn_if_no_npf: TRUE
-" > $CONFIG/recent_common
-
-echo "# Recent settings file for Wireshark $VERSION
-#
-# This file is regenerated each time Wireshark is quit
-# and when changing configuration profile.
-# So be careful, if you want to make manual changes here.
-
-
-# Main Toolbar show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.toolbar_main_show: TRUE
-
-# Filter Toolbar show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.filter_toolbar_show: TRUE
-
-# Wireless Settings Toolbar show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.wireless_toolbar_show: FALSE
-
-# Packet list show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.packet_list_show: TRUE
-
-# Tree view show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.tree_view_show: TRUE
-
-# Byte view show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.byte_view_show: TRUE
-
-# Statusbar show (hide).
-# TRUE or FALSE (case-insensitive).
-gui.statusbar_show: TRUE
-
-# Packet list colorize (hide).
-# TRUE or FALSE (case-insensitive).
-gui.packet_list_colorize: TRUE
-
-# Timestamp display format.
-# One of: RELATIVE, ABSOLUTE, ABSOLUTE_WITH_DATE, DELTA, DELTA_DIS, EPOCH, UTC, UTC_WITH_DATE
-gui.time_format: RELATIVE
-
-# Timestamp display precision.
-# One of: AUTO, SEC, DSEC, CSEC, MSEC, USEC, NSEC
-gui.time_precision: AUTO
-
-# Seconds display format.
-# One of: SECONDS, HOUR_MIN_SEC
-gui.seconds_format: SECONDS
-
-# Zoom level.
-# A decimal number.
-gui.zoom_level: 0
-
-# Bytes view.
-# A decimal number.
-gui.bytes_view: 0
-
-# Main window upper (or leftmost) pane size.
-# Decimal number.
-
-# Main window middle pane size.
-# Decimal number.
-
-# Packet list column pixel widths.
-# Each pair of strings consists of a column format and its pixel width.
-column.width: %m, -1, %t, -1, %s, -1, %d, -1, %p, -1, %L, -1, %i, -1
-
-# Last directory navigated to in File Open dialog.
-gui.fileopen_remembered_dir: /
-" > $CONFIG/recent
+privs.warn_if_elevated: FALSE" > $CONFIG/recent
 }
 
 ###################################
