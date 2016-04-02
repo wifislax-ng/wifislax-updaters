@@ -2,8 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160219
-CATEGORIA="Editores de video"
+SCRIPT_VERSION=20160403
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,29 +16,41 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://www.openshot.org/download/
-	#VERSION=`curl -s $WEB | grep Version | head -1 | cut -d ">" -f2 | cut -d "<" -f-1 | sed "s/ //g"`
-	VERSION=1.4.3
-	RAMA=`echo $VERSION | cut -d "." -f-2`
-	PRGNAM=openshot
+	PRGNAM=libdv
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://downloads.sourceforge.net/${PRGNAM}
+	VERSION=1.0.0
 	EXTENSION=tar.gz
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://launchpad.net/$PRGNAM/$RAMA/$VERSION/+download/$SOURCES
-}
-
-# Comprobar dependencias
-F_dependencias(){
-DEPENDENCIAS="pygoocanvas pyxdg frei0r mlt"
-f_dependencias
+	SOURCES=${PRGNAM}-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --enable-sdl \
+  --without-debug \
+  --disable-gtk \
+  --disable-gtktest \
+  --build=$ARCH-slackware-linux
+
+echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-python setup.py install --root=$PKG
+
+make || exit 1
+make install-strip DESTDIR=$PKG || exit 1
 }
 
 ###################################
@@ -50,6 +61,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -60,12 +73,8 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
-#Compronar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

@@ -1,0 +1,153 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160403
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=frei0r
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://files.dyne.org/frei0r/releases
+	VERSION=1.4
+	SRCNAM=$PRGNAM-plugins-$VERSION
+	EXTENSION=tar.gz
+	SOURCES=$SRCNAM.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+echo "ZGlmZiAtdXAgLi9mcmVpMHItcGx1Z2lucy0xLjQvc3JjL2ZpbHRlci9mYWNlZGV0ZWN0L2ZhY2Vk
+ZXRlY3QuYy5vcGVuY3YzIC4vZnJlaTByLXBsdWdpbnMtMS40L3NyYy9maWx0ZXIvZmFjZWRldGVj
+dC9mYWNlZGV0ZWN0LmMKLS0tIC4vZnJlaTByLXBsdWdpbnMtMS40L3NyYy9maWx0ZXIvZmFjZWRl
+dGVjdC9mYWNlZGV0ZWN0LmMub3BlbmN2MwkyMDEzLTAyLTI0IDE0OjQzOjIyLjAwMDAwMDAwMCAr
+MDEwMAorKysgLi9mcmVpMHItcGx1Z2lucy0xLjQvc3JjL2ZpbHRlci9mYWNlZGV0ZWN0L2ZhY2Vk
+ZXRlY3QuYwkyMDE1LTA3LTA4IDEyOjQ0OjMwLjk4NzA1Njg3OCArMDIwMApAQCAtMjExLDggKzIx
+MSw4IEBAIEN2U2VxKiBkZXRlY3RfYW5kX2RyYXcoIElwbEltYWdlKiBpbWcsIEMKIAogICBkb3Vi
+bGUgc2NhbGUgPSAxLjM7CiAgIElwbEltYWdlKiBncmF5ID0gY3ZDcmVhdGVJbWFnZSggY3ZTaXpl
+KGltZy0+d2lkdGgsaW1nLT5oZWlnaHQpLCA4LCAxICk7Ci0gIElwbEltYWdlKiBzbWFsbF9pbWcg
+PSBjdkNyZWF0ZUltYWdlKCBjdlNpemUoIGN2Um91bmQgKGltZy0+d2lkdGgvc2NhbGUpLAotICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjdlJvdW5kIChpbWct
+PmhlaWdodC9zY2FsZSkpLAorICBJcGxJbWFnZSogc21hbGxfaW1nID0gY3ZDcmVhdGVJbWFnZSgg
+Y3ZTaXplKCBjdlJvdW5kICgoZG91YmxlKWltZy0+d2lkdGgvc2NhbGUpLAorICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjdlJvdW5kICgoZG91YmxlKWltZy0+
+aGVpZ2h0L3NjYWxlKSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA4
+LCAxICk7CiAgIGludCBpOwogCmRpZmYgLXVwIC4vZnJlaTByLXBsdWdpbnMtMS40L3NyYy9maWx0
+ZXIvZmFjZWRldGVjdC9mYWNlZGV0ZWN0LmNwcC5vcGVuY3YzIC4vZnJlaTByLXBsdWdpbnMtMS40
+L3NyYy9maWx0ZXIvZmFjZWRldGVjdC9mYWNlZGV0ZWN0LmNwcAotLS0gLi9mcmVpMHItcGx1Z2lu
+cy0xLjQvc3JjL2ZpbHRlci9mYWNlZGV0ZWN0L2ZhY2VkZXRlY3QuY3BwLm9wZW5jdjMJMjAxMy0w
+Mi0yNCAxNDo0MzoyMi4wMDAwMDAwMDAgKzAxMDAKKysrIC4vZnJlaTByLXBsdWdpbnMtMS40L3Ny
+Yy9maWx0ZXIvZmFjZWRldGVjdC9mYWNlZGV0ZWN0LmNwcAkyMDE1LTA3LTA4IDEyOjQ4OjMyLjc1
+NDYxNTg4NSArMDIwMApAQCAtMjU5LDExICsyNTksMTEgQEAgcHJpdmF0ZToKICAgICB7CiAgICAg
+ICAgIGRvdWJsZSBzY2FsZSA9IHRoaXMtPnNjYWxlID09IDA/IDEuMCA6IHRoaXMtPnNjYWxlOwog
+ICAgICAgICBDdlNjYWxhciBjb2xvcnNbNV0gPSB7Ci0gICAgICAgICAgICB7e2N2Um91bmQoY29s
+b3JbMF0uciAqIDI1NSksIGN2Um91bmQoY29sb3JbMF0uZyAqIDI1NSksIGN2Um91bmQoY29sb3Jb
+MF0uYiAqIDI1NSksIGN2Um91bmQoYWxwaGEgKiAyNTUpfX0sCi0gICAgICAgICAgICB7e2N2Um91
+bmQoY29sb3JbMV0uciAqIDI1NSksIGN2Um91bmQoY29sb3JbMV0uZyAqIDI1NSksIGN2Um91bmQo
+Y29sb3JbMV0uYiAqIDI1NSksIGN2Um91bmQoYWxwaGEgKiAyNTUpfX0sCi0gICAgICAgICAgICB7
+e2N2Um91bmQoY29sb3JbMl0uciAqIDI1NSksIGN2Um91bmQoY29sb3JbMl0uZyAqIDI1NSksIGN2
+Um91bmQoY29sb3JbMl0uYiAqIDI1NSksIGN2Um91bmQoYWxwaGEgKiAyNTUpfX0sCi0gICAgICAg
+ICAgICB7e2N2Um91bmQoY29sb3JbM10uciAqIDI1NSksIGN2Um91bmQoY29sb3JbM10uZyAqIDI1
+NSksIGN2Um91bmQoY29sb3JbM10uYiAqIDI1NSksIGN2Um91bmQoYWxwaGEgKiAyNTUpfX0sCi0g
+ICAgICAgICAgICB7e2N2Um91bmQoY29sb3JbNF0uciAqIDI1NSksIGN2Um91bmQoY29sb3JbNF0u
+ZyAqIDI1NSksIGN2Um91bmQoY29sb3JbNF0uYiAqIDI1NSksIGN2Um91bmQoYWxwaGEgKiAyNTUp
+fX0sCisgICAgICAgICAgICBDdlNjYWxhcihjdlJvdW5kKGNvbG9yWzBdLnIgKiAyNTUpLCBjdlJv
+dW5kKGNvbG9yWzBdLmcgKiAyNTUpLCBjdlJvdW5kKGNvbG9yWzBdLmIgKiAyNTUpLCBjdlJvdW5k
+KGFscGhhICogMjU1KSksCisgICAgICAgICAgICBDdlNjYWxhcihjdlJvdW5kKGNvbG9yWzFdLnIg
+KiAyNTUpLCBjdlJvdW5kKGNvbG9yWzFdLmcgKiAyNTUpLCBjdlJvdW5kKGNvbG9yWzFdLmIgKiAy
+NTUpLCBjdlJvdW5kKGFscGhhICogMjU1KSksCisgICAgICAgICAgICBDdlNjYWxhcihjdlJvdW5k
+KGNvbG9yWzJdLnIgKiAyNTUpLCBjdlJvdW5kKGNvbG9yWzJdLmcgKiAyNTUpLCBjdlJvdW5kKGNv
+bG9yWzJdLmIgKiAyNTUpLCBjdlJvdW5kKGFscGhhICogMjU1KSksCisgICAgICAgICAgICBDdlNj
+YWxhcihjdlJvdW5kKGNvbG9yWzNdLnIgKiAyNTUpLCBjdlJvdW5kKGNvbG9yWzNdLmcgKiAyNTUp
+LCBjdlJvdW5kKGNvbG9yWzNdLmIgKiAyNTUpLCBjdlJvdW5kKGFscGhhICogMjU1KSksCisgICAg
+ICAgICAgICBDdlNjYWxhcihjdlJvdW5kKGNvbG9yWzRdLnIgKiAyNTUpLCBjdlJvdW5kKGNvbG9y
+WzRdLmcgKiAyNTUpLCBjdlJvdW5kKGNvbG9yWzRdLmIgKiAyNTUpLCBjdlJvdW5kKGFscGhhICog
+MjU1KSksCiAgICAgICAgIH07CiAgICAgICAgIAogICAgICAgICBmb3IgKGludCBpID0gMDsgaSA8
+IChvYmplY3RzID8gb2JqZWN0cy0+dG90YWwgOiAwKTsgaSsrKQpAQCAtMjg3LDE0ICsyODcsMTQg
+QEAgcHJpdmF0ZToKICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICBjYXNlIDE6CiAgICAg
+ICAgICAgICAgICAgewotICAgICAgICAgICAgICAgICAgICBDdkJveDJEIGJveCA9IHt7Y2VudGVy
+LngsIGNlbnRlci55fSwge3ItPndpZHRoIC8gc2NhbGUsIChyLT5oZWlnaHQgLyBzY2FsZSkgKiAx
+LjJ9LCA5MH07CisgICAgICAgICAgICAgICAgICAgIEN2Qm94MkQgYm94ID0gQ3ZCb3gyRChDdlBv
+aW50MkQzMmYoY2VudGVyLngsIGNlbnRlci55KSwgQ3ZTaXplMkQzMmYoci0+d2lkdGggLyBzY2Fs
+ZSwgKHItPmhlaWdodCAvIHNjYWxlKSAqIDEuMiksIDkwKTsKICAgICAgICAgICAgICAgICAgICAg
+Y3ZFbGxpcHNlQm94KGltYWdlLCBib3gsIGNvbG9yc1tpICUgNV0sIHRoaWNrbmVzcywgbGluZXR5
+cGUpOwogICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICB9CiAgICAg
+ICAgICAgICBjYXNlIDI6CiAgICAgICAgICAgICAgICAgewotICAgICAgICAgICAgICAgICAgICBD
+dlBvaW50IHB0MSA9IHtyLT54IC8gc2NhbGUsIHItPnkgLyBzY2FsZX07Ci0gICAgICAgICAgICAg
+ICAgICAgIEN2UG9pbnQgcHQyID0geyhyLT54ICsgci0+d2lkdGgpIC8gc2NhbGUsIChyLT55ICsg
+ci0+aGVpZ2h0KSAvIHNjYWxlfTsKKyAgICAgICAgICAgICAgICAgICAgQ3ZQb2ludCBwdDEgPSBD
+dlBvaW50KHItPnggLyBzY2FsZSwgci0+eSAvIHNjYWxlKTsKKyAgICAgICAgICAgICAgICAgICAg
+Q3ZQb2ludCBwdDIgPSBDdlBvaW50KChyLT54ICsgci0+d2lkdGgpIC8gc2NhbGUsIChyLT55ICsg
+ci0+aGVpZ2h0KSAvIHNjYWxlKTsKICAgICAgICAgICAgICAgICAgICAgY3ZSZWN0YW5nbGUoaW1h
+Z2UsIHB0MSwgcHQyLCBjb2xvcnNbaSAlIDVdLCB0aGlja25lc3MsIGxpbmV0eXBlKTsKICAgICAg
+ICAgICAgICAgICAgICAgYnJlYWs7CiAgICAgICAgICAgICAgICAgfQo=
+" | base64 -d > $TMP/opencv3.patch
+
+patch -p2 -i $TMP/opencv3.patch || exit 1
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+make install DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
