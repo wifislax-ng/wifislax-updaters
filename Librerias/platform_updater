@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160313
+SCRIPT_VERSION=20160402
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -32,12 +32,14 @@ echo
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
 
-  cmake . \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=1 \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-    -DCMAKE_INSTALL_LIBDIR_NOARCH=/usr/lib
+mkdir -p build
+cd build
+  cmake -G "Unix Makefiles" \
+    -DCMAKE_INSTALL_PREFIX:PATH="/usr" \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DBUILD_SHARED_LIBS:BOOL=ON \
+    -DCMAKE_BUILD_TYPE=Release ..
 
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"

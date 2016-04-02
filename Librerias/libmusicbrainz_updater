@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151117
+SCRIPT_VERSION=20160402
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -35,6 +35,7 @@ sleep 1
   cd build
   cmake .. \
     -DCMAKE_INSTALL_PREFIX=/usr \
+    -DLIB_SUFFIX=${LIBDIRSUFFIX} \
     -DCMAKE_BUILD_TYPE=Release
 
 echo 
