@@ -2,8 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160404
-CATEGORIA="Editores de audio"
+SCRIPT_VERSION=20160403
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,60 +16,46 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	PRGNAM=ardour
+	PRGNAM=sratom
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/Ardour/${PRGNAM}
-	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d t -f1|cut -d / -f5|sed "s/.$//g"`
-	RAMA=`echo $VERSION | cut -d . -f1`
-	WEB=git://git.ardour.org/ardour/ardour.git
+	WEB=http://download.drobilla.net
+	VERSION=0.4.6
+	EXTENSION=tar.bz2
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="aubio jack-audio-connection-kit liblo liblrdf vamp-plugin-sdk rubberband lv2 serd sord sratom lilv"
+DEPENDENCIAS="sord lv2" 
 f_dependencias
-}
-
-# Git clone
-F_download(){
-if [ -d $TMP/$PRGNAM ]; then
-rm -rf $TMP/$PRGNAM
-fi
-echo ""
-echo "$VERDE"Descargando sources de ${AMARILLO}$PRGNAM-$VERSION${BLANCO}..."$CIERRE"
-sleep 1
-cd $TMP
-git clone $WEB
-cd $TMP/$PRGNAM
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-python2 waf configure \
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./waf configure \
   --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
   --configdir=/etc \
-  --with-backends="jack,alsa" \
-  --libjack=weak \
-  --optimize \
-  --docs \
-  --cxx11 \
-  --no-phone-home
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION
 
-python2 waf build
 
-python2 waf install --destdir=$PKG
-  
-# Entrada a menu
-mkdir -p $PKG/usr/share/applications
-echo "[Desktop Entry]
-Name=Ardour $RAMA
-Comment=Multitrack hard disk recorder
-Exec=ardour$RAMA
-Icon=/usr/share/ardour$RAMA/icons/ardour_icon_256px.png
-Terminal=false
-Type=Application
-X-MultipleArgs=false
-Categories=Audio;AudioVideoEditing;AudioVideo;Video;" > $PKG/usr/share/applications/$PRGNAM.desktop
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+./waf
+
+./waf install \
+  --destdir=$PKG
 }
 
 ###################################
@@ -81,6 +66,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -91,14 +78,14 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Compronar dependencias
 F_dependencias
-# Git clone
-F_download
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
