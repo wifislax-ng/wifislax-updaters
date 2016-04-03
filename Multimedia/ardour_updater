@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160404
+SCRIPT_VERSION=20160405
 CATEGORIA="Editores de audio"
 
 ############################################################
@@ -48,6 +48,7 @@ cd $TMP/$PRGNAM
 F_compilar(){
 python2 waf configure \
   --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
   --configdir=/etc \
   --with-backends="jack,alsa" \
   --libjack=weak \
