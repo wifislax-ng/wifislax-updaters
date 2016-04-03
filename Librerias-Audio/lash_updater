@@ -1,0 +1,115 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160403
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=lash
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://download.savannah.gnu.org/releases/$PRGNAM
+	VERSION=0.6.0.594
+	EXTENSION=tar.bz2
+	SRCNAM=$PRGNAM-0.6.0~rc2
+	SOURCES=$SRCNAM.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="jack-audio-connection-kit"
+f_dependencias
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+
+echo "ZGlmZiAtTmF1ciBhL2RvY3MvTWFrZWZpbGUuaW4gYi9kb2NzL01ha2VmaWxlLmluCi0tLSBhL2Rv
+Y3MvTWFrZWZpbGUuaW4JMjAwOC0xMS0wOSAyMTo0NToyOC4wMDAwMDAwMDAgKzAwMDAKKysrIGIv
+ZG9jcy9NYWtlZmlsZS5pbgkyMDEyLTA1LTA4IDE1OjAzOjU0LjA4MzU3MzEwMCArMDEwMApAQCAt
+NTI3LDkgKzUyNyw5IEBACiBASEFWRV9URVhJMkhUTUxfVFJVRUAJICBta2RpciAtbGFzaC1tYW51
+YWwtaHRtbC1zcGxpdDsgXAogQEhBVkVfVEVYSTJIVE1MX1RSVUVACWZpCiBASEFWRV9URVhJMkhU
+TUxfVFJVRUAJY2QgbGFzaC1tYW51YWwtaHRtbC1vbmUtcGFnZSAmJiBcCi1ASEFWRV9URVhJMkhU
+TUxfVFJVRUAJICB0ZXhpMmh0bWwgLS1udW1iZXIgLi4vJCh0b3Bfc3JjZGlyKS9kb2NzL2xhc2gt
+bWFudWFsLnRleGkKK0BIQVZFX1RFWEkySFRNTF9UUlVFQAkgIHRleGkyaHRtbCAtLW51bWJlci1z
+ZWN0aW9ucyAuLi8kKHRvcF9zcmNkaXIpL2RvY3MvbGFzaC1tYW51YWwudGV4aQogQEhBVkVfVEVY
+STJIVE1MX1RSVUVACWNkIGxhc2gtbWFudWFsLWh0bWwtc3BsaXQgJiYgXAotQEhBVkVfVEVYSTJI
+VE1MX1RSVUVACSAgdGV4aTJodG1sIC0tbnVtYmVyIC0tc3BsaXQ9Y2hhcHRlciAuLi8kKHRvcF9z
+cmNkaXIpL2RvY3MvbGFzaC1tYW51YWwudGV4aQorQEhBVkVfVEVYSTJIVE1MX1RSVUVACSAgdGV4
+aTJodG1sIC0tbnVtYmVyLXNlY3Rpb25zIC0tc3BsaXQ9Y2hhcHRlciAuLi8kKHRvcF9zcmNkaXIp
+L2RvY3MvbGFzaC1tYW51YWwudGV4aQogQEhBVkVfVEVYSTJIVE1MX1RSVUVACXRvdWNoIGh0bWwt
+bWFudWFsLXN0YW1wCiAjIFRlbGwgdmVyc2lvbnMgWzMuNTksMy42Mykgb2YgR05VIG1ha2UgdG8g
+bm90IGV4cG9ydCBhbGwgdmFyaWFibGVzLgogIyBPdGhlcndpc2UgYSBzeXN0ZW0gbGltaXQgKGZv
+ciBTeXNWIGF0IGxlYXN0KSBtYXkgYmUgZXhjZWVkZWQuCg==
+" | base64 -d > $TMP/texlive.patch
+
+patch -p1 --verbose < $TMP/texlive.patch || exit 1
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --disable-static \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+make install DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Compronar dependencias
+F_dependencias
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

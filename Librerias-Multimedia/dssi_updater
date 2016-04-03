@@ -2,8 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160404
-CATEGORIA="Editores de audio"
+SCRIPT_VERSION=20160403
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,49 +16,55 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=https://sourceforge.net/projects/lmuse/files/
-	VERSION=`curl -s $WEB | grep /latest | head -1| rev | cut -f 3- -d . | cut -f 1 -d - | rev`
-	RAMA=`echo $VERSION | cut -c 1-3`
-	PRGNAM=muse
+	PRGNAM=dssi
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://downloads.sourceforge.net/$PRGNAM
+	VERSION=1.1.1
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://sourceforge.net/projects/lmuse/files/$PRGNAM-$RAMA/$SOURCES
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="jack-audio-connection-kit ladspa_sdk liblo lash dssi"
+DEPENDENCIAS="jack-audio-connection-kit ladspa_sdk liblo"
 f_dependencias
 }
-
-
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
-mkdir -p build
-cd build
 
-  cmake -DCMAKE_INSTALL_PREFIX=/usr \
-        -DCMAKE_BUILD_TYPE=release \
-        -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 \
-        -DPYTHON_LIBRARY=/usr/lib${LIBDIRSUFFIX}/libpython2.7.so \
-        -DCMAKE_ENABLE_VST_VESTIGE=1 \
-        -DCMAKE_ENABLE_VST_NATIVE=1 \
-        -DENABLE_PYTHON=1 \
-        -DENABLE_FLUID=1 \
-        -DENABLE_DSSI=1 \
-        -DENABLE_LASH=1 \
-        -DENABLE_OSC=1 ..
-    
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
+
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
+
 make || exit 1
 make install DESTDIR=$PKG || exit 1
+
+mkdir -p $PKG/etc/profile.d/
+cat << EOF > $PKG/etc/profile.d/dssi.csh
+#!/bin/csh
+setenv DSSI_PATH /usr/lib${LIBDIRSUFFIX}/dssi
+EOF
+cat << EOF > $PKG/etc/profile.d/dssi.sh
+#!/bin/sh
+export DSSI_PATH=/usr/lib${LIBDIRSUFFIX}/dssi
+EOF
+chmod 0755 $PKG/etc/profile.d/*
 }
 
 ###################################
@@ -70,6 +75,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -80,8 +87,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Compronar dependencias

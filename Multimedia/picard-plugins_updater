@@ -2,8 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160404
-CATEGORIA="Editores de audio"
+SCRIPT_VERSION=20160403
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,49 +16,34 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=https://sourceforge.net/projects/lmuse/files/
-	VERSION=`curl -s $WEB | grep /latest | head -1| rev | cut -f 3- -d . | cut -f 1 -d - | rev`
-	RAMA=`echo $VERSION | cut -c 1-3`
-	PRGNAM=muse
+	PRGNAM=picard-plugins
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	EXTENSION=tar.gz
+	WEB=https://s.mos6581.de/static/slackbuilds.org/sources
+	VERSION=20160206
+	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://sourceforge.net/projects/lmuse/files/$PRGNAM-$RAMA/$SOURCES
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="jack-audio-connection-kit ladspa_sdk liblo lash dssi"
+DEPENDENCIAS="picard"
 f_dependencias
 }
-
-
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
-echo "$VERDE"Configurando ..."$CIERRE"
-sleep 1
-mkdir -p build
-cd build
-
-  cmake -DCMAKE_INSTALL_PREFIX=/usr \
-        -DCMAKE_BUILD_TYPE=release \
-        -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 \
-        -DPYTHON_LIBRARY=/usr/lib${LIBDIRSUFFIX}/libpython2.7.so \
-        -DCMAKE_ENABLE_VST_VESTIGE=1 \
-        -DCMAKE_ENABLE_VST_NATIVE=1 \
-        -DENABLE_PYTHON=1 \
-        -DENABLE_FLUID=1 \
-        -DENABLE_DSSI=1 \
-        -DENABLE_LASH=1 \
-        -DENABLE_OSC=1 ..
-    
-echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-make || exit 1
-make install DESTDIR=$PKG || exit 1
+
+PYTHONDIR=$(python -c "import sys, os; print os.path.join('/usr/lib${LIBDIRSUFFIX}', 'python%s' % sys.version[:3], 'site-packages')")
+mkdir -p $PKG/$PYTHONDIR/picard/plugins
+(
+  cd plugins
+  find . -maxdepth 2 -name '__init__.py' -printf '%h\n'|xargs mv -t $PKG/$PYTHONDIR/picard/plugins/
+  cp -a */* $PKG/$PYTHONDIR/picard/plugins/
+)
 }
 
 ###################################
@@ -70,6 +54,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -80,8 +66,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Compronar dependencias
