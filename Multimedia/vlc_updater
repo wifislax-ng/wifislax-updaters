@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160402
+SCRIPT_VERSION=20160404
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -28,13 +28,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-if [ $VERSION = "2.2.2" ]; then
-FFMPEGVERSION=ffmpeg28
-PKG_CONFIG_PATH="/usr/lib${LIBDIRSUFFIX}/ffmpeg2.8/pkgconfig"
-else
-FFMPEGVERSION=ffmpeg
-fi
-DEPENDENCIAS="$FFMPEGVERSION libass libdc1394 libdvbpsi libmpeg2 libupnp portaudio twolame opus gsm opencv libkate faac libdca libmatroska libshout speex jack-audio-connection-kit zvbi faad2 libavc1394 libmodplug musepack-tools vcdimager dirac gnome-vfs live555 rtmpdump lua libdvdcss fluidsynth schroedinger chromaprint x264 x265 libbluray"
+DEPENDENCIAS="ffmpeg libass libdc1394 libdvbpsi libmpeg2 libupnp portaudio twolame opus gsm opencv libkate faac libdca libmatroska libshout speex jack-audio-connection-kit zvbi faad2 libavc1394 libmodplug musepack-tools vcdimager dirac gnome-vfs live555 rtmpdump lua libdvdcss fluidsynth schroedinger chromaprint x264 x265 libbluray"
 f_dependencias
 }
 
@@ -43,6 +37,39 @@ F_compilar(){
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
 sleep 1
+
+if [ $VERSION = "2.2.2" ]; then
+echo "LS0tIG1vZHVsZXMvdmlzdWFsaXphdGlvbi9wcm9qZWN0bS5jcHAub3JpZwkyMDEzLTA5LTEzIDAx
+OjE4OjM0LjAwMDAwMDAwMCArMTAwMAorKysgbW9kdWxlcy92aXN1YWxpemF0aW9uL3Byb2plY3Rt
+LmNwcAkyMDE0LTA5LTA0IDE0OjUzOjIxLjUxMDI0MjAzNiArMTAwMApAQCAtNzksOCArNzksOCBA
+QAogIyBkZWZpbmUgRk9OVF9QQVRIX01FTlUgIkM6XFxXSU5ET1dTXFxGb250c1xcYXJpYWwudHRm
+IgogIyBkZWZpbmUgUFJFU0VUX1BBVEggICAgTlVMTAogI2Vsc2UKLSMgZGVmaW5lIEZPTlRfUEFU
+SCAgICAgICIvdXNyL3NoYXJlL2ZvbnRzL3RydWV0eXBlL3R0Zi1kZWphdnUvRGVqYVZ1U2Fucy50
+dGYiCi0jIGRlZmluZSBGT05UX1BBVEhfTUVOVSAiL3Vzci9zaGFyZS9mb250cy90cnVldHlwZS90
+dGYtZGVqYXZ1L0RlamFWdVNhbnNNb25vLnR0ZiIKKyMgZGVmaW5lIEZPTlRfUEFUSCAgICAgICIv
+dXNyL3NoYXJlL2ZvbnRzL1RURi9EZWphVnVTYW5zLnR0ZiIKKyMgZGVmaW5lIEZPTlRfUEFUSF9N
+RU5VICIvdXNyL3NoYXJlL2ZvbnRzL1RURi9EZWphVnVTYW5zTW9uby50dGYiCiAjIGRlZmluZSBQ
+UkVTRVRfUEFUSCAgICAiL3Vzci9zaGFyZS9wcm9qZWN0TS9wcmVzZXRzIgogI2VuZGlmCiAK
+" | base64 -d > $TMP/patch-projectM-fontpath.diff
+
+patch -p0 < $TMP/patch-projectM-fontpath.diff
+
+echo "LS0tIGJpbi9NYWtlZmlsZS5hbS5vcmlnCTIwMTUtMDYtMDMgMTA6NDk6NTEuMjY2MjgyNzM2ICsx
+MDAwCisrKyBiaW4vTWFrZWZpbGUuYW0JMjAxNS0wNi0wMyAxMDo1MDoyMC40NjkyODIzMTAgKzEw
+MDAKQEAgLTcyLDYgKzcyLDEwIEBACiB2bGNfY2FjaGVfZ2VuX0RFUEVOREVOQ0lFUyA9IHZsY193
+aW4zMl9yYy4kKE9CSkVYVCkKIGVuZGlmCiAKK2lmIEhBVkVfR09CSkVDVAordmxjX2NhY2hlX2dl
+bl9MREFERCArPSAkKEdPQkpFQ1RfTElCUykKK2VuZGlmCisKICMKICMgUGx1Zy1pbnMgY2FjaGUK
+ICMKLS0tIGNvbmZpZ3VyZS5hYy5vcmlnCTIwMTUtMDYtMDMgMTA6NTM6MjIuMjk5Mjc5NjU3ICsx
+MDAwCisrKyBjb25maWd1cmUuYWMJMjAxNS0wNi0wMyAwOTo0NDozMy4zMzgzMzk4ODkgKzEwMDAK
+QEAgLTc2Miw2ICs3NjIsMTIgQEAKICAgICBdKQogXSkKIAorZG5sCitkbmwgQ2hlY2sgZm9yIGdv
+YmplY3QKK2RubAoraGF2ZV9nb2JqZWN0PSJubyIKK1BLR19DSEVDS19NT0RVTEVTKFtHT0JKRUNU
+XSwgW2dvYmplY3QtMi4wXSwgWyBoYXZlX2dvYmplY3Q9InllcyIgXSkKK0FNX0NPTkRJVElPTkFM
+KEhBVkVfR09CSkVDVCwgWyB0ZXN0ICIke2hhdmVfZ29iamVjdH0iID0gInllcyIgXSkKIAogZG5s
+CiBkbmwgQ2hlY2sgZm9yIHpsaWIuaCBhbmQgLWx6IGFsb25nIHdpdGggc3lzdGVtIC1sbWluaXpp
+cCBpZiBhdmFpbGFibGUK" | base64 -d > $TMP/patch_vlc_cache_gen.diff
+
+patch -p0 < $TMP/patch_vlc_cache_gen.diff
+fi
 
 autoreconf -f
 
@@ -65,7 +92,10 @@ echo
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
 make  || exit 1
-make install DESTDIR=$PKG
+make install DESTDIR=$PKG || exit 1
+
+mkdir -p $PKG/$(cd /usr/share/vim/vim*/syntax ; pwd)
+cp extras/analyser/vlc.vim $PKG/$(cd /usr/share/vim/vim*/syntax ; pwd)/
 }
 
 ###################################
