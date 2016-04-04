@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160404
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,18 +16,25 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
+        if [ $ARCH = i586 ]; then
+        ARCH=x86
+        DOWNARCH=x86
+        else
+        ARCH=x86-64
+        DOWNARCH=x86_64
+        fi
 	WEB=https://es.libreoffice.org/descarga/libreoffice-nuevo/
-	VERSION=`curl -s $WEB | grep LibreOffice_ | head -1 | cut -d "/" -f 9 | cut -d "_" -f2`
-	DESCARGA1=http://download.documentfoundation.org/libreoffice/stable/${VERSION}/rpm/x86/LibreOffice_${VERSION}_Linux_x86_rpm.tar.gz
-	DESCARGA2=http://download.documentfoundation.org/libreoffice/stable/${VERSION}/rpm/x86/LibreOffice_${VERSION}_Linux_x86_rpm_langpack_es.tar.gz
-	DESCARGA3=http://download.documentfoundation.org/libreoffice/stable/${VERSION}/rpm/x86/LibreOffice_${VERSION}_Linux_x86_rpm_helppack_es.tar.gz
+	VERSION=`curl -s $WEB|grep LibreOffice_|head -1|cut -d "/" -f 9|cut -d "_" -f2`
+	DESCARGA1=http://download.documentfoundation.org/libreoffice/stable/$VERSION/rpm/$DOWNARCH/LibreOffice_${VERSION}_Linux_${ARCH}_rpm.tar.gz
+	DESCARGA2=http://download.documentfoundation.org/libreoffice/stable/$VERSION/rpm/$DOWNARCH/LibreOffice_${VERSION}_Linux_${ARCH}_rpm_langpack_es.tar.gz
+	DESCARGA3=http://download.documentfoundation.org/libreoffice/stable/$VERSION/rpm/$DOWNARCH/LibreOffice_${VERSION}_Linux_${ARCH}_rpm_helppack_es.tar.gz
 	PRGNAM=LibreOffice
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	PRGNAM2=libreoffice-langpack_es
 	PRGNAM3=libreoffice-helppack_es
 	WJRE=${WJRE:-no}
 	DISABLE_JAVA=${DISABLE_JAVA:-NO}
-	SRCSHORT=$(echo $VERSION | cut -f1-2 -d.)
+	SRCSHORT=$(echo $VERSION|cut -f1-2 -d.)
 }
 
 # Si el paquete no existe se descargara de internet
@@ -65,7 +72,7 @@ F_compilar(){
 	rm -rf $TMP/${PRGNAM}_${VERSION}_Linux_${ARCH}_rpm/RPMS/{userland,jre-*-linux-*.rpm}
 
 # Convertimos los rpm
-	cd $TMP/${PRGNAM}_${VERSION}*_Linux_x86_rpm/RPMS/
+	cd $TMP/${PRGNAM}_${VERSION}*_Linux_${ARCH}_rpm/RPMS/
 	rm -f *onlineupdate*.rpm
 	for FILE in *.rpm ; do rpm2cpio < $FILE | cpio -imdv ; done
 	rm -rf desktop-integration *.rpm
@@ -134,6 +141,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -144,8 +153,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura x86
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
