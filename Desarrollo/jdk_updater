@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160409
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,35 @@ f_variables(){
 F_variables() {
 	PRGNAM=jdk
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=$(curl -s http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html | grep -E i586.tar.gz | grep linux | cut -d ":" -f4- | cut -d "\"" -f2|head -1)
-	SOURCES=${WEB##*/}
-	VERSION=$(echo $SOURCES | cut -d "-" -f 2)
+	WEB=http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+	VERSION=`curl -s $WEB|grep -E tar.gz|grep linux|cut -d ":" -f4-|cut -d "\"" -f2|tail -1|cut -d- -f2|cut -d / -f4`
 	DVER=1.8.0_$(printf $VERSION | cut -du -f2)
-	DOWNLOAD=$WEB
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="aria2"
+f_dependencias
+}
+
+# Si el paquete no existe se descargara de internet
+F_download(){
+        if [ $ARCH = x86_64 ]; then
+        ARCH=x64
+        LIB_ARCH=amd64
+	else
+	LIB_ARCH=i386
+        fi
+        DESCARGA=$(curl -s $WEB|grep -E $ARCH.tar.gz|grep linux|cut -d ":" -f4-|cut -d "\"" -f2|tail -1)
+	ARCHIVO=${DESCARGA##*/}
+
+	echo ".oracle.com	TRUE	/	FALSE	1906724535	oraclelicense	accept-securebackup-cookie">cookie
+	if [ ! -f $ARCHIVO ]; then
+		echo ""
+		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
+		sleep 1
+		aria2c -x 3 --load-cookies=cookie $DESCARGA
+	fi
 }
 
 # Empezamos a crear el paquete
@@ -30,11 +54,8 @@ F_crearpaquete(){
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
 	sleep 1
-	LIB_ARCH=i386
-	LIBDIRSUFFIX=""
-	SRC_ARCH="i586"
 	cd $TMP
-	tar xvf $PRGNAM-$VERSION-linux-$SRC_ARCH.tar.gz
+	tar xvf $PRGNAM-$VERSION-linux-$ARCH.tar.gz
 	chown -R root.root $PKG
 	find $PKG \
 	\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
@@ -44,12 +65,12 @@ F_crearpaquete(){
 
 mkdir -p $PKG/etc/profile.d
 echo "#!/bin/csh
-setenv JAVA_HOME /usr/lib/java
+setenv JAVA_HOME /usr/lib${LIBDIRSUFFIX}/java
 setenv MANPATH \${MANPATH}:\${JAVA_HOME}/man
 setenv PATH \${PATH}:\${JAVA_HOME}/bin:\${JAVA_HOME}/jre/bin" >$PKG/etc/profile.d/jdk.csh
 
 echo "#!/bin/sh
-export JAVA_HOME=/usr/lib/java
+export JAVA_HOME=/usr/lib${LIBDIRSUFFIX}/java
 export MANPATH=\"\${MANPATH}:\${JAVA_HOME}/man\"
 export PATH=\"\${PATH}:\${JAVA_HOME}/bin:\${JAVA_HOME}/jre/bin\"" >$PKG/etc/profile.d/jdk.sh
 	chmod +x $PKG/etc/profile.d/jdk.sh
@@ -100,6 +121,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -110,12 +133,12 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
-f_download
+F_download
 # Empezamos a crear el paquete
 F_crearpaquete
 #Hacemos strip sobre el paquete
