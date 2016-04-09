@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160219
+SCRIPT_VERSION=20160409
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,19 +16,22 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
+	if [ $ARCH = i586 ]; then
+	ARCH=i386
+	fi
 	PRGNAM=fpc
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://sourceforge.net/projects/freepascal/files/Linux/
 	#VERSION=$(curl -s $WEB/ | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
 	VERSION=2.6.4
-	DOWNLOAD=http://downloads.sourceforge.net/freepascal/${PRGNAM}-$VERSION.i386-linux.tar
+	DOWNLOAD=http://downloads.sourceforge.net/freepascal/${PRGNAM}-$VERSION.$ARCH-linux.tar
 	DOWNLOAD2=https://downloads.sourceforge.net/freepascal/${PRGNAM}build-$VERSION.tar.gz
 	DOWNLOAD3=https://downloads.sourceforge.net/project/freepascal/Source/$VERSION/$PRGNAM-$VERSION.source.tar.gz
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f ${PRGNAM}-$VERSION.i386-linux.tar ]; then
+	if [ ! -f ${PRGNAM}-$VERSION.$ARCH-linux.tar ]; then
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 2
@@ -56,7 +59,7 @@ echo "$VERDE"Descomprimiendo ..."$CIERRE"
 rm -rf $PRGNAM-$VERSION ${PRGNAM}build-$VERSION
 mkdir $PRGNAM-$VERSION ${PRGNAM}build-$VERSION
 cd $TMP/$PRGNAM-$VERSION
-tar xvf $TMP/$PRGNAM-$VERSION.i386-linux.tar --strip-components=1
+tar xvf $TMP/$PRGNAM-$VERSION.$ARCH-linux.tar --strip-components=1
 cd $TMP/${PRGNAM}build-$VERSION
 tar xvf $TMP/${PRGNAM}build-$VERSION.tar.gz
 
@@ -64,11 +67,11 @@ tar xvf $TMP/${PRGNAM}build-$VERSION.tar.gz
 (
   mkdir -p $TMP/$PRGNAM-$VERSION/binary
   cd $TMP/$PRGNAM-$VERSION/binary
-  tar xvf $TMP/$PRGNAM-$VERSION/binary.i386-linux.tar
+  tar xvf $TMP/$PRGNAM-$VERSION/binary.$ARCH-linux.tar
 
   cd  $TMP/$PRGNAM-$VERSION
-  tar xvf $TMP/$PRGNAM-$VERSION/binary/base.i386-linux.tar.gz
-  tar xvf $TMP/$PRGNAM-$VERSION/binary/utils.i386-linux.tar.gz
+  tar xvf $TMP/$PRGNAM-$VERSION/binary/base.$ARCH-linux.tar.gz
+  tar xvf $TMP/$PRGNAM-$VERSION/binary/utils.$ARCH-linux.tar.gz
 
   cd $TMP/$PRGNAM-$VERSION/bin
   if [ "$ARCH" = "x86_64" ]; then
@@ -231,6 +234,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -241,8 +246,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura i386
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
@@ -253,5 +256,3 @@ F_compilar
 f_strip
 #Creamos xzm , instalamos y salimos
 f_tareasFinales
-
-

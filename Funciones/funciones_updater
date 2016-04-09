@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20160409
+FUNCIONES_VERSION=20160410
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -197,8 +197,13 @@ f_directorioTemporal() {
    PKG=$TMP/package-$PRGNAM
    OUTPUT=${OUTPUT:-/tmp}
    rm -rf $PKG
-   mkdir -p $TMP $PKG $OUTPUT
+   mkdir -p $TMP
    cd $TMP
+   DIRECTORIOS=`ls -d */|sed 's/.$//g'`
+   for D in $DIRECTORIOS ;do
+   rm -rf ./$D
+   done
+   mkdir -p $PKG $OUTPUT
 }
 
 # Hace strip al paquete
