@@ -2,7 +2,7 @@
 
 # Script by vk496 for www.seguridadwireless.net 
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160410
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,7 +27,13 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="jre"
+JAVAVERSION=`echo "$(ls /var/log/packages|rev|cut -d '-' -f4-|rev|grep -x jdk)"`
+if [ -z $JAVAVERSION ]; then
+JAVAVERSION=jre
+else
+JAVAVERSION=jdk
+fi
+DEPENDENCIAS="$JAVAVERSION"
 f_dependencias
 }
 
@@ -221,7 +227,7 @@ f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
 #Asignamos o detectamos arquitectura
-f_arquitectura i386
+f_arquitectura noarch
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Compronar dependencias

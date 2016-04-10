@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151106
+SCRIPT_VERSION=20160410
 CATEGORIA="Reproductores streaming"
 
 ############################################################
@@ -28,8 +28,14 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-  DEPENDENCIAS="ffmpeg jre"
-  f_dependencias
+JAVAVERSION=`echo "$(ls /var/log/packages|rev|cut -d '-' -f4-|rev|grep -x jdk)"`
+if [ -z $JAVAVERSION ]; then
+JAVAVERSION=jre
+else
+JAVAVERSION=jdk
+fi
+DEPENDENCIAS="ffmpeg $JAVAVERSION"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
