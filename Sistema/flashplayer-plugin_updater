@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160410
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,21 +16,17 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://www.adobe.com/software/flash/about/
-	VERSION=`curl -s $WEB | grep -i "<td>11.2.*.*</td>" | head -1 | sed "s/<td>//" | cut -d "<" -f-1 | sed "s/ //g"`
+	if [ $ARCH = i586 ]; then
+	ARCH=i386
+	fi
 	PRGNAM=flashplayer-plugin
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DOWNLOAD=https://fpdownload.macromedia.com/get/flashplayer/pdc/$VERSION/install_flash_player_11_linux.i386.tar.gz
-}
-
-# Si el paquete no existe se descargara de internet
-F_download(){
-	if [ ! -f install_flash_player_11_linux.i386.tar.gz ]; then
-		echo ""
-		echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
-		sleep 1
-		aria2c -x 3 $DOWNLOAD
-	fi
+	WEB=http://www.adobe.com/software/flash/about/
+	VERSION=`curl -s $WEB|grep -i "<td>11.2.*.*</td>"|head -1|sed "s/<td>//"|cut -d "<" -f-1|sed "s/ //g"`
+	EXTENSION=tar.gz
+	SRCNAM=install_flash_player_11_linux
+	SOURCES=$SRCNAM.$ARCH.$EXTENSION
+	DOWNLOAD=https://fpdownload.macromedia.com/get/flashplayer/pdc/$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado
@@ -38,10 +34,10 @@ F_descomprimir(){
 	echo ""
 	echo "$VERDE"Descomprimiendo ..."$CIERRE"
 	sleep 1
-	tar xvf install_flash_player_11_linux.i386.tar.gz -C $PKG
+	tar xvf $SOURCES -C $PKG
 
-	mkdir -p $PKG/usr/lib/mozilla/plugins
-	mv $PKG/libflashplayer.so $PKG/usr/lib/mozilla/plugins
+	mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/mozilla/plugins
+	mv $PKG/libflashplayer.so $PKG/usr/lib${LIBDIRSUFFIX}/mozilla/plugins
 
 	cd $PKG
 	rm -rf readme.txt
@@ -50,8 +46,8 @@ F_descomprimir(){
 	find $PKG -type f -name "*.so" -exec chmod 0755 {} \;
 }
 
-# Creamos desktop
-F_desktop(){
+# Creamos paquete
+F_compilar(){
 rm -rf $PKG/usr/share/applications/*.desktop
 echo "[Desktop Entry]
 Name=Adobe Flash Player
@@ -83,6 +79,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -93,16 +91,14 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
-F_download
-#Descomprimir fichero descargado
+f_download
+# Descomprimimos el fichero descargado
 F_descomprimir
-#Creamos la entrada al menu
-F_desktop
+#Descomprimir fichero descargado y compilamos
+F_compilar
 #Hacemos strip sobre el paquete
 f_strip
 #Creamos xzm , instalamos y salimos
