@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20160410
+FUNCIONES_VERSION=20160411
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -199,9 +199,8 @@ f_directorioTemporal() {
    rm -rf $PKG
    mkdir -p $TMP
    cd $TMP
-   DIRECTORIOS=`ls -d */|sed 's/.$//g'`
-   for D in $DIRECTORIOS ;do
-   rm -rf ./$D
+   find $TMP -name "*" -type d | while read line ; do
+   rm -rf $line
    done
    mkdir -p $PKG $OUTPUT
 }
