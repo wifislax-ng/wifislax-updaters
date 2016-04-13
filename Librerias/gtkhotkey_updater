@@ -1,0 +1,122 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160413
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=gtkhotkey
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://launchpad.net/gtkhotkey
+	VERSION=0.2.1
+	RAMA=`echo $VERSION|cut -d . -f-2`
+	EXTENSION=tar.gz
+	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/$RAMA/$VERSION/+download/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Configurando ..."$CIERRE"
+sleep 1
+echo "RnJvbSA2ZmRhZDAyZThiY2Y2ODc2YzhhNWFhMzUxMjk2MDMxMWU4ZWE5ZmI3IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBOb2J1aGlybyBJd2FtYXRzdSA8aXdhbWF0c3VAZGViaWFuLm9y
+Zz4KRGF0ZTogVHVlLCAxOSBKYW4gMjAxMCAxNDoxNDozOCArMDkwMApTdWJqZWN0OiBbUEFUQ0gg
+MS8yXSBEaXNhYmxlIGRlYnVnIG1vZGUuCgpTaWduZWQtb2ZmLWJ5OiBOb2J1aGlybyBJd2FtYXRz
+dSA8aXdhbWF0c3VAZGViaWFuLm9yZz4KLS0tCiBzcmMveDExL3RvbWJveWtleWJpbmRlci5jIHwg
+ICAgMiArLQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0p
+CgpkaWZmIC0tZ2l0IGEvc3JjL3gxMS90b21ib3lrZXliaW5kZXIuYyBiL3NyYy94MTEvdG9tYm95
+a2V5YmluZGVyLmMKaW5kZXggZmU1NjlhNy4uMGVkZDQ3NiAxMDA2NDQKLS0tIGEvc3JjL3gxMS90
+b21ib3lrZXliaW5kZXIuYworKysgYi9zcmMveDExL3RvbWJveWtleWJpbmRlci5jCkBAIC0xMiw3
+ICsxMiw3IEBACiAjaW5jbHVkZSAidG9tYm95a2V5YmluZGVyLmgiCiAKIC8qIFVuY29tbWVudCB0
+aGUgbmV4dCBsaW5lIHRvIHByaW50IGEgZGVidWcgdHJhY2UuICovCi0jZGVmaW5lIERFQlVHIDEK
+Ky8qICNkZWZpbmUgREVCVUcgMSAqLwogCiAjaWZkZWYgREVCVUcKICMgIGRlZmluZSBUUkFDRSh4
+KSB4Ci0tIAoxLjYuNgoK" | base64 -d > $TMP/0001-Disable-debug-mode.patch
+patch -p1 < $TMP/0001-Disable-debug-mode.patch || exit 1
+
+echo "RGVzY3JpcHRpb246IEZpeCBidWlsZCBmYWlsdXJlIHdpdGggZ2xpYiAyLjMyCiB3aGVyZSBpbmNs
+dWRpbmcgaW52aWR1YWwgZ2xpYiBoZWFkZXJzIGlzIG5vIGxvbmdlciBhbGxvd2VkLgpBdXRob3I6
+IE1pY2hhZWwgQmllYmwgPGJpZWJsQGRlYmlhbi5vcmc+CkJ1Zy1EZWJpYW46IGh0dHA6Ly9idWdz
+LmRlYmlhbi5vcmcvY2dpLWJpbi9idWdyZXBvcnQuY2dpP2J1Zz02NjU1NDgKSW5kZXg6IGd0a2hv
+dGtleS0wLjIuMS9zcmMvZ3RrLWhvdGtleS1lcnJvci5oCj09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGd0a2hvdGtl
+eS0wLjIuMS5vcmlnL3NyYy9ndGstaG90a2V5LWVycm9yLmgJMjAwOS0wOS0wMyAyMjo1Mjo0OS4w
+MDAwMDAwMDAgKzAyMDAKKysrIGd0a2hvdGtleS0wLjIuMS9zcmMvZ3RrLWhvdGtleS1lcnJvci5o
+CTIwMTItMDMtMjUgMTk6MDc6MDUuODIyMjY4MTcxICswMjAwCkBAIC0yMyw3ICsyMyw3IEBACiAj
+aWZuZGVmIF9fR1RLX0hPVEtFWV9FUlJPUl9IX18KICNkZWZpbmUgX19HVEtfSE9US0VZX0VSUk9S
+X0hfXwogCi0jaW5jbHVkZSA8Z2xpYi9ncXVhcmsuaD4KKyNpbmNsdWRlIDxnbGliLmg+CiAKIEdf
+QkVHSU5fREVDTFMKIApJbmRleDogZ3RraG90a2V5LTAuMi4xL3NyYy94MTEvdG9tYm95a2V5Ymlu
+ZGVyLmgKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PQotLS0gZ3RraG90a2V5LTAuMi4xLm9yaWcvc3JjL3gxMS90b21ib3lr
+ZXliaW5kZXIuaAkyMDA5LTA5LTAzIDIyOjUyOjQ5LjAwMDAwMDAwMCArMDIwMAorKysgZ3RraG90
+a2V5LTAuMi4xL3NyYy94MTEvdG9tYm95a2V5YmluZGVyLmgJMjAxMi0wMy0yNSAxOTowNzowNS45
+MTQyNjgxNjggKzAyMDAKQEAgLTIsNyArMiw3IEBACiAjaWZuZGVmIF9fVE9NQk9ZX0tFWV9CSU5E
+RVJfSF9fCiAjZGVmaW5lIF9fVE9NQk9ZX0tFWV9CSU5ERVJfSF9fCiAKLSNpbmNsdWRlIDxnbGli
+L2d0eXBlcy5oPgorI2luY2x1ZGUgPGdsaWIuaD4KIAogR19CRUdJTl9ERUNMUwogCg==
+" | base64 -d > $TMP/glib-single-include.patch 
+patch -p1 < $TMP/glib-single-include.patch || exit 1
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --enable-static=no \
+  --build=$ARCH-slackware-linux
+
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+make || exit 1
+make install DESTDIR=$PKG || exit 1
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales

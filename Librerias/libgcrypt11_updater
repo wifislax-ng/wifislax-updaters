@@ -17,53 +17,22 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	if [ $ARCH = i586 ]; then
-	ARCH=i386
+	ARCH=i486
 	fi
-	PRGNAM=maxthon
+	PRGNAM=libgcrypt11
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://es.maxthon.com/
-	VERSION=`curl -s $WEB|grep $ARCH.tgz|cut -d "/" -f6|cut -d- -f4|sed "s/ //g"`
-	EXTENSION=tgz
-	SOURCES=maxthon-browser-stable-$VERSION-$ARCH.$EXTENSION
-	DOWNLOAD=http://dl.maxthon.com/linux/tars/$SOURCES
-}
-
-F_dependencias(){
-if [ ! -f /lib${LIBDIRSUFFIX}/libgcrypt.so.11 ]; then
-GCRYPT=libgcrypt11
-else
-GCRYPT=""
-fi
-DEPENDENCIAS="gtkhotkey $GCRYPT"
-f_dependencias
+	WEB=http://slackware.cs.utah.edu/pub/slackware/slackware${LIBDIRSUFFIX}-14.1/slackware${LIBDIRSUFFIX}/n
+	VERSION=1.5.3
+	EXTENSION=txz
+	SOURCES=libgcrypt-$VERSION-$ARCH-1.$EXTENSION
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-mkdir -p $PKG/{usr/bin,opt/$PRGNAM,usr/share/pixmaps,usr/share/applications}
-# Copiamos recursivamente y creamos lanzador desktop
-cp -rf ./* $PKG/opt/$PRGNAM
-ln -s /opt/$PRGNAM/maxthon-browser $PKG/usr/bin/maxthon
-cp -r $PKG/opt/$PRGNAM/product_logo_48.png $PKG/usr/share/pixmaps/$PRGNAM.png
-chmod 4755 $PKG/opt/maxthon/maxthon_sandbox
-echo "[Desktop Entry]
-Categories=Network;
-Name=Maxthon
-Icon=$PRGNAM
-Exec=maxthon %U --user-data-dir=/.config/$PRGNAM
-StartupNotify=true
-Terminal=false
-Type=Application" > $PKG/usr/share/applications/$PRGNAM.desktop
-
-# Eliminando locales extras
-# Funcion extraida del script cleandir escrito en su mayoria por geminis_demon
-RMDIR='rmdir -p --ignore-fail-on-non-empty'
-	if [ -d $PKG/opt/maxthon/locales ]; then
-	cd $PKG/opt/maxthon/locales
-	IDIOMAS=$(ls|cut -d '/' -f1|grep -v -x 'es.pak'|grep -v -x 'en-US.pak')
-	rm -Rf $IDIOMAS
-	$RMDIR $PKG/opt/maxthon/locales
-	fi
+tar xvf $SOURCES
+mkdir -p $PKG/lib${LIBDIRSUFFIX}
+cp -rf $TMP/lib${LIBDIRSUFFIX}/libgcrypt.so.11.8.2 $PKG/lib${LIBDIRSUFFIX}/libgcrypt.so.11
 }
 
 ###################################
@@ -86,14 +55,10 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Comprobamos version instalada del script
+#Comprobamos version instalada del paquete
 f_versionInstalada
-# Comprobar dependencias
-F_dependencias
 #Si no existe el fichero se descargara
 f_download
-#Preparamos entorno
-f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete
