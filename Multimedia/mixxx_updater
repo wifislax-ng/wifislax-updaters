@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160416
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -25,6 +25,12 @@ F_variables() {
 	EXTENSION=tar.gz
 	SOURCES=${PRGNAM}-${VERSION}-src.$EXTENSION
 	DOWNLOAD=http://downloads.mixxx.org/${PRGNAM}-${VERSION}/$SOURCES
+}
+
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="libshout portmidi scons protobuf portaudio" 
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -83,6 +89,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno

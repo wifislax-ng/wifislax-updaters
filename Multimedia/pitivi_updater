@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160415
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -18,29 +18,27 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	PRGNAM=pitivi
-	ARCH=x86
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://pitivi.ecchi.ca/bundles/releases/
-	EXTENSION=$ARCH.tar
-	SOURCES=`curl -s $WEB | grep $ARCH.tar | head -1 | cut -d '"' -f2`
-	VERSION=`echo $SOURCES | sed 's/pitivi-//g' | cut -d - -f-2 | sed 's/-/_/g'`
-	SUBVERSION=`echo $SOURCES | sed 's/pitivi-//g' | cut -d - -f-1`
-	DOWNLOAD=`echo "$WEB$SOURCES"`
-	SRCNAM=${PRGNAM}-$SUBVERSION-$ARCH
+	if [ ! $ARCH = x86_64 ]; then
+	ARCH=x86
+	fi
+	WEB=http://pitivi.ecchi.ca/bundles/releases
+	EXTENSION=tar.xz
+	SOURCES=`curl -s $WEB/|grep $ARCH.$EXTENSION|head -1|cut -d '"' -f2`
+	VERSION=`curl -s $WEB/|grep $ARCH.$EXTENSION|head -1|cut -d '"' -f2|sed 's/pitivi-//g'|cut -d - -f-2|sed 's/-/_/g'`
+	SUBVERSION=`curl -s $WEB/|grep $ARCH.$EXTENSION|head -1|cut -d '"' -f2|sed 's/pitivi-//g'|cut -d - -f-1`
+	DOWNLOAD=$WEB/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
+rm -rf *.md5sum
+tar xvf $TMP/$SOURCES
 mkdir -p $PKG/opt/$PRGNAM/
 mkdir -p $PKG/usr/bin/
-rm -rf *.md5sum
 mv -f ${PRGNAM}-$SUBVERSION-$ARCH $PKG/opt/$PRGNAM/${PRGNAM}
 ln -sf ../../opt/${PRGNAM}/${PRGNAM} $PKG/usr/bin/${PRGNAM}
 rm -rf $SOURCES
-}
-
-F_desktop(){
-# Icono
 mkdir -p $PKG/usr/share/pixmaps/
 echo "
 iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAPt0lEQVRogc1Ze3Bc1Xn/fd/dx5VW
@@ -136,6 +134,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -150,11 +150,7 @@ f_comprobarUpdates
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
-#Preparamos entorno
-f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
-#Creamos la entrada al menu
-F_desktop
 #Creamos xzm , instalamos y salimos
 f_tareasFinales
