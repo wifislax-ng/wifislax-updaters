@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160415
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,12 +16,20 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WEB=http://hashcat.net/oclhashcat/
-	VERSION=`curl -s $WEB | grep .7z | head -1 | cut -d "v" -f2 | cut -d "<" -f 1 | sed "s/ //g"`
+	# El suffix invertido para eliminar lo inverso que no necesitamos
+	if [ $ARCH = x86_64 ]; then
+	SUFFIX="32"
+	LINK="64"
+	else
+	SUFFIX="64"
+	LINK="32"
+	fi
 	PRGNAM=hashcat
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DRIVER_ATI=`curl -s $WEB|grep "AMD users"|head -1|sed 's/<li>AMD users require Catalyst //'|cut -d "<" -f-1`
-	DRIVER_NVIDIA=`curl -s $WEB |grep "NV users"|head -1|sed 's/<li>NV users require ForceWare //'|cut -d "<" -f-1`
+	WEB=http://hashcat.net/oclhashcat/
+	VERSION=`curl -s $WEB|grep .7z|head -1|cut -d "v" -f2|cut -d "<" -f 1|sed "s/ //g"`
+	DRIVER_ATI=`curl -s $WEB|grep "AMD users"|head -1|sed 's/<li>AMD users require Catalyst //'|cut -d "<" -f-1|sed 's/ //g'|sed 's/orlater/ or later/g'`
+	DRIVER_NVIDIA=`curl -s $WEB |grep "NV users"|head -1|sed 's/<li>NV users require ForceWare //'|cut -d "<" -f-1|sed 's/ //g'|sed 's/orlater/ or later/g'`
 	DESCARGA_NVIDIA=http://hashcat.net/files/cudaHashcat-$VERSION.7z
 	DESCARGA_AMD=http://hashcat.net/files/oclHashcat-$VERSION.7z
 }
@@ -41,9 +49,9 @@ echo "ATENCION:"$CYAN" esta aplicacion requiere para su correcto funcionamiento
 $ROJO      
           ¡¡¡   NO SOPORTA GRAFICAS INTEL   !!!"
 echo $VERDE
-echo "Driver NVIDIA requerido: NVIDIA-Linux-x86-$DRIVER_NVIDIA"
+echo "Driver NVIDIA requerido: NVIDIA-Linux-${DRIVER_NVIDIA}"
 echo $ROJO
-echo "Driver AMD/ATI requerido: linux-amd-catalyst-$DRIVER_ATI"
+echo "Driver AMD/ATI requerido: linux-amd-catalyst-${DRIVER_ATI}"
 echo $AMARILLO
 echo "Pulse ENTER tras leer la informacion."
 echo $CIERRE
@@ -74,10 +82,9 @@ sleep 1
 7z -y x cudaHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
 echo ""
 echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
-rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/kernels/4318/*.64.ptx
+rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/kernels/4318/*.$SUFFIX.cubin
 rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*.exe
 rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*.cmd
-rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*64.bin
 cp -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/* $PKG/opt/$PRGNAM
 rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION
 
@@ -89,19 +96,17 @@ echo ""
 echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
 rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*.exe
 rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*.cmd
-rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*64.bin
 cp -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/* $PKG/opt/$PRGNAM
 rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION
 
 # Relinkeamos los ejecutables para engañar a la gui
 cd $PKG/opt/$PRGNAM
-ln -fs /opt/$PRGNAM/oclHashcat32.bin $PKG/opt/$PRGNAM/oclHashcat-plus32.bin
-ln -fs /opt/$PRGNAM/cudaHashcat32.bin $PKG/opt/$PRGNAM/cudaHashcat-plus32.bin
-
+rm -rf $PKG/opt/$PRGNAM/*$SUFFIX.bin
+ln -fs /opt/$PRGNAM/oclHashcat$LINK.bin $PKG/opt/$PRGNAM/oclHashcat-plus$LINK.bin
+ln -fs /opt/$PRGNAM/cudaHashcat$LINK.bin $PKG/opt/$PRGNAM/cudaHashcat-plus$LINK.bin
 
 # Añadimos el fichero eula.aceppted
 echo "ZQAAAA==" | base64 -d > $PKG/opt/$PRGNAM/eula.accepted
-
 }
 
 ###################################
@@ -112,6 +117,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura 
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -126,8 +133,6 @@ f_presentacion
 f_comprobarUpdates
 #Compronar dependencias
 F_dependencias
-#Asignamos o detectamos arquitectura
-f_arquitectura 
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
