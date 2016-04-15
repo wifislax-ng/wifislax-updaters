@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160415
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -22,7 +22,7 @@ F_variables() {
 	#WEB=https://www.clementine-player.org/es/downloads
 	#VERSION=`curl -s $WEB | grep Clementine | grep .tar.gz | cut -d "/" -f 7 | cut -d "." -f-3`
 	WEB=http://ponce.cc/slackware/sources/repo/
-	VERSION=20150512_70cc291
+	VERSION=20151123_136c980
 	EXTENSION=tar.xz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=http://ponce.cc/slackware/sources/repo/$SOURCES
