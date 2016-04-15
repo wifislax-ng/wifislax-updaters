@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160415
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,27 +18,27 @@ f_variables(){
 F_variables() {
 	PRGNAM=kde-games
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://slackware.mirrors.tds.net/pub/slackware/slackware-current/
-	LAGRANWEB=http://slackware.mirrors.tds.net/pub/slackware/slackware-current
-	ELGRANARCHIVO=$(curl -s $LAGRANWEB/slackware/PACKAGES.TXT)
-	ELPACK=$(echo "$ELGRANARCHIVO" | grep -i game -B5 | grep NAME | awk '{print $3}' | grep -vi kanagram | grep -vi khangman | grep -vi xgames | grep -vi bsd-games | grep -vi kig)
-	LOSEXTRAS=$(echo "$ELGRANARCHIVO" | grep NAME | grep -E "(libkmahjongg|kmines)" | awk '{print $3}')
+	WEB=http://slackware.mirrors.tds.net/pub/slackware/slackware${LIBDIRSUFFIX}-current/
+	LAGRANWEB=http://slackware.mirrors.tds.net/pub/slackware/slackware${LIBDIRSUFFIX}-current
+	ELGRANARCHIVO=$(curl -s $LAGRANWEB/slackware${LIBDIRSUFFIX}/PACKAGES.TXT)
+	ELPACK=$(echo "$ELGRANARCHIVO"|grep -i game -B5|grep NAME|awk '{print $3}'|grep -vi kanagram |grep -vi khangman |grep -vi xgames|grep -vi bsd-games|grep -vi kig)
+	LOSEXTRAS=$(echo "$ELGRANARCHIVO"|grep NAME|grep -E "(libkmahjongg|kmines)"|awk '{print $3}')
 	LOSGRANDESJUEGOS=$(cat <<EOF
 	$ELPACK
 	$LOSEXTRAS
 EOF
 )
-VERSION=$(echo "$ELGRANARCHIVO" | grep -i kdelibs | head -1 | cut -d "-" -f 2)
+VERSION=$(echo "$ELGRANARCHIVO"|grep -i kdelibs|head -1|cut -d "-" -f 2)
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-echo "$CYAN"Se han detectado $ROJO$(echo $LOSGRANDESJUEGOS | sed 's/ /\n/g' | wc -l)$CYAN paquetes..."$CIERRE"
+echo "$CYAN"Se han detectado $ROJO$(echo $LOSGRANDESJUEGOS|sed 's/ /\n/g'|wc -l)$CYAN paquetes..."$CIERRE"
 lacuenta=1
 for JUEGO in $LOSGRANDESJUEGOS; do
-LAGRANRUTA=$(echo "$ELGRANARCHIVO" | grep -i $JUEGO -A1 | grep LOCATION | awk '{print $3}' | cut -d "." -f2 | cut -d- -f2-)
-VERSION_JEUGO=$(echo $JUEGO | rev | cut -d "i" -f2 | cut -d- -f2 | rev)
-PRGNAM_JUEGO=$(echo $JUEGO | cut -d. -f1 | rev | cut -d- -f2- | rev)
+LAGRANRUTA=$(echo "$ELGRANARCHIVO"|grep -i $JUEGO -A1|grep LOCATION|awk '{print $3}'|cut -d "." -f2|cut -d- -f2-)
+VERSION_JEUGO=$(echo $JUEGO|rev|cut -d "i" -f2|cut -d- -f2|rev)
+PRGNAM_JUEGO=$(echo $JUEGO|cut -d. -f1|rev|cut -d- -f2-|rev)
 for RUTA in $LAGRANRUTA; do
 # Si el paquete no existe se descargara de internet
 if [ ! -f $JUEGO ]; then
@@ -74,7 +74,7 @@ cleandir $PKG
 cd $PKG/usr/share/applications/
 for DESKTOP in $(find -type f); do
 
-cat $DESKTOP | sed "s/Education//g" >${DESKTOP}2
+cat $DESKTOP|sed "s/Education//g" >${DESKTOP}2
 rm $DESKTOP
 mv ${DESKTOP}2 ${DESKTOP}
 
@@ -89,6 +89,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -99,8 +101,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Si no existe el fichero se descargara
