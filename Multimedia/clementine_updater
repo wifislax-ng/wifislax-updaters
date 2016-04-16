@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160415
+SCRIPT_VERSION=20160416
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -19,18 +19,17 @@ f_variables(){
 F_variables() {
 	PRGNAM=clementine
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	#WEB=https://www.clementine-player.org/es/downloads
-	#VERSION=`curl -s $WEB | grep Clementine | grep .tar.gz | cut -d "/" -f 7 | cut -d "." -f-3`
-	WEB=http://ponce.cc/slackware/sources/repo/
-	VERSION=20151123_136c980
-	EXTENSION=tar.xz
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=http://ponce.cc/slackware/sources/repo/$SOURCES
+	WEB=https://www.clementine-player.org/es/downloads
+	VERSION=`curl -s $WEB|grep Clementine| grep .tar.gz|head -1|cut -d "/" -f 7|cut -d "." -f-3|cut -d t -f-1|sed 's/.$//g'`
+	EXTENSION=tar.gz
+	SOURCES=$VERSION.$EXTENSION
+	SRCNAM=Clementine-$VERSION
+	DOWNLOAD=https://github.com/clementine-player/Clementine/archive/$SOURCES
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="libspotify libechonest"
+DEPENDENCIAS="libspotify libechonest cryptopp"
 f_dependencias
 }
 
@@ -64,6 +63,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -74,8 +75,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del script
 f_versionInstalada
 #Compronar dependencias
