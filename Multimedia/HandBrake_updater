@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151101
+SCRIPT_VERSION=20160417
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -20,7 +20,7 @@ F_variables() {
 	PRGNAM=HandBrake
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://handbrake.fr/downloads.php
-	VERSION=`curl -s $WEB | grep Current | cut -d: -f2 | cut -d '<' -f-1 | sed "s/ //g"`
+	VERSION=`curl -s $WEB|grep Current|cut -d: -f2|cut -d '<' -f-1|sed "s/ //g"`
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=http://download.handbrake.fr/releases/$VERSION/$SOURCES
@@ -28,10 +28,6 @@ F_variables() {
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-if [ $ARCH = i486 ]; then
-ARCH=i686
-fi
-
 SLKCFLAGS="$SLKCFLAGS -fno-aggressive-loop-optimizations"
 saved_CFLAGS="$CFLAGS"
 saved_CXXFLAGS="$CFLAGS"
@@ -44,8 +40,7 @@ CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
-  --disable-gtk-update-checks \
-  --arch=$ARCH
+  --disable-gtk-update-checks
 
 cd build
   # Fix underlinking by configuring the gtk module first, then sed:
@@ -67,6 +62,8 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
@@ -77,8 +74,6 @@ f_directorioTemporal
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura i686
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara
