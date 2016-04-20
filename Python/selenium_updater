@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151114
+SCRIPT_VERSION=20160420
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -22,7 +22,7 @@ F_variables() {
 	VERSION=`curl -s $WEB|grep .tar.gz|tail -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://pypi.python.org/packages/source/s/selenium/$SOURCES
+	DOWNLOAD=`curl -s $WEB|grep tar.gz|grep https|cut -d '"' -f2|cut -d '#' -f-1`
 }
 
 # Descomprimimos el fichero descargado y compilamos
