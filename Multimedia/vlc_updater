@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160404
+SCRIPT_VERSION=20160421
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -69,6 +69,22 @@ CiBkbmwgQ2hlY2sgZm9yIHpsaWIuaCBhbmQgLWx6IGFsb25nIHdpdGggc3lzdGVtIC1sbWluaXpp
 cCBpZiBhdmFpbGFibGUK" | base64 -d > $TMP/patch_vlc_cache_gen.diff
 
 patch -p0 < $TMP/patch_vlc_cache_gen.diff
+
+echo "LS0tIGEvY29uZmlndXJlLmFjDQorKysgYi9jb25maWd1cmUuYWMNCkBAIC0zNzU0LDkgKzM3NTQs
+OSBAQA0KICAgICAgICAgICBBQ19NU0dfV0FSTihbTm90IGJ1aWxkaW5nIFF0IEludGVyZmFjZSB3
+aXRoIFgxMSBoZWxwZXJzLl0pDQogICAgICAgXSkNCiANCi0gICAgICBQS0dfQ0hFQ0tfRVhJU1RT
+KFtRdDVDb3JlID49IDUuNS4wIFF0NUNvcmUgPCA1LjYuMF0sIFsNCi0gICAgICAgIEFDX01TR19F
+UlJPUihbIllvdSBjYW5ub3QgYnVpbGQgVkxDIHdpdGggUXQtNS41LjAuIFlvdSBuZWVkIHRvIGJh
+Y2twb3J0IEk3OGVmMjk5NzUxODFlZTIyNDI5YzliZDRiMTFkOTZkOWU2OGI3YTljIl0pDQotICAg
+ICAgXSkNCisjICAgICAgUEtHX0NIRUNLX0VYSVNUUyhbUXQ1Q29yZSA+PSA1LjUuMCBRdDVDb3Jl
+IDwgNS42LjBdLCBbDQorIyAgICAgICAgQUNfTVNHX0VSUk9SKFsiWW91IGNhbm5vdCBidWlsZCBW
+TEMgd2l0aCBRdC01LjUuMC4gWW91IG5lZWQgdG8gYmFja3BvcnQgI0k3OGVmMjk5NzUxODFlZTIy
+NDI5YzliZDRiMTFkOTZkOWU2OGI3YTljIl0pDQorIyAgICAgIF0pDQogDQogICAgICAgUVRfUEFU
+SD0iJChldmFsICRQS0dfQ09ORklHIC0tdmFyaWFibGU9ZXhlY19wcmVmaXggUXQ1Q29yZSkiDQog
+ICAgICAgUVRfSE9TVF9QQVRIPSIkKGV2YWwgJFBLR19DT05GSUcgLS12YXJpYWJsZT1ob3N0X2Jp
+bnMgUXQ1Q29yZSkiDQo=" | base64 -d > $TMP/native_widgets.patch
+
+patch -p1 < $TMP/native_widgets.patch
 fi
 
 autoreconf -f
@@ -87,7 +103,7 @@ LDFLAGS="$SLKLDFLAGS" \
   --enable-merge-ffmpeg \
   --with-kde-solid=no \
   --build=$ARCH-slackware-linux
- 
+  
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
