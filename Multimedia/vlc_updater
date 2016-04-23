@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160421
+SCRIPT_VERSION=20160422
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -28,7 +28,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="ffmpeg libass libdc1394 libdvbpsi libmpeg2 libupnp portaudio twolame opus gsm opencv libkate faac libdca libmatroska libshout speex jack-audio-connection-kit zvbi faad2 libavc1394 libmodplug musepack-tools vcdimager dirac gnome-vfs live555 rtmpdump lua libdvdcss fluidsynth schroedinger chromaprint x264 x265 libbluray"
+DEPENDENCIAS="ffmpeg libass libdc1394 libdvbpsi libmpeg2 libupnp portaudio twolame opus gsm opencv libkate faac libdca libmatroska libshout speex jack2 zvbi faad2 libavc1394 libmodplug musepack-tools vcdimager dirac gnome-vfs live555 rtmpdump lua libdvdcss fluidsynth schroedinger chromaprint x264 x265 libbluray"
 f_dependencias
 }
 
