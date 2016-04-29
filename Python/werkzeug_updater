@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160314
+SCRIPT_VERSION=20160429
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,12 +17,13 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	PRGNAM=werkzeug
+	SRCNAM=Werkzeug
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/mitsuhiko/$PRGNAM
-	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d / -f5|cut -d t -f-1|sed 's/.$//g'`
+	WEB=https://pypi.python.org/pypi/$SRCNAM
+	VERSION=`curl -s $WEB|grep tar.gz|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.gz
-	SOURCES=$VERSION.$EXTENSION
-	DOWNLOAD=$WEB/archive/$SOURCES
+	SOURCES=$SRCNAM-$VERSION.$EXTENSION
+	DOWNLOAD=`curl -s $WEB|grep tar.gz|grep https|cut -d '"' -f2|cut -d '#' -f-1`
 }
 
 # Descomprimimos el fichero descargado y compilamos
