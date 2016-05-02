@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160319
+SCRIPT_VERSION=20160502
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -382,9 +382,11 @@ fi
 # Descargamos version de aufs correspondiente a nuestra rama y aplicamos
 if [ $RAMA_ELEGIDO = 4.1 ]; then
 RAMA_ELEGIDO=4.1.13+
+AUFS=4.1.13+
 fi
 if [ $RAMA_ELEGIDO = 3.18 ]; then
 RAMA_ELEGIDO=3.18.25+
+AUFS=3.18.25+
 fi
 DEST=/usr/src/$PRGNAM-$KERNEL_ELEGIDO/$AUFS.patch
 
@@ -394,15 +396,20 @@ echo ""$VERDE"Creamos y aplicamos el parche aufs "$BLANCO"..."$CIERRE""
 rm -r /tmp/aufs* 2>/dev/null
 mkdir /tmp/aufs$$
 cd /tmp/aufs$$
-git clone https://github.com/sfjro/aufs$FAMILIA-standalone.git || exit 1
-cd aufs$FAMILIA-standalone
-git checkout origin/$AUFS || exit 1
+if [ $FAMILIA = 4 ]; then
+git clone https://github.com/sfjro/aufs4-standalone.git aufs4-standalone.git || exit 1
+cd aufs4-standalone.git || exit 1
+else
+git clone git://git.code.sf.net/p/aufs/aufs3-standalone aufs3-standalone.git  || exit 1
+cd aufs3-standalone.git || exit 1
+fi
+git checkout origin/aufs${AUFS} || exit 1
 mkdir ../a ../b
 cp -r {Documentation,fs,include} ../b
 rm ../b/include/uapi/linux/Kbuild 2>/dev/null || rm ../b/include/linux/Kbuild
 cd ..
 diff -rupN a/ b/ > $DEST
-cat aufs$FAMILIA-standalone/*.patch >> $DEST
+cat aufs$FAMILIA-standalone.git/*.patch >> $DEST
 rm -r /tmp/aufs$$
 
 # Verificamos la existencia del parche aufs
