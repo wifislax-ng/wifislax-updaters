@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160502
+SCRIPT_VERSION=20160503
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -116,14 +116,14 @@ do
             RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO |cut -d "." -f-2 |sed 's/ //g'`
             FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
             DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
-            AUFS=aufs$RAMA_ELEGIDO
+            AUFS=$RAMA_ELEGIDO
             break;;
         "${VERDE}Ultimo disponible como estable${CIERRE}")
             KERNEL_ELEGIDO=`curl -s $WEB|grep .tar.xz|head -1|cut -d "-" -f2|cut -d "t" -f-1|sed "s/.$//g"`
             RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "." -f-2|sed 's/ //g'`
             FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
             DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
-            AUFS=aufs$RAMA_ELEGIDO
+            AUFS=$RAMA_ELEGIDO
             break;;
         "${VERDE}Elegir uno custom${CIERRE}")
             CUSTOM="TRUE"
@@ -133,7 +133,7 @@ do
             RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "-" -f-1|sed 's/ //g'`
             FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
             DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/testing/linux-$KERNEL_ELEGIDO.tar.xz
-            AUFS=aufs$FAMILIA.x-rcN
+            AUFS=$FAMILIA.x-rcN
             break;;
         *)  echo opcion invalida;;
     esac
