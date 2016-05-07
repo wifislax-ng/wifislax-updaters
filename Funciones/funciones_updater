@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20160417
+FUNCIONES_VERSION=20160507
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -16,8 +16,7 @@ ROSA=${ROSA:-"[1;35m"}
 # Variables globales
 PRGNAM=funciones
 VERSION=$FUNCIONES_VERSION
-WEB=http://www.downloadwireless.net
-DOWNLOAD=$WEB/wifislax-updaters/Funciones/${PRGNAM}_updater
+MAKEFLAGS='-j '$(grep -c ^processor /proc/cpuinfo)
 BUILD=${BUILD:-1}
 TAG=${TAG:-sw}
 CWD=$(pwd)

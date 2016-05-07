@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160503
+SCRIPT_VERSION=20160507
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -25,6 +25,7 @@ TAG=sw
 M0DNUM=000
 MODNAM=Kernel
 BUILD=1
+MAKEFLAGS='-j '$(grep -c ^processor /proc/cpuinfo)
 KERNEL_SISTEMA=`uname -r|cut -d '-' -f1|sed 's/ //g'`
 RAMA_SISTEMA=`uname -r|cut -d '-' -f1|cut -d "." -f-2|sed 's/ //g'`
 WEB=https://www.kernel.org/
@@ -78,26 +79,6 @@ exit
 fi
 fi
 
-# Definimos arquitectura del sitema anfitrion
-if [ -z "$ARCH" ]; then
-  case "$( uname -m )" in
-    i?86) ARCH=i586 ;;
-    arm*) ARCH=arm ;;
-       *) ARCH=$( uname -m ) ;;
-  esac
-fi
-
-if [ $ARCH = "i586" ]; then
-HEADERS=i386
-IMAGEN=x86
-elif [ "$ARCH" = "x86_64" ]; then
-HEADERS=x86_64
-IMAGEN=x86_64
-elif [ "$ARCH" = "arm" ]; then
-HEADERS=arm
-IMAGEN=arm
-fi
-
 # Aseguramos la existencia del directorio de compilacion y si no existe se crea
 if [ ! -d /usr/src ]; then
 mkdir -p /usr/src
@@ -147,7 +128,7 @@ echo "$ROSA"
 read KERNEL_ELEGIDO
 RAMA_ELEGIDO=`echo $KERNEL_ELEGIDO|cut -d "." -f-2|sed 's/ //g'`
 FAMILIA=`echo $KERNEL_ELEGIDO|cut -d. -f1`
-AUFS=aufs$RAMA_ELEGIDO
+AUFS=$RAMA_ELEGIDO
 DESCARGA=https://www.kernel.org/pub/linux/kernel/v$FAMILIA.x/linux-$KERNEL_ELEGIDO.tar.xz
 echo "$CIERRE"
 fi
@@ -426,38 +407,48 @@ cd /usr/src/$PRGNAM-$KERNEL_ELEGIDO
 patch -f -p1 -i $AUFS.patch || exit 1
 
 # Compilamos el kernel
-make oldconfig || exit 1
-make xconfig || exit 1
+make $MAKEFLAGS oldconfig || exit 1
+make $MAKEFLAGS xconfig || exit 1
 
 # Variables para calcular tiempo de inicio
 COMIENZO=$(date +%s)
 
 # Comienza la compilacion del kernel
-make || exit 1
-make modules || exit 1
+make $MAKEFLAGS|| exit 1
+make $MAKEFLAGS modules || exit 1
+
+# Arquitectura segun el fichero config
+if [ ! -z "`grep -i 'CONFIG_64BIT=y' .config`" ]; then
+HEADERS=x86_64
+IMAGEN=x86_64
+ARCH=x86_64
+else
+HEADERS=i386
+IMAGEN=x86
+ARCH=i586
+fi
 
 # Comprobar si es un kernel SMP (pae)
 if [ -z "`grep -i 'CONFIG_HIGHMEM64G=y' .config`" ]; then
 SMP=""
+VMLINUZ="vmlinuz"
+VMLINUZCONFIG=""
 else
 SMP="SMP-"
+VMLINUZ="vmlinuz2"
+VMLINUZCONFIG="smp"
 fi
 
 # Creamos la tuta de destina a instalar el kernel
 mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG
-make modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG || exit 1
+make $MAKEFLAGS modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG || exit 1
 
 # Instalamos las cabeceras kernel-headers
-make headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr || exit 1
+make $MAKEFLAGS headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr || exit 1
 rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/.install
 rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/..install.cmd
 
-# Copiamos vmlinuz a escritorio
-if [ -z "`grep -i 'CONFIG_HIGHMEM64G=y' .config`" ]; then
-VMLINUZ="vmlinuz"
-else
-VMLINUZ="vmlinuz2"
-fi
+# Copiamos el vmlinuz
 cp /usr/src/$PRGNAM-$KERNEL_ELEGIDO/arch/$IMAGEN/boot/bzImage $HOME/Desktop/$VMLINUZ &>/dev/null
 
 # Generamos kernel sources recortadas
@@ -513,11 +504,7 @@ echo ""$AMARILLO"Pulsa ENTER si quieres instalar el kernel,si no te interesa cie
 read junk
 echo ""
 echo ""$VERDE"Instalando Kernel $KERNEL_ELEGIDO en sistema ..."$CIERRE""
-if [ $SMP = "SMP-" ]; then
-VMLINUZCONFIG="smp"
-else
-VMLINUZCONFIG=""
-fi
+
 cp -r $HOME/Desktop/$VMLINUZ /boot/vmlinuz-$KERNEL_ELEGIDO-$VMLINUZCONFIG-wifislax
 xzm2dir $HOME/Desktop/$M0DNUM-$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG.xzm /
 update-grub
