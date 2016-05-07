@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160415
+SCRIPT_VERSION=20160507
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -24,7 +24,8 @@ F_variables() {
 	SUFFIX="64"
 	LINK="32"
 	fi
-	PRGNAM=hashcat
+	PRGNAM=oclhashcat
+	SRCNAM=hashcat
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://hashcat.net/oclhashcat/
 	VERSION=`curl -s $WEB|grep .7z|head -1|cut -d "v" -f2|cut -d "<" -f 1|sed "s/ //g"`
@@ -36,7 +37,7 @@ F_variables() {
 
 # Creamos directorios extra
 F_extradirs(){
-mkdir -p $PKG/opt/$PRGNAM $PKG/usr/{bin,share/pixmaps,}
+mkdir -p $PKG/opt/$SRCNAM $PKG/usr/{bin,share/pixmaps,}
 }
 
 # Comprobar dependencias
@@ -79,34 +80,34 @@ F_compilar(){
 echo ""
 echo "$VERDE"Descomprimiendo cudaHashcat-$VERSION ..."$CIERRE"
 sleep 1
-7z -y x cudaHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
+7z -y x cudaHashcat-$VERSION.7z -o$PKG/opt/$SRCNAM
 echo ""
 echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
-rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/kernels/4318/*.$SUFFIX.cubin
-rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*.exe
-rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/*.cmd
-cp -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION/* $PKG/opt/$PRGNAM
-rm -rf $PKG/opt/$PRGNAM/cudaHashcat-$VERSION
+rm -rf $PKG/opt/$SRCNAM/cudaHashcat-$VERSION/kernels/4318/*.$SUFFIX.cubin
+rm -rf $PKG/opt/$SRCNAM/cudaHashcat-$VERSION/*.exe
+rm -rf $PKG/opt/$SRCNAM/cudaHashcat-$VERSION/*.cmd
+cp -rf $PKG/opt/$SRCNAM/cudaHashcat-$VERSION/* $PKG/opt/$SRCNAM
+rm -rf $PKG/opt/$SRCNAM/cudaHashcat-$VERSION
 
 echo ""
 echo "$VERDE"Descomprimiendo oclHashcat-$VERSION ..."$CIERRE"
 sleep 1
-7z -y x oclHashcat-$VERSION.7z -o$PKG/opt/$PRGNAM
+7z -y x oclHashcat-$VERSION.7z -o$PKG/opt/$SRCNAM
 echo ""
 echo "$VERDE"Copiando ficheros y eliminando innecesarios ..."$CIERRE"
-rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*.exe
-rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/*.cmd
-cp -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION/* $PKG/opt/$PRGNAM
-rm -rf $PKG/opt/$PRGNAM/oclHashcat-$VERSION
+rm -rf $PKG/opt/$SRCNAM/oclHashcat-$VERSION/*.exe
+rm -rf $PKG/opt/$SRCNAM/oclHashcat-$VERSION/*.cmd
+cp -rf $PKG/opt/$SRCNAM/oclHashcat-$VERSION/* $PKG/opt/$SRCNAM
+rm -rf $PKG/opt/$SRCNAM/oclHashcat-$VERSION
 
 # Relinkeamos los ejecutables para engañar a la gui
-cd $PKG/opt/$PRGNAM
-rm -rf $PKG/opt/$PRGNAM/*$SUFFIX.bin
-ln -fs /opt/$PRGNAM/oclHashcat$LINK.bin $PKG/opt/$PRGNAM/oclHashcat-plus$LINK.bin
-ln -fs /opt/$PRGNAM/cudaHashcat$LINK.bin $PKG/opt/$PRGNAM/cudaHashcat-plus$LINK.bin
+cd $PKG/opt/$SRCNAM
+rm -rf $PKG/opt/$SRCNAM/*$SUFFIX.bin
+ln -fs /opt/$SRCNAM/oclHashcat$LINK.bin $PKG/opt/$SRCNAM/oclHashcat-plus$LINK.bin
+ln -fs /opt/$SRCNAM/cudaHashcat$LINK.bin $PKG/opt/$SRCNAM/cudaHashcat-plus$LINK.bin
 
 # Añadimos el fichero eula.aceppted
-echo "ZQAAAA==" | base64 -d > $PKG/opt/$PRGNAM/eula.accepted
+echo "ZQAAAA==" | base64 -d > $PKG/opt/$SRCNAM/eula.accepted
 }
 
 ###################################
