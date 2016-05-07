@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160507
+SCRIPT_VERSION=20160508
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -25,10 +25,11 @@ TAG=sw
 M0DNUM=000
 MODNAM=Kernel
 BUILD=1
-MAKEFLAGS='-j '$(grep -c ^processor /proc/cpuinfo)
 KERNEL_SISTEMA=`uname -r|cut -d '-' -f1|sed 's/ //g'`
 RAMA_SISTEMA=`uname -r|cut -d '-' -f1|cut -d "." -f-2|sed 's/ //g'`
 WEB=https://www.kernel.org/
+
+export MAKEFLAGS='-j '$(grep -c ^processor /proc/cpuinfo)
 
 echo -ne "\033]2;${PRGNAM}_updater\007"
 
@@ -407,15 +408,15 @@ cd /usr/src/$PRGNAM-$KERNEL_ELEGIDO
 patch -f -p1 -i $AUFS.patch || exit 1
 
 # Compilamos el kernel
-make $MAKEFLAGS oldconfig || exit 1
-make $MAKEFLAGS xconfig || exit 1
+make oldconfig || exit 1
+make xconfig || exit 1
 
 # Variables para calcular tiempo de inicio
 COMIENZO=$(date +%s)
 
 # Comienza la compilacion del kernel
-make $MAKEFLAGS|| exit 1
-make $MAKEFLAGS modules || exit 1
+make || exit 1
+make modules || exit 1
 
 # Arquitectura segun el fichero config
 if [ ! -z "`grep -i 'CONFIG_64BIT=y' .config`" ]; then
@@ -441,10 +442,10 @@ fi
 
 # Creamos la tuta de destina a instalar el kernel
 mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG
-make $MAKEFLAGS modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG || exit 1
+make modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG || exit 1
 
 # Instalamos las cabeceras kernel-headers
-make $MAKEFLAGS headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr || exit 1
+make headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr || exit 1
 rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/.install
 rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/..install.cmd
 
