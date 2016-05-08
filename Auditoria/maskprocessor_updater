@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151129
+SCRIPT_VERSION=20160508
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -16,16 +16,10 @@ f_variables(){
 ############################################################
 # Definicion de variables
 F_variables() {
-	WIFISLAX=$(cat /etc/wifislax-version | cut -d ' ' -f2)
-	if [ $WIFISLAX = 4.11.1 ]; then
-	PRGNAM=Maskprocessor
-	else
 	PRGNAM=maskprocessor
-	fi
-	SRCNAM=maskprocessor
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://github.com/hashcat/$SRCNAM
-	VERSION=`curl -s $WEB/releases|grep "tar.gz"|head -1|cut -d v -f3|cut -d t -f-1|sed 's/.$//g'`
+	WEB=https://github.com/hashcat/$PRGNAM
+	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d v -f3|cut -d t -f-1|sed 's/.$//g'`
 	EXTENSION=tar.gz
 	SOURCES=v$VERSION.$EXTENSION
 	DOWNLOAD=$WEB/archive/$SOURCES
@@ -36,14 +30,18 @@ F_compilar(){
 echo 
 echo "$VERDE"Instalando ..."$CIERRE"
 sleep 1
-cd $TMP/$SRCNAM-$VERSION/src/
-sed -i 's/all: mp64.bin/all: mp32.bin/' $TMP/$SRCNAM-$VERSION/src/Makefile
+cd $TMP/$PRGNAM-$VERSION/src/
 make || exit 1
-install -Dm755 "mp32.bin" $PKG/usr/bin/$SRCNAM || exit 1
+if [ $ARCH = x86_64 ]; then
+BIN=64
+else
+BIN=32
+fi
+install -Dm755 "mp$BIN.bin" $PKG/usr/bin/$PRGNAM || exit 1
 
 # Si el paquete no esta dividido , se juntara todo en un xzm
-if [ ! -f /var/log/packages/${SRCNAM}_starter-1.0-noarch-1sw ]; then
-PKG2=/tmp/${SRCNAM}_starter-1.0-noarch-1sw
+if [ ! -f /var/log/packages/${PRGNAM}_starter-1.0-noarch-1sw ]; then
+PKG2=/tmp/${PRGNAM}_starter-1.0-noarch-1sw
 mkdir -p $PKG2
 # Icono
 mkdir -p $PKG2/usr/share/pixmaps/
@@ -100,7 +98,7 @@ V1VFFEWjXq/3G6Zs7wB3gc+BXaZvZM5kOs8DAB5pIgZ6wB7wALgOXMvz3HIc51qapssHBwfEcYzn
 eezv7+sTaNjr9X7FtJNxe/apBU85g9OeFwBMGc9nmw5nIH4LXAX+PI7jY9/3v/XgwYONzz77DN/3
 2dnZYTgc7nW73XeAX8+E352RkfMMjD85Fr6pXzAkU+ZOZ0DuAbtpmu6WZamKouh8/vnn2UcfffQf
 Ozs7PwB+BnzA1HRGTDX61FRh0ThTX+gZhnbuFaDDtHGVM7X3Ac9pJv9fQ9fU/9skPTb+B9UObpQt
-o188AAAAAElFTkSuQmCC" | base64 -d > $PKG2/usr/share/pixmaps/$SRCNAM.png
+o188AAAAAElFTkSuQmCC" | base64 -d > $PKG2/usr/share/pixmaps/$PRGNAM.png
 
 # Entrada desktop
 mkdir -p $PKG2/usr/share/applications/wifislax/Diccionarios/
@@ -117,7 +115,7 @@ Path=/opt/maskprocessor/
 StartupNotify=true
 Terminal=true
 TerminalOptions=
-Type=Application' > $PKG2/usr/share/applications/wifislax/Diccionarios/$SRCNAM.desktop
+Type=Application' > $PKG2/usr/share/applications/wifislax/Diccionarios/$PRGNAM.desktop
 
 dir2xzm $PKG2 $PKG2.xzm &>/dev/null
 xzm2dir $PKG2.xzm / &>/dev/null

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160508
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=libnfc
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://bintray.com/nfc-tools/sources/libnfc
-	DOWNLOAD=https://bintray.com$(curl -sk $WEB  | grep "download/nfc-tools" | head -1 | grep -Po 'href="\K.*(?="><span)')
-	VERSION=$(echo "$DOWNLOAD"| rev | cut -d/ -f1 | cut -d. -f3- | rev | cut -d- -f2)
+	WEB=https://github.com/nfc-tools/$PRGNAM/releases
+	VERSION=`curl -s $WEB|grep tar.bz2|head -1|cut -d- -f3|cut -d / -f-1`
 	EXTENSION=tar.bz2
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/download/$PRGNAM-$VERSION/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos

@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160508
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -20,11 +20,16 @@ F_variables() {
 	PRGNAM=avidemux
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://fixounet.free.fr/avidemux/download.html
-	VERSION=`curl -s $WEB | grep .tar.gz | head -1 | cut -d _ -f2 | cut -d t -f1 | sed "s/.$//g"`
+	VERSION=`curl -s $WEB|grep .tar.gz|head -1|cut -d _ -f2|cut -d t -f1|sed "s/.$//g"`
 	SRCNAM=${PRGNAM}_${VERSION}
 	EXTENSION=tar.gz
 	SOURCES=${PRGNAM}_${VERSION}.$EXTENSION
-	DOWNLOAD=`curl -s http://www.fosshub.com/Avidemux.html/$SOURCES | grep tar\.gz | grep -Po 'src="\K.*(?=">)'`
+	DOWNLOAD=`curl -s http://www.fosshub.com/Avidemux.html/$SOURCES|grep tar\.gz|grep -Po 'src="\K.*(?=">)'`
+}
+
+F_dependencias(){
+DEPENDENCIAS="faac faad2 lame libdca x264 xvidcore"
+f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -35,7 +40,6 @@ sleep 1
  
 WITH_CLI=${WITH_CLI:-YES}
 WITH_QT4=${WITH_QT4:-YES}
-WITH_GTK=${WITH_GTK:-NO}
 
 mkdir -p build_core
 cd build_core
@@ -45,8 +49,8 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DFAKEROOT="$PKG" \
   ../avidemux_core
-make  || exit 1
-make   install DESTDIR=$PKG
+make -j 1 || exit 1
+make -j 1 install DESTDIR=$PKG || exit 1
 cd ..
 
 if [ "x$WITH_QT4" = "xYES" ]; then
@@ -58,22 +62,8 @@ if [ "x$WITH_QT4" = "xYES" ]; then
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DFAKEROOT="$PKG" \
     ../avidemux/qt4
-  make  || exit 1
-  make   install DESTDIR=$PKG
-  cd ..
-fi
-
-if [ "x$WITH_GTK" = "xYES" ]; then
-  mkdir -p build_gtk
-  cd build_gtk
-  cmake \
-    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
-    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DFAKEROOT="$PKG" \
-    ../avidemux/gtk
-  make  || exit 1
-  make   install DESTDIR=$PKG
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG || exit 1
   cd ..
 fi
 
@@ -86,8 +76,8 @@ if [ "x$WITH_CLI" = "xYES" ]; then
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DFAKEROOT="$PKG" \
     ../avidemux/cli
-  make  || exit 1
-  make   install DESTDIR=$PKG
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG || exit 1
   cd ..
 fi
 
@@ -101,8 +91,8 @@ cd build_plugins_common
     -DPLUGIN_UI=COMMON \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make  || exit 1
-  make   install DESTDIR=$PKG
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG || exit 1
 cd ..
 
 if [ "x$WITH_QT4" = "xYES" ]; then
@@ -116,24 +106,8 @@ if [ "x$WITH_QT4" = "xYES" ]; then
     -DPLUGIN_UI=QT4 \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make  || exit 1
-  make   install DESTDIR=$PKG
-  cd ..
-fi
-
-if [ "x$WITH_GTK" = "xYES" ]; then
-  mkdir -p build_plugins_gtk
-  cd build_plugins_gtk
-  cmake \
-    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
-    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
-    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DPLUGIN_UI=GTK \
-    -DFAKEROOT="$PKG" \
-    ../avidemux_plugins
-  make  || exit 1
-  make   install DESTDIR=$PKG
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG || exit 1
   cd ..
 fi
 
@@ -148,8 +122,8 @@ if [ "x$WITH_CLI" = "xYES" ]; then
     -DPLUGIN_UI=CLI \
     -DFAKEROOT="$PKG" \
     ../avidemux_plugins
-  make  || exit 1
-  make   install DESTDIR=$PKG
+  make -j 1 || exit 1
+  make -j 1 install DESTDIR=$PKG || exit 1
   cd ..
 fi
 
@@ -159,17 +133,12 @@ if [ "x$WITH_QT4" = "xYES" ]; then
 	cat avidemux2.desktop | sed -e 's/avidemux2$/avidemux/' -e 's/2_gtk/3_qt4/' >\
 		$PKG/usr/share/applications/avidemux_qt.desktop
 fi
-if [ "x$WITH_GTK" = "xYES" ]; then
-	cat avidemux2.desktop | sed -e 's/avidemux2$/avidemux/' -e 's/2_gtk/3_gtk/' >\
-		$PKG/usr/share/applications/avidemux_gtk.desktop
-fi
 install -m644 avidemux_icon.png $PKG/usr/share/pixmaps/avidemux.png
 for sz in 16x16 32x32 48x48 64x64 ; do
   mkdir -p $PKG/usr/share/icons/hicolor/$sz/apps
   convert avidemux_icon.png -resize $sz \
     $PKG/usr/share/icons/hicolor/$sz/apps/avidemux.png
 done
-
 }
 
 ###################################
@@ -194,6 +163,8 @@ f_comprobarUpdates
 f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 f_download
 #Preparamos entorno
