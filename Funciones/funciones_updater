@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-FUNCIONES_VERSION=20160508
+FUNCIONES_VERSION=20160509
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -216,7 +216,7 @@ f_strip() {
 
 # Descargar sources
 f_download(){
-GESTOR="wget -N -L -c -q --show-progress "
+GESTOR="wget -N -L -c -q --show-progress --no-passive-ftp"
 if [ $PRGNAM = hydra ]; then
 GESTOR="$GESTOR --no-check-certificate "
 fi
