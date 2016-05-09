@@ -16,11 +16,10 @@ f_variables(){
 ############################################################
 #Definicion de variables
 F_variables() {
-	WEB=http://www.frostwire.com/download/
-	#VERSION=`curl -s $WEB | grep pageTracker | cut -d '/' -f 9`
-	VERSION=5.7.7
 	PRGNAM=frostwire
 	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=http://www.frostwire.com/downloads
+	VERSION=`curl -s $WEB|grep '>v[0-9]'|tail -1|cut -d v -f2|cut -d '<' -f-1`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.noarch.$EXTENSION
 	DOWNLOAD=http://dl.frostwire.com/frostwire/$VERSION/$SOURCES
