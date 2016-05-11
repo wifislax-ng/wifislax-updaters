@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160511
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,10 +19,10 @@ F_variables() {
 	PRGNAM=pip
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://pypi.python.org/pypi/pip
-	VERSION=`curl -s $WEB | grep .tar.gz | cut -d - -f3 | cut -d t -f-1 | sed "s/.$//g"`
+	VERSION=`curl -s $WEB|grep tar.gz|cut -d - -f3|cut -d t -f-1|sed "s/.$//g"|sed 's/ //g'`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://pypi.python.org/packages/source/p/$PRGNAM/$SOURCES
+	DOWNLOAD=`curl -s $WEB|grep $SOURCES|grep https|cut -d '"' -f2|cut -d '#' -f-1|grep -v PGP|sed 's/ //g'`
 }
 
 # Descomprimimos el fichero descargado y compilamos
