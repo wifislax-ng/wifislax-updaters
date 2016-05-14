@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151025
+SCRIPT_VERSION=20160513
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,11 +18,11 @@ f_variables(){
 F_variables() {
 	PRGNAM=slackyd
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://slacky.eu/~dani/$PRGNAM/sources/
-	VERSION=`curl -s $WEB|grep .bz2|head -1|cut -d- -f3|cut -d t -f-1|sed 's/.$//g'`
-	EXTENSION=tar.bz2
-	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=http://slacky.eu/~dani/$PRGNAM/sources/$SOURCES
+	WEB=https://github.com/slackyeu/slackyd
+	VERSION=`curl -s $WEB/releases|grep .gz|head -1|cut -d / -f5|cut -d t -f-1|sed 's/.$//g'|cut -d v -f2`
+	EXTENSION=tar.gz
+	SOURCES=v$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
 }
 
 # Descomprimimos el fichero descargado y compilamos
@@ -33,46 +33,9 @@ sleep 1
 make "CFLAGS=$SLKCFLAGS -lcrypto" || exit 1
 make install DESTDIR=$PKG || exit 1
 
-rm -f $PKG/etc/slackyd/slackyd.conf
-
-echo "IwojIFNsYWNreSBEb3dubG9hZGVyIENvbmZpZyBGaWxlLgojCiMgQ2FzZSBpbnNlbnNpdGl2ZS4K
-IyBDb21tZW50OiAnIycgb3IgJyEnCiMKCiMKIyBTbGFja3lkIGNhY2hlCiMKY2FjaGUgPSAvdmFy
-L3NsYWNreWQKCiMKIyBDb25uZWN0aW9uIHRpbWVvdXQsIGluIHNlY29uZHMuCiMgU2V0IHRvIDAg
-Zm9yIHVzZSBMaW51eCBkZWZhdWx0IHZhbHVlICh2ZXJ5IGxvbmcpLiAKIwp0aW1lb3V0ID0gMTUK
-CiMKIyBVcGdyYWRlIHNsYWNrd2FyZSBwYWNrYWdlcyB3aXRoIHVub2ZmaWNpYWwgcGFja2FnZXMu
-CiMKdXBncmFkZV9yZXBsYWNpbmdfb2ZmaWNpYWwgPSB5ZXMKCiMKIyBVc2luZyBTbGFja3dhcmU2
-NCBvZmZpY2lhbCBtaXJyb3IKIwpzbGFja3dhcmU2NCA9IG5vCgojCiMgRG93bmxvYWQgd2l0aCB3
-Z2V0IChwcm94eSB3b3JrYXJvdW5kKQojCndnZXQgPSBubwoKIwojIFJlcG9zaXRvcnkgc3ludGF4
-OgojCiMgS0VZV09SRCBOQU1FIEFERFJFU1MKIwojIC0gIktFWVdPUkQiIE11c3QgYWx3YXlzIGJl
-ICJSRVBPU0lUT1JZIiBhbmQgbXVzdCBhbHdheXMgYmUgYXQgc3RhcnQgb2YgbGluZSAhIAojCiMg
-LSAiTkFNRSIgICAgSXMgYSBzdHJpbmcgKG9ubHkgY2hhcmFjdGVycywgbnVtYmVycywgdW5kZXJz
-Y29yZXMgb3IgJy0nKSB0byBpZGVudGlmeSByZXBvc2l0b3J5LiAKIyAgICAgICAgICAgICBJZiBu
-b3Qgc3BlY2lmaWVkIHNsYWNreWQgY29uc2lkZXIgcmVwb3NpdG9yeSBhcyBvZmZpY2lhbCBzbGFj
-a3dhcmUgbWlycm9yLgojICAgICAgICAgICAgIEluIHRoaXMgY2FzZSBvbmx5IGZpcnN0IG9mIHRo
-ZSBsaXN0IHdpbGwgYmUgdXNlZCwgaWYgZG9uJ3Qgd29yayBzbGFja3lkIHRyeSB3aXRoIHNlY29u
-ZCBldGMuLi4KIwojIC0gIkFERFJFU1MiIElzIHJlcG9zaXRvcnkuCiMKIyAtIE9ubHkgRklMRS9I
-VFRQL0ZUUCBwcm90b2NvbHMgYXJlIGltcGxlbWVudGVkIHlldC4KIwoKIyBTbGFja3dhcmUgcmVw
-b3NpdG9yaWVzOgoKIyBUbyB1c2UgYSBkaXJlY3RvcnkgYXMgc2xhY2t3YXJlIG1pcnJvcjoKIXJl
-cG9zaXRvcnkgPSBmaWxlOi8veW91ci9taXJyb3IvCiMgVG8gdXNlIGEgZGlyZWN0b3J5IGFzIGV4
-dHJhIG1pcnJvcjoKIXJlcG9zaXRvcnkgbWlycm9ybmFtZSA9IGZpbGU6Ly95b3VyL21pcnJvci8K
-CiMgT2ZmaWNpYWwgbWlycm9yIGlzIHRvbyBzbG93Li4uCiFyZXBvc2l0b3J5IGZ0cDovL2Z0cC5z
-bGFja3dhcmUuY29tL3B1Yi9zbGFja3dhcmUvc2xhY2t3YXJlLTEzLjM3LwoKcmVwb3NpdG9yeSA9
-IGh0dHA6Ly93d3cuc2xhY2t3YXJlLmF0L2RhdGEvc2xhY2t3YXJlLWN1cnJlbnQvCgoKI0V4dHJh
-IHJlcG9zaXRvcmllczoKIyBTbGFja3kuZXUKIXJlcG9zaXRvcnkgc2xhY2t5ID0gaHR0cDovL2Rh
-cmtzdGFyLmlzdC51dGwucHQvc2xhY2t3YXJlL2FkZG9uL3NsYWNreS9zbGFja3dhcmUtMTMuMzcv
-CiMgR1NsYWNreQohcmVwb3NpdG9yeSBnc2xhY2t5IGh0dHA6Ly9kYXJrc3Rhci5pc3QudXRsLnB0
-L3NsYWNrd2FyZS9hZGRvbi9zbGFja3kvZ25vbWUtc2xhY2t5LTEzLjM3LwoKIyBCbGFja2xpc3Qg
-c3ludGF4OgojCiMgYmxhY2tsaXN0IHBhY2thZ2UxIHBhY2thZ2UyIHBhY2thZ2UzIC4uLgojCiMg
-YGJsYWNrbGlzdCcga2V5d29yZCBtdXN0IGJlIGF0IHN0YXJ0IG9mIGxpbmUuCiMgIFBhY2thZ2Vz
-IGNhbiBiZSB0YWIsIHdoaXRlIHNwYWNlIG9yIGNvbW1hIHNlcGFyYXRlZC4KIwojIEV4YW1wbGVz
-OgojIDEpIEJsYWNrbGlzdCBhbGwgcGFja2FnZXMgJ3hpbmUtbGliJzoKIyBibGFja2xpc3QgXnhp
-bmUtbGliLS4qCiMgMikgQmxhY2tsaXN0IF9leGFjdGx5XyBwYWNrYWdlIHhpbmUtbGliCiMgYmxh
-Y2tsaXN0IF54aW5lLWxpYi1bXi1dKy1bXi1dKy1bXi1dCiMgMykgQmxhY2tsaXN0IHhpbmUtbGli
-LTEsIHhpbmUtbGliLTIgYW5kIHhpbmUtbGliMzoKIyBibGFja2xpc3QgXnhpbmUtbGliLVsxMjNd
-CiMgNCkgQmxhY2tsaXN0IGZpcmVmb3ggMyBhbmQgYWxsIGtlcm5lbCBzbXA6CiMgYmxhY2tsaXN0
-IF5tb3ppbGxhLWZpcmVmb3gtZW4tdXMtMyBea2VybmVsLS4qX3NtcAojCiMgVXNlIC14IG9wdGlv
-biB0byBkaXNhYmxlIGJsYWNrbGlzdCBvbiBydW4tdGltZSwgYW5kIC1YIG9wdGlvbiB0byBzZWUK
-IyBhbGwgcGFja2FnZXMgYmxhY2tsaXN0ZWQuCiMK" | base64 -d > $PKG/etc/slackyd/slackyd.conf
+if [ -f /etc/slackyd/slackyd.conf ]; then
+cp -rf /etc/slackyd/slackyd.conf $PKG/etc/slackyd/
+fi
 }
 
 ###################################

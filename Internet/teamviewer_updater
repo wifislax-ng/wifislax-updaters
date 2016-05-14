@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160514
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,19 +18,21 @@ f_variables(){
 F_variables() {
 	PRGNAM=teamviewer
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	DOWNLOAD=http://download.teamviewer.com/download/teamviewer_linux.tar.gz
-	WEB=https://www.teamviewer.com/es/download/linux.aspx
-	VERSION=$(curl -sk $WEB | grep _ctl4_Version | head -1 | cut -d "v" -f2 | cut -d '<' -f-1)
-}
-
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/opt $PKG/usr/share/{applications,pixmaps}
+	WEB=http://www.teamviewer.com/es/download/linux/
+	VERSION=`curl -s $WEB|grep tar.xz|grep -v i386|head -1|cut -d '>' -f2|cut -d ' ' -f-1|cut -d v -f2`
+	DOWNLOAD=http://download.teamviewer.com/download/${PRGNAM}_i386.deb
 }
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ ! -f teamviewer_linux.tar.gz ]; then
+	if [ $ARCH = x86_64 ]; then
+	echo $AMARILLO
+	echo "Este programa no funciona en sistemas de 64 bits"
+	echo $CIERRE
+	exit 0
+	fi
+
+	if [ ! -f ${PRGNAM}_${VERSION}_i386.deb ]; then
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 1
@@ -43,13 +45,13 @@ F_compilar(){
 echo 
 echo "$VERDE"Descomprimiendo ..."$CIERRE"
 sleep 1
-tar xvf teamviewer_linux.tar.gz -C $PKG/opt
-
+mkdir -p $PKG/opt $PKG/usr/share/{applications,pixmaps}
+mkdir -p "$TMP/deb"
+deb2dir $TMP/${PRGNAM}_${VERSION}_i386.deb "$TMP/deb"
+cp -rfp "$TMP"/deb/* "$PKG"
 # Copiamos desktop & icono
 cp -rf $PKG/opt/teamviewer/tv_bin/desktop/teamviewer.png $PKG/usr/share/pixmaps/teamviewer.png
 cp -rf $PKG/opt/teamviewer/tv_bin/desktop/*.desktop $PKG/usr/share/applications/teamviewer.desktop
-
-rm -rf /opt/teamviewer*
 }
 
 ###################################
@@ -60,20 +62,18 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-#Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
 #Comprobamos updates del script
 f_comprobarUpdates
-#Asignamos o detectamos arquitectura
-f_arquitectura
 #Comprobamos version instalada del paquete
 f_versionInstalada
 #Si no existe el fichero se descargara

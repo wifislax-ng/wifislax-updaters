@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160220
+SCRIPT_VERSION=20160514
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -18,7 +18,7 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	WEB=http://lives-video.com/index.php?do=downloads
-	VERSION=`curl -s $WEB | grep -a .tar.bz2 | cut -d - -f3 | cut -d t -f-1 | sed "s/.$//g" `
+	VERSION=`curl -s $WEB|grep -a .tar.bz2|cut -d - -f3|cut -d t -f-1|sed "s/.$//g" `
 	PRGNAM=lives
 	SRCNAM=LiVES
 	echo -ne "\033]2;${PRGNAM}_updater\007"
@@ -29,13 +29,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-if [ $VERSION = "2.6.0" ]; then
-FFMPEGVERSION=ffmpeg28
-PKG_CONFIG_PATH="/usr/lib/ffmpeg2.8/pkgconfig"
-else
-FFMPEGVERSION=ffmpeg
-fi
-DEPENDENCIAS="$FFMPEGVERSION"
+DEPENDENCIAS="ffmpeg"
 f_dependencias
 }
 
