@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160210
+SCRIPT_VERSION=20160705
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -33,7 +33,7 @@ if [ $VERSION = 2.38.0 ]; then
 echo 
 echo "$VERDE""Version detectada 2.38.0 aplicando parche...""$CIERRE"
 sleep 1
-cat > graphviz.patch << "EOF"
+cat > format-string.patch << "EOF"
 diff -Naur old/lib/cgraph/scan.l new/lib/cgraph/scan.l
 --- old/lib/cgraph/scan.l	2014-04-13 10:40:25.000000000 -1000
 +++ new/lib/cgraph/scan.l	2014-12-02 08:54:21.285050735 -1000
@@ -55,7 +55,31 @@ diff -Naur old/lib/cgraph/scan.l new/lib/cgraph/scan.l
  	agxbfree(&xb);
  }
  /* must be here to see flex's macro defns */
+EOF
 
+cat > ghostscript918.patch << "EOF"
+diff -uprb graphviz-2.38.0.orig/plugin/gs/gvloadimage_gs.c graphviz-2.38.0/plugin/gs/gvloadimage_gs.c
+--- graphviz-2.38.0.orig/plugin/gs/gvloadimage_gs.c	2014-04-13 23:40:25.000000000 +0300
++++ graphviz-2.38.0/plugin/gs/gvloadimage_gs.c	2015-11-11 00:08:32.916123704 +0200
+@@ -72,11 +72,11 @@ static void gs_error(GVJ_t * job, const
+ 
+     assert (err < 0);
+ 
+-    if (err >= e_VMerror) 
++    if (err >= gs_error_VMerror)
+ 	errsrc = "PostScript Level 1"; 
+-    else if (err >= e_unregistered)
++    else if (err >= gs_error_unregistered)
+ 	errsrc = "PostScript Level 2";
+-    else if (err >= e_invalidid)
++    else if (err >= gs_error_invalidid)
+ 	errsrc = "DPS error";
+     else
+ 	errsrc = "Ghostscript internal error";
+
+EOF
+
+cat > php_5.4_compat.patch << "EOF"
 diff -Naur graphviz-2.28.0.orig/tclpkg/gv/gv_php_init.c graphviz-2.28.0/tclpkg/gv/gv_php_init.c
 --- graphviz-2.28.0.orig/tclpkg/gv/gv_php_init.c	2011-01-25 17:30:51.000000000 +0100
 +++ graphviz-2.28.0/tclpkg/gv/gv_php_init.c	2012-05-30 04:10:40.657221055 +0200
@@ -75,7 +99,9 @@ diff -Naur graphviz-2.28.0.orig/tclpkg/gv/gv_php_init.c graphviz-2.28.0/tclpkg/g
 
 EOF
 
-patch -p1 -i $TMP/$PRGNAM-$VERSION/graphviz.patch || exit 1
+patch -p1 -i $TMP/$PRGNAM-$VERSION/format-string.patch || exit 1
+patch -p1 -i $TMP/$PRGNAM-$VERSION/ghostscript918.patch || exit 1
+patch -p1 -i $TMP/$PRGNAM-$VERSION/php_5.4_compat.patch || exit 1
 fi
 
 echo 
@@ -93,7 +119,6 @@ LDFLAGS="-L/usr/lib${LIBDIRSUFFIX}" \
   --mandir=/usr/man \
   --disable-static \
   --enable-ocaml=no \
-  --enable-java=no \
   --build=$ARCH-slackware-linux
 
 echo 
