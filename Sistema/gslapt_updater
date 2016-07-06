@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151024
+SCRIPT_VERSION=20160706
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,7 +19,7 @@ F_variables() {
 	PRGNAM=gslapt
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=http://software.jaos.org/source/gslapt/
-	VERSION=`curl -s $WEB | grep .tar.gz | tail -1 | cut -d - -f2 | sed 's/.tar.gz">gslapt//g'`
+	VERSION=`curl -s $WEB|grep .tar.gz|tail -1|cut -d - -f2|cut -d . -f-3``
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
 	DOWNLOAD=${WEB}$SOURCES
