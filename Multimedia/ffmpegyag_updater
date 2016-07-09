@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160211
+SCRIPT_VERSION=20160709
 CATEGORIA="Editores de video"
 
 ############################################################
@@ -43,11 +43,6 @@ CXXFLAGS="$SLKCFLAGS" \
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-  
-# Usare wxGTK2.8 o dara fallo
-  sed -i 's|3.0|2.8|g' Makefile
-  sed -i 's|unicode|unicode-release|' Makefile
-  sed -i 's|-lwx_gtk2u_webview-2.8||' Makefile
 
 make  || exit 1
 make install DESTDIR=$PKG
