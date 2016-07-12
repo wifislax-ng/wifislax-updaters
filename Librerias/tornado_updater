@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160506
+SCRIPT_VERSION=20160712
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -19,10 +19,10 @@ F_variables() {
 	PRGNAM=tornado
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://pypi.python.org/pypi/tornado
-	VERSION=`curl -s $WEB|grep .gz|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'`
+	VERSION=`curl -s $WEB|grep $PRGNAM/[0-9]|head -1|cut -d '"' -f2|cut -d / -f4`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://pypi.python.org/packages/source/t/tornado/$SOURCES
+	DOWNLOAD=`curl -s $WEB/$VERSION|grep $SOURCES|head -1|grep -Po 'href="\K.*(?=")'`
 }
 
 # Comprobar dependencias
