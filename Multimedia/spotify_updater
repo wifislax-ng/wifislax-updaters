@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151116
+SCRIPT_VERSION=20160715
 CATEGORIA="Reproductores streaming"
 
 ############################################################
@@ -18,27 +18,18 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	PRGNAM=spotify
+	SRCNAM=spotify-client
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://spotify.en.uptodown.com/ubuntu
-	DOWNLOAD=$(curl -s $WEB/download | grep dw\.en\.uptodown | grep -Po 'href="\K.*(?=" )')
-	ARCHIVO=$(echo "$DOWNLOAD"|rev | cut -d/ -f1 | rev)
-	VERSION=$(curl -s "$WEB" | grep softwareVersion | sed -e 's/\(<[^<][^<]*>\)//g')
-}
-
-# Creamos directorios extra
-F_extradirs(){
-mkdir -p $PKG/usr/share/applications
-}
-
-# Definimos arquitectura del sitema
-F_arquitectura(){
-	case "$(uname -m)" in
-	i?86) DEBARCH="i386" ; LIBDIRSUFFIX="" ; ARCH=i386 ;;
-	x86_64) DEBARCH="amd64" ; LIBDIRSUFFIX="64" ; ARCH=x86_64 ;;
-	*) echo "Package for $(uname -m) architecture is not available." ; exit 1 ;;
-esac
-
-set -eu
+	WEB=http://repository.spotify.com/pool/non-free/s/spotify-client
+	if [ $ARCH = x86_64 ]; then
+	DEBARCH=amd64
+	else
+	DEBARCH=i386
+	fi
+	VERSION=`curl -s $WEB/|grep $DEBARCH|tail -1|cut -d _ -f2|cut -d- -f-1`
+	RAMA=`curl -s $WEB/|grep $DEBARCH|tail -1|cut -d _ -f2|cut -d- -f2`
+	ARCHIVO=${SRCNAM}_${VERSION}-${RAMA}_${DEBARCH}.deb
+	DOWNLOAD=$WEB/$ARCHIVO
 }
 
 # Si el paquete no existe se descargara de internet
@@ -53,47 +44,49 @@ F_download(){
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-deb2dir $TMP/$ARCHIVO $PKG
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $PKG
+ar -p $TMP/$ARCHIVO data.tar.gz | tar zxv
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-# Symlinks to fix lib naming issue.
-ln -sf /usr/lib${LIBDIRSUFFIX}/libnspr4.so $PKG/opt/spotify/spotify-client/libnspr4.so.0d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libnss3.so $PKG/opt/spotify/spotify-client/libnss3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libnssutil3.so $PKG/opt/spotify/spotify-client/libnssutil3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libplc4.so $PKG/opt/spotify/spotify-client/libplc4.so.0d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libplds4.so $PKG/opt/spotify/spotify-client/libplds4.so.0d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libsmime3.so $PKG/opt/spotify/spotify-client/libsmime3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libssl3.so $PKG/opt/spotify/spotify-client/libssl3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libssl.so.1.0.0 $PKG/opt/spotify/spotify-client/libssl.so.0.9.8
-ln -sf /usr/lib${LIBDIRSUFFIX}/libcrypto.so.1.0.0 $PKG/opt/spotify/spotify-client/libcrypto.so.0.9.8
+## create our opt/ directory
+mkdir -p $PKG/opt/$PRGNAM/
 
-## fixes some display issues
-ln -sf /usr/lib${LIBDIRSUFFIX}/libnspr4.so $PKG/opt/spotify/spotify-client/Data/libnspr4.so.0d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libnss3.so $PKG/opt/spotify/spotify-client/Data/libnss3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libnssutil3.so $PKG/opt/spotify/spotify-client/Data/libnssutil3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libplc4.so $PKG/opt/spotify/spotify-client/Data/libplc4.so.0d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libplds4.so $PKG/opt/spotify/spotify-client/Data/libplds4.so.0d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libsmime3.so $PKG/opt/spotify/spotify-client/Data/libsmime3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libssl3.so $PKG/opt/spotify/spotify-client/Data/libssl3.so.1d
-ln -sf /usr/lib${LIBDIRSUFFIX}/libssl.so.1.0.0 $PKG/opt/spotify/spotify-client/Data/libssl.so.0.9.8
-ln -sf /usr/lib${LIBDIRSUFFIX}/libcrypto.so.1.0.0 $PKG/opt/spotify/spotify-client/Data/libcrypto.so.0.9.8
+## move usr/ to opt/ to avoid
+## collisions
+mv usr/ $PKG/opt/$PRGNAM/
 
-# Gneramos el fichero .desktop
-cat > spotify.desktop << "EOF"
-[Desktop Entry]
-Name=Spotify
-GenericName=Music Player
-Comment=Listen to music using Spotify
-Icon=/opt/spotify/spotify-client/Icons/spotify-linux-128.png
-Exec=spotify %U
-TryExec=spotify
-Terminal=false
-Type=Application
-Path=/opt/spotify/spotify-client/
-Categories=Qt;Audio;Player;AudioVideo;
-MimeType=x-scheme-handler/spotify;
-EOF
+## rebuild some directories
+mkdir -p $PKG/usr/{bin,doc}/
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 
-mv spotify.desktop $PKG/usr/share/applications
+## we make our own launcher
+cat <<EOT > $PKG/usr/bin/$PRGNAM
+#!/bin/sh
+/opt/$PRGNAM/usr/bin/$PRGNAM "\$@"
+EOT
+
+chmod 755 $PKG/usr/bin/$PRGNAM
+
+## install all icon sizes, thanks to Dhaby
+(
+  cd $PKG/opt/$PRGNAM/usr/share/$PRGNAM/icons
+  for IMG in $PRGNAM-linux-*.png; do
+    SIZE=${IMG##*$PRGNAM-linux-}
+    DIRNAME=${SIZE%.png}x${SIZE%.png}
+    install -D $IMG $PKG/usr/share/icons/hicolor/$DIRNAME/apps/$SRCNAM.png
+  done
+)
+
+mkdir -p $PKG/usr/share/applications/
+mv $PKG/opt/$PRGNAM/usr/share/$PRGNAM/$PRGNAM.desktop \
+  $PKG/usr/share/applications/$SRCNAM.desktop
 }
 
 ###################################
@@ -104,18 +97,16 @@ trap f_exitmode SIGHUP SIGINT
 
 #Inicializamos las variables globales
 f_variables
+# Definimos arquitectura del sitema
+f_arquitectura
 #Comprobamos conexion a Internet
 f_comprobarConexion
 #Inicializamos las variables del script
 F_variables
 #Creamos directorio de trabajo
 f_directorioTemporal
-# Creamos directorios extra
-F_extradirs
 #Mostramos el mensaje de presentacion
 f_presentacion
-# Definimos arquitectura del sitema
-F_arquitectura
 #Comprobamos updates del script
 f_comprobarUpdates
 #Comprobamos version instalada del script
