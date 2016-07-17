@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160507
+SCRIPT_VERSION=20160717
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -27,10 +27,12 @@ F_variables() {
 	PRGNAM=oclhashcat
 	SRCNAM=hashcat
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=http://hashcat.net/oclhashcat/
+	WEB=http://hashcat.net/oclhashcat/ #Este link no existe. Redirige a hashcat. No sé si oclhashcat == hashcat
 	VERSION=`curl -s $WEB|grep .7z|head -1|cut -d "v" -f2|cut -d "<" -f 1|sed "s/ //g"`
-	DRIVER_ATI=`curl -s $WEB|grep "AMD users"|head -1|sed 's/<li>AMD users require Catalyst //'|cut -d "<" -f-1|sed 's/ //g'|sed 's/orlater/ or later/g'`
-	DRIVER_NVIDIA=`curl -s $WEB |grep "NV users"|head -1|sed 's/<li>NV users require ForceWare //'|cut -d "<" -f-1|sed 's/ //g'|sed 's/orlater/ or later/g'`
+	echo xddd
+	echo $VERSION
+	DRIVER_ATI=`curl -s $WEB|grep "AMD users"|grep -E "[0-9]+(\.|[0-9]+)*[0-9]+" -o | head -1`
+	DRIVER_NVIDIA=`curl -s $WEB |grep "NVidia users"|grep -E "[0-9]+(\.|[0-9]+)*[0-9]+" -o | head -1`
 	DESCARGA_NVIDIA=http://hashcat.net/files/cudaHashcat-$VERSION.7z
 	DESCARGA_AMD=http://hashcat.net/files/oclHashcat-$VERSION.7z
 }

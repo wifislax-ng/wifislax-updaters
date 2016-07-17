@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20151101
+SCRIPT_VERSION=20160717
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,7 +20,7 @@ F_variables() {
 	SRCNAM=Telegram
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://desktop.telegram.org/
-	VERSION=$(curl -s $WEB | grep stable |grep href | head -1 | sed -e 's/\(<[^<][^<]*>\)//g' | sed 's/^ *//g' | cut -d" " -f2)
+	VERSION=$(curl -s $WEB | grep -E "v [0-9]+(\.|[0-9]+)*[0-9]+" -o -m 1 | cut -d" " -f2)
 	EXTENSION=tar.xz
 	SOURCES=tsetup32.$VERSION.$EXTENSION
 	DOWNLOAD=https://updates.tdesktop.com/tlinux32/$SOURCES
