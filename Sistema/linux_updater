@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160508
+SCRIPT_VERSION=20160718
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -18,8 +18,10 @@ ROSA=${ROSA:-"[1;35m"}
 
 # Variables globales
 # El PRGNAM2 se usa en la creacion del xzm ,NO BORRAR
+# KARCH se usara siempre x86 ya que especifica arcquitectura "PC"
 PRGNAM2=kernel
 PRGNAM=linux
+KARCH=x86
 SCRIPTNAME=linux_updater
 TAG=sw
 M0DNUM=000
@@ -420,12 +422,8 @@ make modules || exit 1
 
 # Arquitectura segun el fichero config
 if [ ! -z "`grep -i 'CONFIG_64BIT=y' .config`" ]; then
-HEADERS=x86_64
-IMAGEN=x86_64
 ARCH=x86_64
 else
-HEADERS=i386
-IMAGEN=x86
 ARCH=i586
 fi
 
@@ -445,12 +443,12 @@ mkdir -p $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG
 make modules_install INSTALL_MOD_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG || exit 1
 
 # Instalamos las cabeceras kernel-headers
-make headers_install ARCH=$HEADERS INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr || exit 1
+make INSTALL_HDR_PATH=$HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr headers_install|| exit 1
 rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/.install
 rm -r $HOME/Desktop/$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG/usr/include/*/..install.cmd
 
 # Copiamos el vmlinuz
-cp /usr/src/$PRGNAM-$KERNEL_ELEGIDO/arch/$IMAGEN/boot/bzImage $HOME/Desktop/$VMLINUZ &>/dev/null
+cp /usr/src/$PRGNAM-$KERNEL_ELEGIDO/arch/$KARCH/boot/bzImage $HOME/Desktop/$VMLINUZ &>/dev/null
 
 # Generamos kernel sources recortadas
 mv System.map ../
@@ -459,8 +457,8 @@ mv ../System.map .
 make prepare
 make scripts
 rm -Rf Documentation drivers fs net sound firmware
-ls -1d arch/* | grep -v $IMAGEN | xargs rm -Rf
-ls -1d include/* | grep asm- | grep -v $IMAGEN | grep -v generic | xargs rm -Rf
+ls -1d arch/*|grep -v $KARCH|xargs rm -Rf
+ls -1d include/*|grep asm- |grep -v $KARCH|grep -v generic|xargs rm -Rf
 cp include/generated/* include/linux &>/dev/null
 
 # Preparamos creacion de xzm
