@@ -1,0 +1,93 @@
+#!/bin/sh
+
+# Script by www.seguridadwireless.net
+
+SCRIPT_VERSION=20160721
+
+############################################################
+## Funciones comunes. Su nombre empieza por f_ ##
+############################################################
+f_variables(){
+	. /opt/wifislax-updaters/Funciones/funciones_updater
+}
+
+############################################################
+## Funciones propias del script. Su nombre empieza por F_ ##
+############################################################
+# Definicion de variables
+F_variables() {
+	PRGNAM=slpkg
+	echo -ne "\033]2;${PRGNAM}_updater\007"
+	WEB=https://github.com/dslackw/slpkg
+	VERSION=`curl -s $WEB/releases|grep tar.gz|head -1|cut -d / -f5|cut -d t -f-1|sed 's/.$//g'|sed 's/v//g'`
+	EXTENSION=tar.gz
+	SOURCES=v$VERSION.$EXTENSION
+	DOWNLOAD=$WEB/archive/$SOURCES
+}
+
+# Descomprimimos el fichero descargado y compilamos
+F_compilar(){
+echo 
+echo "$VERDE"Compilando ..."$CIERRE"
+sleep 1
+
+# avoid install configuration files and man page over setup.py
+sed -i 's/if "install"/if ""/' setup.py
+
+python setup.py install --root=$PKG
+
+mkdir -p $PKG/etc/slpkg
+# install configuration files
+CONFIGS="slpkg.conf repositories.conf blacklist slackware-mirrors \
+    default-repositories custom-repositories"
+for file in $CONFIGS; do
+    install -D -m0644 conf/$file $PKG/etc/slpkg/${file}
+done
+
+# keep original configuration file for reset
+cp -p conf/slpkg.conf $PKG/etc/slpkg/slpkg.conf
+
+# install bash completion file
+mkdir -p $PKG/etc/bash_completion.d
+install -D -m0744 conf/${PRGNAM}.bash-completion \
+    $PKG/etc/bash_completion.d/${PRGNAM}.bash-completion
+
+# install fish completion file
+if [ -d "/etc/fish/completions" ]; then
+    install -D -m0744 conf/${PRGNAM}.fish \
+        $PKG/etc/fish/completions/${PRGNAM}.fish
+fi
+}
+
+###################################
+## BLOQUE PRINCIPAL DE EJECUCION ##
+###################################
+# Si se cierra el script inesperadamente, ejecutar la funcion de limpieza
+trap f_exitmode SIGHUP SIGINT
+
+#Inicializamos las variables globales
+f_variables
+#Asignamos o detectamos arquitectura
+f_arquitectura
+#Comprobamos conexion a Internet
+f_comprobarConexion
+#Inicializamos las variables del script
+F_variables
+#Creamos directorio de trabajo
+f_directorioTemporal
+#Mostramos el mensaje de presentacion
+f_presentacion
+#Comprobamos updates del script
+f_comprobarUpdates
+#Comprobamos version instalada del paquete
+f_versionInstalada
+#Si no existe el fichero se descargara
+f_download
+#Preparamos entorno
+f_preparar
+#Descomprimir fichero descargado y compilamos
+F_compilar
+#Hacemos strip sobre el paquete
+f_strip
+#Creamos xzm , instalamos y salimos
+f_tareasFinales
