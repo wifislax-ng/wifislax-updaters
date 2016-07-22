@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160211
+SCRIPT_VERSION=20160722
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -29,23 +29,43 @@ F_variables() {
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
 echo 
-echo "$VERDE"Descomprimiendo ..."$CIERRE"
+echo "$VERDE"Compilando ..."$CIERRE"
 sleep 1
-rm -rf $PRGNAM-$VERSION
-unzip -a -d $PRGNAM-$VERSION ${PRGNAM}$(echo $VERSION | tr -d .).zip
-cd $PRGNAM-$VERSION
-chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
- -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
- -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
+# Fix Makefile to install correctly on x86_64.
 sed -i "s%(PREFIX)/lib%(PREFIX)/lib${LIBDIRSUFFIX}%g" GNUmakefile
-sed -i "/*.so/d" GNUmakefile
 
-make CFLAGS="$SLKCFLAGS" CXXFLAGS="$SLKCFLAGS" 
+make dynamic CFLAGS="$SLKCFLAGS" CXXFLAGS="-DNDEBUG $SLKCFLAGS"
 make install PREFIX=$PKG/usr
+( cd $PKG/usr/lib${LIBDIRSUFFIX}
+  mv libcryptopp.so libcryptopp-${VERSION}.so.0
+  ln -s libcryptopp-${VERSION}.so.0 libcryptopp.so )
+  
+# This is empty
+rmdir $PKG/usr/bin
+
+# Install a pkgconfig file
+cat > $PRGNAM.pc << "EOF"
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}/lib@LIBDIRSUFFIX@
+includedir=${prefix}/include/cryptopp
+
+Name: Crypto++
+Description: A free C++ class library of cryptographic schemes
+Version: 5.6.2
+URL: http://www.cryptopp.com
+Requires:
+Conflicts:
+Libs: -L${libdir} -lcryptopp
+Cflags: -I${includedir}
+
+EOF
+
+# Install a pkgconfig file
+mkdir $PKG/usr/lib$LIBDIRSUFFIX/pkgconfig
+sed "s|@LIBDIRSUFFIX@|$LIBDIRSUFFIX|" ./$PRGNAM.pc \
+  > $PKG/usr/lib$LIBDIRSUFFIX/pkgconfig/$PRGNAM.pc
 }
 
 ###################################
@@ -72,6 +92,8 @@ f_arquitectura
 f_versionInstalada
 #Si no existe el fichero se descargara
 f_download
+#Preparamos entorno
+f_preparar
 #Descomprimir fichero descargado y compilamos
 F_compilar
 #Hacemos strip sobre el paquete

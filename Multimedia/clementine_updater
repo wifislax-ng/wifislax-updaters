@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160420
+SCRIPT_VERSION=20160722
 CATEGORIA="Reproductores multimedia"
 
 ############################################################
@@ -29,7 +29,7 @@ F_variables() {
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="libspotify libechonest cryptopp"
+DEPENDENCIAS="chromaprint cryptopp libechonest protobuf"
 f_dependencias
 }
 
