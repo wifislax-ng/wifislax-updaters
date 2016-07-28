@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160324
+SCRIPT_VERSION=20160727
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -32,6 +32,12 @@ F_variables() {
 	fi
 }
 
+# Comprobar dependencias
+F_dependencias(){
+DEPENDENCIAS="aria2"
+f_dependencias
+}
+
 # Si el paquete no existe se descargara de internet
 F_download(){
 	if [ ! -f $SOURCES ]; then
@@ -51,23 +57,68 @@ sleep 1
 mkdir -p "$TMP/deb"
 deb2dir $TMP/$SOURCES "$TMP/deb"
 rm -rf "$TMP/deb"/{etc,usr/share/man/,usr/share/doc,/usr/share/menu,/usr/share/gnome-control-center}
-find ""$TMP/deb"/opt/google/chrome/locales" -iname "*.pak" \
-	-not -iname "es.pak" \
-	-not -iname "en-US.pak" -and \
-	-exec rm -rf {} \;
-	
 rm -rf "$TMP/deb"/usr/share/applications/*.desktop
 
 echo "[Desktop Entry]
+Version=1.0
 Name=Google Chrome
 GenericName=Web Browser
+GenericName[ar]=متصفح الشبكة
+GenericName[bg]=Уеб браузър
+GenericName[ca]=Navegador web
+GenericName[cs]=WWW prohlížeč
+GenericName[da]=Browser
+GenericName[de]=Web-Browser
+GenericName[el]=Περιηγητής ιστού
+GenericName[en_GB]=Web Browser
 GenericName[es]=Navegador web
+GenericName[et]=Veebibrauser
+GenericName[fi]=WWW-selain
+GenericName[fr]=Navigateur Web
+GenericName[gu]=વેબ બ્રાઉઝર
+GenericName[he]=דפדפן אינטרנט
+GenericName[hi]=वेब ब्राउज़र
+GenericName[hu]=Webböngésző
+GenericName[it]=Browser Web
+GenericName[ja]=ウェブブラウザ
+GenericName[kn]=ಜಾಲ ವೀಕ್ಷಕ
+GenericName[ko]=웹 브라우저
+GenericName[lt]=Žiniatinklio naršyklė
+GenericName[lv]=Tīmekļa pārlūks
+GenericName[ml]=വെബ് ബ്രൌസര്‍
+GenericName[mr]=वेब ब्राऊजर
+GenericName[nb]=Nettleser
+GenericName[nl]=Webbrowser
+GenericName[pl]=Przeglądarka WWW
+GenericName[pt]=Navegador Web
+GenericName[pt_BR]=Navegador da Internet
+GenericName[ro]=Navigator de Internet
+GenericName[ru]=Веб-браузер
+GenericName[sl]=Spletni brskalnik
+GenericName[sv]=Webbläsare
+GenericName[ta]=இணைய உலாவி
+GenericName[th]=เว็บเบราว์เซอร์
+GenericName[tr]=Web Tarayıcı
+GenericName[uk]=Навігатор Тенет
+GenericName[zh_CN]=网页浏览器
+GenericName[zh_HK]=網頁瀏覽器
+GenericName[zh_TW]=網頁瀏覽器
+GenericName[bn]=ওয়েব ব্রাউজার
+GenericName[fil]=Web Browser
+GenericName[hr]=Web preglednik
+GenericName[id]=Browser Web
+GenericName[or]=ଓ୍ବେବ ବ୍ରାଉଜର
+GenericName[sk]=WWW prehliadač
+GenericName[sr]=Интернет прегледник
+GenericName[te]=మహాతల అన్వేషి
+GenericName[vi]=Bộ duyệt Web
 Exec=/opt/google/chrome/google-chrome --user-data-dir= --disable-infobars
 Terminal=false
-Icon=/opt/google/chrome/product_logo_48.png
+Icon=google-chrome
 Type=Application
 Categories=Network;WebBrowser;
-MimeType=text/html;text/xml;application/xhtml_xml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;" > "$TMP/deb"/usr/share/applications/$PRGNAM.desktop
+MimeType=text/html;text/xml;application/xhtml_xml;image/webp;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
+X-Ayatana-Desktop-Shortcuts=NewWindow;NewIncognito" > "$TMP/deb"/usr/share/applications/$PRGNAM.desktop
 
 cp -rfp "$TMP"/deb/* "$PKG"
 }
@@ -94,6 +145,8 @@ f_presentacion
 f_comprobarUpdates
 #Comprobamos version instalada del script
 f_versionInstalada
+# Comprobar dependencias
+F_dependencias
 #Si no existe el fichero se descargara
 F_download
 #Descomprimir fichero descargado y compilamos
