@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160718
+SCRIPT_VERSION=20160730
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -354,15 +354,17 @@ fi
 # Parte2 sino hay config generamos una en base al kernel actual
 if [ -f /usr/src/$PRGNAM-$KERNEL_ELEGIDO/.config ]; then
 echo ""
-echo ""$CYAN"Usando config añadida por el usuario ..."$CIERRE""
+echo ""$VERDE"Usando config añadida por el usuario ..."$CIERRE""
 echo ""
 else
 echo ""
-echo ""$CYAN"Generamos fichero .config ..."$CIERRE""
+echo ""$VERDE"Generamos fichero .config ..."$CIERRE""
 echo ""
 modprobe configs && zcat /proc/config.gz > /usr/src/$PRGNAM-$KERNEL_ELEGIDO/.config
 fi
 
+# Si no es 64 bits
+if ! [ $(uname -m) = "x86_64" ] ;then
 # Descargamos version de aufs correspondiente a nuestra rama y aplicamos
 if [ $RAMA_ELEGIDO = 4.1 ]; then
 RAMA_ELEGIDO=4.1.13+
@@ -373,7 +375,6 @@ RAMA_ELEGIDO=3.18.25+
 AUFS=3.18.25+
 fi
 DEST=/usr/src/$PRGNAM-$KERNEL_ELEGIDO/$AUFS.patch
-
 # Creamos parche y aplicamos
 echo ""
 echo ""$VERDE"Creamos y aplicamos el parche aufs "$BLANCO"..."$CIERRE""
@@ -395,7 +396,6 @@ cd ..
 diff -rupN a/ b/ > $DEST
 cat aufs$FAMILIA-standalone.git/*.patch >> $DEST
 rm -r /tmp/aufs$$
-
 # Verificamos la existencia del parche aufs
 if [ ! -f /usr/src/$PRGNAM-$KERNEL_ELEGIDO/$AUFS.patch ]; then
 echo ""
@@ -404,10 +404,10 @@ echo ""
 sleep 1
 exit 0
 fi
-
 # Aplicamos parche aufs
 cd /usr/src/$PRGNAM-$KERNEL_ELEGIDO
 patch -f -p1 -i $AUFS.patch || exit 1
+fi
 
 # Compilamos el kernel
 make oldconfig || exit 1
