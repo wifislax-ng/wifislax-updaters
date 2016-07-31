@@ -5,7 +5,7 @@
 # Eliminamos posibles ficheros viejos de modificaciones de scripts	
 rm -rf /opt/wifislax-updaters/*/*~ &>/dev/null
 
-SCRIPT_VERSION=20160730
+SCRIPT_VERSION=20160731
 
 # Colores
 CIERRE=${CIERRE:-"[0m"}
@@ -503,8 +503,8 @@ echo ""$AMARILLO"Pulsa ENTER si quieres instalar el kernel,si no te interesa cie
 read junk
 echo ""
 echo ""$VERDE"Instalando Kernel $KERNEL_ELEGIDO en sistema ..."$CIERRE""
-
-cp -r $HOME/Desktop/$VMLINUZ /boot/vmlinuz-$KERNEL_ELEGIDO-$VMLINUZCONFIG-wifislax
+VMLINUZNAME=`grep  "CONFIG_LOCALVERSION=" .config|cut -d = -f2|sed 's/"//g'`
+cp -r $HOME/Desktop/$VMLINUZ /boot/vmlinuz-${KERNEL_ELEGIDO}${VMLINUZNAME}
 xzm2dir $HOME/Desktop/$M0DNUM-$SMP$MODNAM-$KERNEL_ELEGIDO-$ARCH-$BUILD$TAG.xzm /
 update-grub
 echo ""
