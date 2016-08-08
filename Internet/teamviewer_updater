@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160717
+SCRIPT_VERSION=20160807
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -25,13 +25,6 @@ F_variables() {
 
 # Si el paquete no existe se descargara de internet
 F_download(){
-	if [ $ARCH = x86_64 ]; then
-	echo $AMARILLO
-	echo "Este programa no funciona en sistemas de 64 bits"
-	echo $CIERRE
-	exit 0
-	fi
-
 	if [ ! -f ${PRGNAM}_${VERSION}_i386.deb ]; then
 	echo 
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
@@ -52,6 +45,26 @@ cp -rfp "$TMP"/deb/* "$PKG"
 # Copiamos desktop & icono
 cp -rf $PKG/opt/teamviewer/tv_bin/desktop/teamviewer.png $PKG/usr/share/pixmaps/teamviewer.png
 cp -rf $PKG/opt/teamviewer/tv_bin/desktop/*.desktop $PKG/usr/share/applications/teamviewer.desktop
+# Metemos el servicio
+mkdir -p $PKG/etc/rc.d
+echo "
+IyEvYmluL3NoCiMKIyAvZXRjL3JjLmQvcmMudGVhbXZpZXdlcmQKIwojIFN0YXJ0L3N0b3AvcmVz
+dGFydCB0aGUgVGVhbVZpZXdlciBEYWVtb24KIwojIFRvIG1ha2UgVGVhbVZpZXdlciBEYWVtb24g
+c3RhcnQgYXV0b21hdGljYWxseSBhdCBib290LCBtYWtlIHRoaXMKIyBmaWxlIGV4ZWN1dGFibGU6
+ICBjaG1vZCA3NTUgL2V0Yy9yYy5kL3JjLnRlYW12aWV3ZXJkCiMgQWxzbywgYWRkIHRoaXMgbGlu
+ZSBpbiB5b3VyIC9ldGMvcmMuZC9yYy5sb2NhbDoKIwojIGlmIFsgLXggL2V0Yy9yYy5kL3JjLnRl
+YW12aWV3ZXJkIF07IHRoZW4KIyAgICAgICAgL2V0Yy9yYy5kL3JjLnRlYW12aWV3ZXJkIHN0YXJ0
+CiMgZmkKIwoKdGVhbXZpZXdlcmRfc3RhcnQoKSB7CiAgaWYgWyAteCAvb3B0L3RlYW12aWV3ZXIv
+dHZfYmluL3RlYW12aWV3ZXJkIF07IHRoZW4KICAgIGVjaG8gIlN0YXJ0aW5nIFRlYW1WaWV3ZXIg
+RGFlbW9uIgogICAgL29wdC90ZWFtdmlld2VyL3R2X2Jpbi90ZWFtdmlld2VyZCAtLWRhZW1vbiBz
+dGFydAogIGZpCn0KCnRlYW12aWV3ZXJkX3N0b3AoKSB7CiAgICBlY2hvICJUZXJtaW5hdGluZyBU
+ZWFtVmlld2VyIERhZW1vbiIKICBraWxsYWxsIHRlYW12aWV3ZXJkCn0KCnRlYW12aWV3ZXJkX3Jl
+c3RhcnQoKSB7CiAgdGVhbXZpZXdlcmRfc3RvcAogIHNsZWVwIDIKICB0ZWFtdmlld2VyZF9zdGFy
+dAp9CgpjYXNlICIkMSIgaW4KJ3N0YXJ0JykKICB0ZWFtdmlld2VyZF9zdGFydAogIDs7CidzdG9w
+JykKICB0ZWFtdmlld2VyZF9zdG9wCiAgOzsKJ3Jlc3RhcnQnKQogIHRlYW12aWV3ZXJkX3Jlc3Rh
+cnQKICA7OwoqKQogIGVjaG8gInVzYWdlICQwIHN0YXJ0fHN0b3B8cmVzdGFydCIKZXNhYwo=
+" | base64 -d > $PKG/etc/rc.d/rc.teamviewerd
+chmod 777 $PKG/etc/rc.d/rc.teamviewerd
 }
 
 ###################################

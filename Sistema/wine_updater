@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160402
+SCRIPT_VERSION=20160807
 
 #################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -20,10 +20,10 @@ F_variables(){
 	echo -ne "\033]2;${PRGNAM}_updater\007"
 	WEB=https://sourceforge.net/projects/wine/files/Slackware%20Packages/
 	VERSION=$(curl -s $WEB|grep -m1 "class=\"folder"|awk '{print $2}'|cut -d "\"" -f 2)
-	GECKO_WEB=https://sourceforge.net/projects/wine/files/Wine%20Gecko/
-	GECKO_VERSION=$(curl -s $GECKO_WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
-	MONO_WEB=https://sourceforge.net/projects/wine/files/Wine%20Mono/
-	MONO_VERSION=$(curl -s $MONO_WEB | grep -m1 "class=\"folder" | awk '{print $2}' | cut -d "\"" -f 2)
+	GECKO_WEB=http://dl.winehq.org/wine/wine-gecko
+	GECKO_VERSION=$(curl -s $GECKO_WEB/|egrep -o ">[0-9].[0-9]{1,2}/"|tr -d '>/'|tail -1)
+	MONO_WEB=https://dl.winehq.org/wine/wine-mono
+	MONO_VERSION=$(curl -s $MONO_WEB/|egrep -o ">[0-9].[0-9]{1,2}.[0-9]{1,2}/"|tr -d '>/'|tail -1)
 }
 
 # Si el paquete no existe se descargara de internet
@@ -31,23 +31,27 @@ F_download(){
 	DESCARGAR="wget -N -L -c -q --show-progress"
 	if [ $ARCH = i586 ]; then
 	ARCH=i486
-	SYSTEM=x86
-	else
-	SYSTEM=$(uname -m)
 	fi
-	BUILD=`curl -s ${WEB}$VERSION/$ARCH/|grep -o [0-9]sg|tail -1`
-	if [ ! -f $PRGNAM-$VERSION-$ARCH-$BUILD.txz ]; then
+	PKGVER=`curl -s ${WEB}$VERSION/$ARCH/|grep -o [0-9]sg|tail -1`
+	if [ ! -f $PRGNAM-$VERSION-$ARCH-$PKGVER.txz ]; then
 	echo ""
 	echo "$CYAN"Descargando sources de $PRGNAM-$VERSION"$CIERRE"
 	sleep 1
-	$DESCARGAR ${WEB}$VERSION/$ARCH/$PRGNAM-$VERSION-$ARCH-$BUILD.txz
+	$DESCARGAR ${WEB}$VERSION/$ARCH/$PRGNAM-$VERSION-$ARCH-$PKGVER.txz
 	fi
 # Si gecko no existe se descargara de internet
-	if [ ! -f ${PRGNAM}_gecko-$GECKO_VERSION-$SYSTEM.msi ]; then
+	if [ ! -f ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi ]; then
 	echo ""
-	echo "$CYAN"Descargando plugin ${PRGNAM}_gecko-$GECKO_VERSION-$SYSTEM.msi"$CIERRE"
+	echo "$CYAN"Descargando plugin ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi"$CIERRE"
 	sleep 1
-	$DESCARGAR $GECKO_WEB/$GECKO_VERSION/${PRGNAM}_gecko-$GECKO_VERSION-$SYSTEM.msi
+	$DESCARGAR $GECKO_WEB/$GECKO_VERSION/${PRGNAM}_gecko-$GECKO_VERSION-x86.msi
+	if [ $ARCH = x86_64 ]; then
+	echo ""
+	echo "$VERDE"Detectado sistema de 64 bits... incluyendo recursos.
+	echo "$CYAN"Descargando plugin ${PRGNAM}_gecko-$GECKO_VERSION-x86_64.msi"$CIERRE"
+	sleep 1
+	$DESCARGAR $GECKO_WEB/$GECKO_VERSION/${PRGNAM}_gecko-$GECKO_VERSION-x86_64.msi
+	fi
 	fi
 # Si mono no existe se descargara de internet
 	if [ ! -f ${PRGNAM}-mono-$MONO_VERSION.msi ]; then
@@ -62,10 +66,16 @@ fi
 F_compilar(){
 echo ""
 echo "$VERDE"
-txz2dir $PRGNAM-$VERSION-$ARCH-${BUILD}.txz $PKG
+txz2dir $PRGNAM-$VERSION-$ARCH-${PKGVER}.txz $PKG
 mkdir $PKG/usr/share/wine/gecko $PKG/usr/share/wine/mono
-mv ${PRGNAM}_gecko-$GECKO_VERSION-$SYSTEM.msi $PKG/usr/share/wine/gecko
+if [ -f ${PRGNAM}_gecko-$GECKO_VERSION-x86_64.msi ]; then
+mv ${PRGNAM}_gecko-$GECKO_VERSION-x86_64.msi $PKG/usr/share/wine/gecko
+chmod 777 $PKG/usr/share/wine/gecko/${PRGNAM}_gecko-$GECKO_VERSION-x86_64.msi
+fi
+mv ${PRGNAM}_gecko-$GECKO_VERSION-x86.msi $PKG/usr/share/wine/gecko
+chmod 777 $PKG/usr/share/wine/gecko/${PRGNAM}_gecko-$GECKO_VERSION-x86.msi
 mv ${PRGNAM}-mono-$MONO_VERSION.msi $PKG/usr/share/wine/mono
+chmod 777 $PKG/usr/share/wine/mono/${PRGNAM}-mono-$MONO_VERSION.msi
 rm $PKG/var/log/packages/wine*
 # El desktop winecfg viene mal ..se repara
 rm $PKG/usr/share/applications/winecfg.desktop
@@ -80,10 +90,6 @@ Name=Wine Configuration
 Terminal=false
 Type=Application
 " > $PKG/usr/share/applications/winecfg.desktop
-
-# Se da permiso de ejecucion a los plugins
-chmod 777 $PKG/usr/share/wine/gecko/${PRGNAM}_gecko-$GECKO_VERSION-$SYSTEM.msi
-chmod 777 $PKG/usr/share/wine/mono/${PRGNAM}-mono-$MONO_VERSION.msi
 }
 
 ###################################
