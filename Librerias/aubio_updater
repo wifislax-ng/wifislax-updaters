@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160218
+SCRIPT_VERSION=20160817
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -35,19 +35,11 @@ f_dependencias
 F_compilar(){
 echo 
 echo "$VERDE"Configurando ..."$CIERRE"
-sleep 1 
 python waf configure --prefix=/usr --enable-fftw3f
-
 echo 
 echo "$VERDE"Compilando ..."$CIERRE"
-sleep 1
 python waf build $MAKEFLAGS
-cd python && python setup.py build
-
-cd ..
 python waf --destdir=$PKG install
-
-cd python || return 1
 python setup.py install --root=$PKG --optimize=1
 }
 
