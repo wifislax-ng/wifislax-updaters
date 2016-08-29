@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160505
+SCRIPT_VERSION=20160828
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -18,24 +18,24 @@ f_variables(){
 F_variables() {
 	PRGNAM=matplotlib
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://sourceforge.net/projects/${PRGNAM}/files/${PRGNAM}
-	VERSION=`curl -s $WEB/|grep -m 1 "<tr title="|cut -d '"' -f2|cut -d- -f2|sed "s/ //g"`
+	WEB=https://pypi.python.org/pypi/$PRGNAM
+	VERSION=`curl -s $WEB/|grep $PRGNAM|grep /[0-9]|head -1|cut -d / -f4|cut -d '"' -f-1`
 	EXTENSION=tar.gz
 	SOURCES=$PRGNAM-$VERSION.$EXTENSION
-	DOWNLOAD=https://sourceforge.net/projects/${PRGNAM}/files/${PRGNAM}/${PRGNAM}-$VERSION/$SOURCES
+	DOWNLOAD=`curl -s $WEB/$VERSION|grep $SOURCES|head -1|grep -Po 'href="\K.*(?=">)'`
 }
 
 # Comprobar dependencias
 F_dependencias(){
-DEPENDENCIAS="numpy python-dateutil pytz six tornado pyparsing"
+DEPENDENCIAS="numpy python-dateutil pytz tornado pyparsing"
 f_dependencias
 }
 
 # Descomprimimos el fichero descargado y compilamos
 F_compilar(){
-mv setup.cfg.template setup.cfg
-sed -i "s|#pytz|pytz|" setup.cfg
-sed -i "s|#dateutil|dateutil|" setup.cfg
+cat setup.cfg.template > setup.cfg
+sed -i "s|#tests = True|tests = False|" setup.cfg
+sed -i "s|#toolkits_tests = auto|toolkits_tests = False|" setup.cfg
 
 echo ""
 echo "$VERDE"Compilando ..."$CIERRE"
