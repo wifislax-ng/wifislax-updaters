@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160730
+SCRIPT_VERSION=20160831
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -31,9 +31,23 @@ F_compilar(){
 ### Generamos parche ####
 #########################
 cat > setup.patch << "EOF"
---- youtube-dl-2015.05.20/Makefile.orig	2015-05-25 04:09:16.056234902 +0300
-+++ youtube-dl-2015.05.20/Makefile	2015-05-25 04:13:42.180907886 +0300
-@@ -50,7 +50,7 @@
+--- youtube-dl-2016.05.30.2/Makefile.orig	2016-05-30 16:14:38.003087066 +0300
++++ youtube-dl-2016.05.30.2/Makefile	2016-05-30 16:19:03.597103047 +0300
+@@ -5,11 +5,11 @@
+ 	find . -name "*.pyc" -delete
+ 	find . -name "*.class" -delete
+ 
+-PREFIX ?= /usr/local
++PREFIX ?= /usr
+ BINDIR ?= $(PREFIX)/bin
+ MANDIR ?= $(PREFIX)/man
+ SHAREDIR ?= $(PREFIX)/share
+-PYTHON ?= /usr/bin/env python
++PYTHON ?= /usr/bin/python
+ 
+ # set SYSCONFDIR to /etc if PREFIX=/usr or PREFIX=/usr/local
+ SYSCONFDIR != if [ $(PREFIX) = /usr -o $(PREFIX) = /usr/local ]; then echo /etc; else echo $(PREFIX)/etc; fi
+@@ -43,7 +43,7 @@
  
  .PHONY: all clean install test tar bash-completion pypi-files zsh-completion fish-completion ot offlinetest codetest supportedsites
  
@@ -42,41 +56,23 @@ cat > setup.patch << "EOF"
  
  youtube-dl: youtube_dl/*.py youtube_dl/*/*.py
  	zip --quiet youtube-dl youtube_dl/*.py youtube_dl/*/*.py
-@@ -70,11 +70,11 @@
+@@ -66,11 +66,11 @@
  	$(PYTHON) devscripts/make_supportedsites.py docs/supportedsites.md
  
  README.txt: README.md
 -	pandoc -f markdown -t plain README.md -o README.txt
-+	#pandoc -f markdown -t plain README.md -o README.txt
++	# pandoc -f markdown -t plain README.md -o README.txt
  
  youtube-dl.1: README.md
  	$(PYTHON) devscripts/prepare_manpage.py youtube-dl.1.temp.md
 -	pandoc -s -f markdown -t man youtube-dl.1.temp.md -o youtube-dl.1
-+	#pandoc -s -f markdown -t man youtube-dl.1.temp.md -o youtube-dl.1
++	# pandoc -s -f markdown -t man youtube-dl.1.temp.md -o youtube-dl.1
  	rm -f youtube-dl.1.temp.md
  
  youtube-dl.bash-completion: youtube_dl/*.py youtube_dl/*/*.py devscripts/bash-completion.in
-@@ -92,7 +92,7 @@
- 
- fish-completion: youtube-dl.fish
- 
--youtube-dl.tar.gz: youtube-dl README.md README.txt youtube-dl.1 youtube-dl.bash-completion youtube-dl.zsh youtube-dl.fish ChangeLog
-+youtube-dl.tar.gz: youtube-dl README.md youtube-dl.1 youtube-dl.bash-completion youtube-dl.zsh youtube-dl.fish
- 	@tar -czf youtube-dl.tar.gz --transform "s|^|youtube-dl/|" --owner 0 --group 0 \
- 		--exclude '*.DS_Store' \
- 		--exclude '*.kate-swp' \
-@@ -105,7 +105,7 @@
- 		--exclude 'docs/_build' \
- 		-- \
- 		bin devscripts test youtube_dl docs \
--		ChangeLog LICENSE README.md README.txt \
-+		LICENSE README.md \
- 		Makefile MANIFEST.in youtube-dl.1 youtube-dl.bash-completion \
- 		youtube-dl.zsh youtube-dl.fish setup.py \
- 		youtube-dl
---- youtube-dl-2015.05.20/setup.orig.py	2015-05-25 04:08:00.477179771 +0300
-+++ youtube-dl-2015.05.20/setup.py	2015-05-25 04:18:55.835986658 +0300
-@@ -46,10 +46,8 @@
+--- youtube-dl-2016.05.30.2/setup.orig	2016-05-30 16:14:52.766087954 +0300
++++ youtube-dl-2016.05.30.2/setup.py	2016-05-30 16:22:55.100116977 +0300
+@@ -47,10 +47,10 @@
      params = py2exe_params
  else:
      files_spec = [
@@ -86,6 +82,8 @@ cat > setup.patch << "EOF"
 -        ('share/man/man1', ['youtube-dl.1'])
 +        ('/etc/bash_completion.d', ['youtube-dl.bash-completion']),
 +        ('/etc/fish/completions', ['youtube-dl.fish']),
++        ('/usr/doc/youtube_dl', ['README.txt']),
++        ('/usr/man/man1', ['youtube-dl.1'])
      ]
      root = os.path.dirname(os.path.abspath(__file__))
      data_files = []
