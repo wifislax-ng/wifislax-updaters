@@ -2,7 +2,7 @@
 
 # Script by www.seguridadwireless.net
 
-SCRIPT_VERSION=20160211
+SCRIPT_VERSION=20160902
 
 ############################################################
 ## Funciones comunes. Su nombre empieza por f_ ##
@@ -17,10 +17,10 @@ f_variables(){
 # Definicion de variables
 F_variables() {
 	PRGNAM=gambas
+	RAMA=3
 	echo -ne "\033]2;${PRGNAM}_updater\007"
-	WEB=https://sourceforge.net/projects/gambas/files/
-	VERSION=`curl -s $WEB | grep latest/ | head -1 | cut -d "/" -f 8 | cut -d- -f 2 | cut -d "t" -f-1 | sed "s/.$//g" | sed "s/ //g"`
-	RAMA=`echo $VERSION | cut -d "." -f1`
+	WEB=https://sourceforge.net/projects/gambas/files/gambas$RAMA/
+	VERSION=`curl -s $WEB|grep .bz2|grep title|grep -v latest|head -1|cut -d- -f2|cut -d t -f-1|sed 's/.$//g'|sed 's/ //g'`
 	EXTENSION=tar.bz2
 	SRCNAM=gambas${RAMA}-$VERSION
 	SOURCES=$SRCNAM.$EXTENSION
